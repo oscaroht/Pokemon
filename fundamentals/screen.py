@@ -2,12 +2,14 @@
 from PIL import ImageGrab
 import numpy as np
 import cv2
+import os
 
 from fundamentals.config import config
 
 def screen_grab():
 
-    param = config('./settings.ini', 'window_size')
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
+    param = config('../settings.ini', 'window_size')
     w = int(param['w'])
     h = int(param['h'])
     vertical_offset = int(param['vertical_menu_offset'])

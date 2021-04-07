@@ -19,19 +19,26 @@ class Template:
         self.img = img_gray                     # array image of the template
 
 def load_templates():
-    param = config('./settings.ini', 'dirs')
-    root = param['base_dir'] + param['templates'] # this is the root of the templates folder
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
+    param = config('../settings.ini', 'dirs')
+    templates_folder = param['base_dir'] + param['templates'] # this is the root of the templates folder
+    os.chdir(templates_folder)
     global temp_list
     temp_list = []
-    for path, subdirs, files in os.walk(root):
+    for path, subdirs, files in os.walk(templates_folder):
         for filename in files:
             if filename.endswith('.png'):
-                #print(os.path.join(path, filename))
+                # TODO change to logger
+                print( 'Loading ' + os.path.join(path, filename))
 
-                subdir = path.replace(root,'')
+                subdir = path.replace(templates_folder,'')
                 option = subdir.replace(subdir,'').split('\\')[0]
                 version = None
 
                 temp_list.append(Template(filename, path, subdir.split('\\')[0], option, version, cv2.cvtColor(cv2.imread(os.path.join(path, filename)), cv2.COLOR_BGR2GRAY) ))
 
     return temp_list
+
+if __name__ == '__main__':
+    temp_list = load_templates()
+    test = 1

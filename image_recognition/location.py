@@ -24,11 +24,12 @@ def Retrive_image(curmap):
 def get_current_map(name):
     ''''This is a temporary function used to to take the current map from the the temp_list'''
 
-    ''''Need better way to navigate the data structure. Maybe indexing.'''
+
     if 'temp_list' not in globals():
         global temp_list
         temp_list = load_templates()
 
+    ''''Need better way to navigate the data structure. Maybe indexing.'''
     for t in temp_list:
         if t.name == name: # 'pellet_town':
             return t.img
@@ -85,15 +86,16 @@ def get_position_wrapper(map_name):
     return get_position(map_to_cor(get_current_map(map_name)),screen_grab())
 
 
-# Make sure to load this only once!!!
-img = get_current_map('pellet_town')
-mapping = map_to_cor(img)
+if __name__ == '__main__':
+    # Make sure to load this only once!!!
+    img = get_current_map('pellet_town')
+    mapping = map_to_cor(img)
 
-# only this depends per coordinate!!
-(id, x, y) = get_position(mapping,screen_grab())
+    # only this depends per coordinate!!
+    (id, x, y) = get_position(mapping,screen_grab())
 
-# img = cpo(screen_grab(),16*4)
-# cv2.imshow('screen',img)
-# cv2.waitKey()
+    # img = cpo(screen_grab(),16*4)
+    # cv2.imshow('screen',img)
+    # cv2.waitKey()
 
 
