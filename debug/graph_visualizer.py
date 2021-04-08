@@ -7,7 +7,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from fundamentals.config import config
 
-password = config('../users','postgres','password')
+password = config('../users.ini','postgres','password')
 engine = create_engine(f'postgresql+psycopg2://postgres:{password}@localhost/pokemon')
 
 node1_id = 1
@@ -25,12 +25,16 @@ for row in mart_edges:
 pos={}
 row_num = 0
 for row in node_positions:
-    print(row['node0_id'],row['x'], row['y'] )
+    #print(row['node0_id'],row['x'], row['y'] )
     pos[row['node0_id']] = (row['x'], row['y'])
+
+path = nx.dijkstra_path(G, 1, 195)
 
 ## just for visual testing
 flipped_pos = {node: (x,-y) for (node, (x,y)) in pos.items()} # flip axes
-nx.draw(G, pos=flipped_pos, with_labels=True, font_weight='bold')
-plt.yticks(rotation=90)
+nx.draw(G, pos=flipped_pos, with_labels=True, font_weight='bold',node_color = 'b')
+nx.draw(G, pos=flipped_pos,nodelist=path, with_labels=True, font_weight='bold',node_color= 'r')
 plt.show()
+
+test=1
 
