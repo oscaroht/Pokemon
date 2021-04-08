@@ -4,7 +4,7 @@ from pynput.keyboard import Key, Controller
 keyboard = Controller()
 
 # control settings. Can be tuned using the function below
-wait = 0.25
+wait = 0.28
 turnRatio = 0.02
 goRatio = 0.07
 
@@ -130,3 +130,7 @@ def test_controls():
         goleft()
         turnup()
         goup()
+
+if __name__ == '__main__':
+    test_controls()
+    test = 1
