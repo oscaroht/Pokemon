@@ -6,6 +6,7 @@ from fundamentals.initialization import load_templates
 from fundamentals.screen import screen_grab
 from fundamentals.open_vba import open_vba
 from fundamentals.config import config
+from image_recognition.orientation import get_orientation
 
 import os
 
@@ -19,10 +20,12 @@ def open_debug_screen():
         debug_screen = cv2.cvtColor(debug_screen,cv2.COLOR_GRAY2RGB)
         # Write some Text
 
-        id = get_position_wrapper('pellet_town')
+        loc = get_position_wrapper('pellet_town')
+        ori = get_orientation(0.15)
 
         font = cv2.FONT_HERSHEY_SIMPLEX
-        cv2.putText(debug_screen, str(id), (int(w/2), int(h/2)), font, 1, (0, 255, 255), 2, cv2.LINE_AA)
+        cv2.putText(debug_screen, str(loc), (int(w/2), int(h/2)), font, 1, (0, 125, 255), 2, cv2.LINE_AA)
+        cv2.putText(debug_screen, str(ori), (int(w/2.5), int(h/2.5)), font, 1, (255, 125, 255), 2, cv2.LINE_AA)
 
         window_name = 'debug_screen'
         cv2.moveWindow(window_name, int(w), 20)
