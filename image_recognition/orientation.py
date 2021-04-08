@@ -1,36 +1,67 @@
 
+from fundamentals.screen import screen_grab
+from fundamentals.load_templates import load_templates
+from fundamentals.config import config
 
-from numpy import max, argmax, zeros as np
-#import max, argmax, zeros from numpy as np
+import numpy as np
+import cv2
+import os
 
-from cv2 import matchTemplate, TM_CCOEFF_NORMED
+# os.chdir(os.path.dirname(os.path.realpath(__file__)))
+# x = int(config('../settings.ini', 'window_size','x'))
+#
+# template = cv2.imread('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\templates\\orientation\\down\\template_down_x1.png')
+# mask = cv2.imread('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\templates\\orientation\\down\\mask_down.msk')
+#
+# mask = cv2.cvtColor(mask, cv2.COLOR_RGB2GRAY)
+# template = cv2.cvtColor(template, cv2.COLOR_RGB2GRAY)
+#
+# screen = screen_grab()
+# screen = cv2.resize(screen,(0,0),fx=1/x,fy=1/x)
+
+## make zero pixels 1 such that we can norm the SQDIFF result.
+# screen = np.where(screen==0, 1, screen)
+#
+# res = cv2.matchTemplate(screen, template, cv2.TM_SQDIFF_NORMED, mask=mask)
+# min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+# top_left = (min_loc[0]*x, min_loc[1]*x)
+# bottom_right = (top_left[0] + template.shape[1]*x, top_left[1] + template.shape[0]*x)
+#
+# debug_screen = cv2.resize(screen,(0,0),fx=x,fy=x)
+# debug_screen = cv2.cvtColor(debug_screen, cv2.COLOR_GRAY2RGB)
+# cv2.rectangle(debug_screen, top_left, bottom_right, (0,255,255), 2)
+# print(np.min(res))
+# cv2.imshow('screen',debug_screen)
+# cv2.waitKey()
+#
+# test=1
 
 
 
 
+def get_orientation(threshold):
+    screen = screen_grab(resize=True)
+    if 'temp_list' not in globals():
+        print('not in globals')
+        global temp_list
+        temp_list = load_templates()
+    # evaluate all templates
+    best_score = 1
+    for t in temp_list:
+        if t.group == 'orientation':
+            if t.mask is not None:
+                res = cv2.matchTemplate(screen, t.img, cv2.TM_SQDIFF_NORMED, mask=t.mask)
+            else:
+                res = cv2.matchTemplate(screen, t.img, cv2.TM_SQDIFF_NORMED)
+            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+            if min_val < best_score:
+                best_score = min_val
+                t_best = t
+    if best_score > threshold:
+        print('No orientation found.')
+        return None
+    print(f'{t_best.name} with a score of {best_score}')
+    return t_best.option
 
-
-def PlayerRec(screen, templates_player):
-    # screen = cv2.imread('Pokemon Blue_32.png')
-    #rs = (700, 630)
-    #screen = cv2.resize(screen, rs)
-    res_max = np.zeros(len(templates_player))
-    thresh = 0.62
-    orientation = []
-    loc = []
-    #locvec = []#np.zeros(len(templates_player))
-    for ori in range(len(templates_player)):
-        for tem in range(len(templates_player[ori])):
-            res = cv2.matchTemplate(screen, templates_player[ori][tem], cv2.TM_CCOEFF_NORMED)
-            if np.max(res) > res_max[ori]:
-                res_max[ori] = np.max(res)
-                #min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-                #locvec[ori] = np.where()# >= thresh)
-    if np.max(res_max) >= thresh:
-        orientation = np.argmax(res_max)+1      # zorg ervoor dat 1 omhoog is
-    else: orientation = 5;
-    return orientation
-
-
-
-
+if __name__ == '__main__':
+    t = get_orientation(0.15)
