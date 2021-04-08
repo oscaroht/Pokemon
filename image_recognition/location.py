@@ -83,10 +83,21 @@ def get_position(mapping, screen):
     return best_id, mapping[best_id]['x'], mapping[best_id]['y']
 
 def get_position_wrapper(map_name):
+    if 'temp_list' not in globals():
+        print('not in globals')
+        global temp_list
+        temp_list = load_templates()
+
     return get_position(map_to_cor(get_current_map(map_name)),screen_grab())
 
 
 if __name__ == '__main__':
+    if 'temp_list' not in globals():
+        print('not in globals')
+        global temp_list
+        temp_list = load_templates()
+
+
     # Make sure to load this only once!!!
     img = get_current_map('pellet_town')
     mapping = map_to_cor(img)
