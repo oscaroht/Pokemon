@@ -4,9 +4,9 @@ from pynput.keyboard import Key, Controller
 keyboard = Controller()
 
 # control settings. Can be tuned using the function below
-wait = 0.28
-turnRatio = 0.02
-goRatio = 0.07
+wait = 0.35
+turnRatio = 0.015
+goRatio = 0.062
 
 def btnA(*argv):
     if len(argv) == 0:

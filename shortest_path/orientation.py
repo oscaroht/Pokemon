@@ -39,7 +39,7 @@ import os
 
 
 
-def get_orientation(threshold):
+def get_orientation(threshold=0.15):
     screen = screen_grab(resize=True)
     if 'temp_list' not in globals():
         print('not in globals')
