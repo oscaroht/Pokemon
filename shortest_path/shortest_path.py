@@ -126,8 +126,6 @@ def check(current, status):
         status[0] = False
         #raise WrongStep('Not right step')
 
-
-
 def load_graph(node1_id):
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
     password = config('../users.ini', 'postgres', 'password')
