@@ -19,6 +19,7 @@ def singleton(class_):
     return getinstance
 
 def load_pokemon():
+
     query = """select 
     a.own_pokemon_id,
     a.pokemon_id,
@@ -69,11 +70,13 @@ def load_pokemon():
     join mappings.pokemon_move e on a.move3_id = e.move_id 
     join mappings.pokemon_move f on a.move4_id = f.move_id; """
 
-    if 'pokemon_table' not in globals() or 'pokemon_move_table' not in globals() or 'own_pokemon' not in globals() or 'party' not in globals():
+    if 'df_pokemon' not in globals() or 'df_moves' not in globals() or 'own_pokemon' not in globals() or 'party' not in globals():
+        print('Loading.. pokemon tables')
         global df_pokemon
         global df_moves
         global own_pokemon
         global party
+        print('Done loading.. pokemon tables')
 
         os.chdir(os.path.dirname(os.path.realpath(__file__)))
         engine = create_engine(f"postgresql+psycopg2://postgres:{config('../users.ini','postgres','password')}@localhost/pokemon")
@@ -81,7 +84,7 @@ def load_pokemon():
         with engine.connect() as con:
             df_pokemon = pd.read_sql_table('pokemon', con=con, schema='mappings', index_col='pokemon_id')
             df_moves = pd.read_sql_table('pokemon_move', con=con, schema='mappings', index_col='move_id')
-            df_party = pd.read_sql_table('party', con=con, schema='mart')
+            #df_party = pd.read_sql_table('party', con=con, schema='mart')
             #df_own_pokemon = pd.read_sql_table('own_pokemon', con=con, schema='mart')
             df_own_pokemon = pd.read_sql(query,con=con)
 
@@ -100,7 +103,7 @@ def load_pokemon():
         for index, row in df_own_pokemon.iterrows():
             own_id = row['own_pokemon_id']
             party.add(own_pokemon.get_pokemon_by_id(own_id))
-
+    return df_pokemon
 
 class Move:
     def __init__(self, id,name, type1, power, accuracy, max_pp):
@@ -133,6 +136,15 @@ class Pokemon:
         self.base_stats = stats # dict {'hp':82, 'atk':50, ...}
         #self.evolve = evolve # dict {'method':'level', 'by': 16, 'into_name': 'Charizard'}
 
+class SpecificPokemon(Pokemon):
+
+    def __init__(self,pokemon_id, pokemon_name, type1, type2, stats, level):
+        super(SpecificPokemon, self).__init__(pokemon_id, pokemon_name, type1, type2, stats)
+
+        self.level = level
+        self.stats = stats
+
+
 class OwnPokemon(Pokemon):
 
     def __init__(self,pokemon_id, pokemon_name, type1, type2, stats, own_id,own_name,lvl, own_moves, current_hp = 0, status = 'normal'): # add some kind of move id or move object
@@ -159,7 +171,7 @@ class OwnPokemon(Pokemon):
         self.current_hp = self.stats['max_hp']
 
     def lvl_up(self, new_lvl,hp, atk, defe, spa, spe):
-        self.lvl +=1
+        self.lvl += 1
         # update stats
         self.stats = {'hp':hp, 'atk':atk, 'def':defe, 'spa':spa, 'spd':spa, 'spe':spe }
 
@@ -212,8 +224,8 @@ class Party(list):
     def rmv(self, pokemon): # remove is a list function
         if len(self.party) > 1:
             if pokemon in self:
-                item = self.index(pokemon)
-                self.pop(item)
+                index = self.index(pokemon)
+                self.pop(index)
             else:
                 raise PartyError('Pokemon not found in party.')
         else:
