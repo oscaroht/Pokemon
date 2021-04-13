@@ -5,8 +5,8 @@ keyboard = Controller()
 
 # control settings. Can be tuned using the function below
 wait = 0.35
-turnRatio = 0.015
-goRatio = 0.062
+turnRatio = 0.03
+goRatio = 0.068
 
 def btnA(*argv):
     if len(argv) == 0:
@@ -131,6 +131,36 @@ def test_controls():
         turnup()
         goup()
 
+def test2():
+
+    for i in range(4):
+        turnright()
+        goright()
+        turndown()
+        godown()
+        turnleft()
+        goleft()
+        turnup()
+        goup()
+        turnleft()
+        goleft()
+        turndown()
+        godown()
+        turnright()
+        goright()
+        turnup()
+        goup()
+
+def test3():
+    for i in range(4):
+        turnright()
+        turndown()
+        turnleft()
+        turnup()
+
+
 if __name__ == '__main__':
-    test_controls()
+
+    time.sleep(3)
+    test2()
     test = 1
