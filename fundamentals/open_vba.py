@@ -21,8 +21,8 @@ def open_vba():
                                                 # with assosiated program
     sleep(2)
     vb = gw.getWindowsWithTitle('VisualBoyAdvance')[0]
-    vb.moveTo(0,0)  # move the window to the upper corner
-    vb.resizeTo(w, h)
+    vb.moveTo(-8,0)  # move the window to the upper corner
+    #vb.resizeTo(w, h)
     vb.activate() # also possible to uncheck 'Pause when inactive' in vba settings
 
 
