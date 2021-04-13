@@ -21,18 +21,23 @@ def Retrive_image(curmap):
     img=cv2.cvtColor(img_tem, cv2.COLOR_BGR2GRAY)
     return img
 
-def get_current_map(name):
+def get_current_map(map):
     ''''This is a temporary function used to to take the current map from the the temp_list'''
-
 
     if 'temp_list' not in globals():
         global temp_list
         temp_list = load_templates()
 
-    ''''Need better way to navigate the data structure. Maybe indexing.'''
-    for t in temp_list:
-        if t.name == name: # 'pellet_town':
-            return t.img
+    if isinstance(map,str):
+        ''''Need better way to navigate the data structure. Maybe indexing.'''
+        for t in temp_list:
+            if t.name == map: # 'pellet_town':
+                return t.img
+    elif isinstance(map,int):
+        ''''Need better way to navigate the data structure. Maybe indexing.'''
+        for t in temp_list:
+            if t.id == map: # 'pellet_town':
+                return t.id
 
 def cpo(img, tile_size):
     ''''This function cuts the player out. It works both on the map(template) as on the screen. In case the screen is
@@ -67,6 +72,10 @@ def get_position(mapping, screen):
 
     screen_cpo = cpo(screen, 16*4) ## It appears to be 16 times 4 Not sure about the 16, should check
 
+    # testing
+    # cv2.imshow('screen_cpo', screen_cpo)
+    # cv2.waitKey()
+
     h, w = mapping[1]['img'].shape
     screen_cpo = cv2.resize(screen_cpo, (w, h))
 
@@ -82,13 +91,13 @@ def get_position(mapping, screen):
             best_id = id
     return best_id, mapping[best_id]['x'], mapping[best_id]['y']
 
-def get_position_wrapper(map_name):
+def get_position_wrapper(map):
     if 'temp_list' not in globals():
         print('not in globals')
         global temp_list
         temp_list = load_templates()
 
-    return get_position(map_to_cor(get_current_map(map_name)),screen_grab())
+    return get_position(map_to_cor(get_current_map(map)),screen_grab())
 
 
 if __name__ == '__main__':

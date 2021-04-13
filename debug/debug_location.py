@@ -14,7 +14,7 @@ import threading
 import os
 from time import sleep
 
-def open_debug_screen():
+def open_debug_screen(map_name):
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
     w = int(config('../settings.ini', 'window_size','w'))
     h = int(config('../settings.ini', 'window_size', 'h'))
@@ -27,7 +27,7 @@ def open_debug_screen():
         debug_screen = cv2.cvtColor(debug_screen,cv2.COLOR_GRAY2RGB)
         # Write some Text
 
-        loc = get_position_wrapper('pellet_town')
+        loc = get_position_wrapper(map_name)
         ori = get_orientation(0.15)
 
         font = cv2.FONT_HERSHEY_SIMPLEX
@@ -83,5 +83,5 @@ if __name__ == "__main__":
         global temp_list
         temp_list = load_templates()
 
-    open_debug_screen()
+    open_debug_screen('pellet_town')
 

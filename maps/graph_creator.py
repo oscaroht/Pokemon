@@ -8,12 +8,12 @@ import matplotlib.pyplot as plt
 
 engine = create_engine('postgresql+psycopg2://postgres:Postoscar1@localhost/pokemon')
 
-G = nx.Graph()
+G_current_lvl0 = nx.Graph()
 
 with engine.connect() as con:
     mart_edges = con.execute(f"select * from mart.edges_lvl0; ")
     node_positions = con.execute('select node0_id, x, y from stage.naive_nodes_lvl0;')
 
 for row in mart_edges:
-    G.add_edge(row['node0_id_from'], row['node0_id_to'])
+    G_current_lvl0.add_edge(row['node0_id_from'], row['node0_id_to'])
 
