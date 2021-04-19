@@ -3,6 +3,8 @@ from fundamentals.screen import screen_grab
 from fundamentals.load_templates import load_templates
 from fundamentals.config import config
 
+from fundamentals.globals import temp_list
+
 import numpy as np
 import cv2
 import os
@@ -41,10 +43,13 @@ import os
 
 def get_orientation(threshold=0.15):
     screen = screen_grab(resize=True)
-    if 'temp_list' not in globals():
-        print('not in globals')
-        global temp_list
-        temp_list = load_templates()
+
+    # if 'temp_list' not in globals():
+    #     print('not in globals')
+    #     global temp_list
+    # temp_list  = load_templates()
+
+
     # evaluate all templates
     best_score = 1
     for t in temp_list:

@@ -5,39 +5,44 @@ Maybe we can even store the shrunk cpo versions. Maybe this improves performance
 
 import numpy as np
 import cv2
+from time import sleep
 
 from fundamentals.load_templates import load_templates
 
+from fundamentals.globals import temp_list
+
 from fundamentals.screen import screen_grab
 
+class LocationNotFound(Exception):
+    pass
 
-def Retrive_image(curmap):
-    ''''This is a temporary function used to load a test map. In future the initialization file will be used to load
-    all templates to memory at once and make them global 'variables'.'''
-
-    direc='C:\\Users\\oscar\\PycharmProjects\\Pokemon\\templates\\Map\\'
-    path=direc+str(curmap)+'.png'
-    img_tem=cv2.imread(path)
-    img=cv2.cvtColor(img_tem, cv2.COLOR_BGR2GRAY)
-    return img
 
 def get_current_map(map):
     ''''This is a temporary function used to to take the current map from the the temp_list'''
 
-    if 'temp_list' not in globals():
-        global temp_list
-        temp_list = load_templates()
+    # if 'temp_list' not in globals():
+    #     global temp_list
+    #     temp_list = load_templates()
 
     if isinstance(map,str):
         ''''Need better way to navigate the data structure. Maybe indexing.'''
         for t in temp_list:
             if t.name == map: # 'pellet_town':
                 return t.img
+        # maybe it is a group
+        list=[]
+        for t in temp_list:
+            if t.group == map:
+                list.append(t)
+        if list != []:
+            return list
+
     elif isinstance(map,int):
         ''''Need better way to navigate the data structure. Maybe indexing.'''
         for t in temp_list:
             if t.id == map: # 'pellet_town':
                 return t.id
+
 
 def cpo(img, tile_size):
     ''''This function cuts the player out. It works both on the map(template) as on the screen. In case the screen is
@@ -81,7 +86,7 @@ def get_position(mapping, screen):
 
     res_max = 0
     node0_id = None
-    best_id = None
+    best_id, best_x, best_y = None, None, None
     for id in range(1, len(mapping)+1):                 # +1 because database id starts at 1
         screen = cv2.resize(screen_cpo, (w, h))
         #TODO check the match function
@@ -89,26 +94,48 @@ def get_position(mapping, screen):
         if np.max(res)>res_max: # TODO maybe if match is higher than 90% or so break from the loop
             res_max = res
             best_id = id
-    return best_id, mapping[best_id]['x'], mapping[best_id]['y']
+
+    if res_max < 0.5:
+        print('threshold of 0.5 not passed')
+        return None
+
+    best_x = mapping[best_id]['x']
+    best_y = mapping[best_id]['y']
+    return best_id, best_x , best_y
 
 def get_position_wrapper(map):
-    if 'temp_list' not in globals():
-        print('not in globals')
-        global temp_list
-        temp_list = load_templates()
+    # if 'temp_list' not in globals():
+    #     print('not in globals')
+    #     global temp_list
+    #     temp_list = load_templates()
 
-    return get_position(map_to_cor(get_current_map(map)),screen_grab())
+    cor = None
+    cor = get_position(map_to_cor(get_current_map(map)),screen_grab())
+    if cor != None:
+        return (map, *cor)
+
+    # sleep(5)
+    # check other maps
+    for t in temp_list:
+        # iterate over all map templates
+        if t.group == 'map':
+            print(f' trying {t.name}')
+            cor = get_position(map_to_cor(get_current_map(t.name)), screen_grab())
+            if cor != None:
+                print('found')
+                return (t.name , *cor)
+    raise LocationNotFound
 
 
 if __name__ == '__main__':
-    if 'temp_list' not in globals():
-        print('not in globals')
-        global temp_list
-        temp_list = load_templates()
+    # if 'temp_list' not in globals():
+    #     print('not in globals')
+    #     global temp_list
+    #     temp_list = load_templates()
 
 
     # Make sure to load this only once!!!
-    img = get_current_map('pellet_town')
+    img = get_current_map('mom_lvl1')
     mapping = map_to_cor(img)
 
     # only this depends per coordinate!!
@@ -118,4 +145,4 @@ if __name__ == '__main__':
     # cv2.imshow('screen',img)
     # cv2.waitKey()
 
-
+    print(id, x, y)
