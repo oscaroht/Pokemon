@@ -99,7 +99,7 @@ def start_bot(console_level='INFO'):
     open_vba()
     initialize_logger(logging_directory='log', console_level=console_level, include_lowest_level=False)
     #logger.debug('Loading templates')
-    load_templates()
+    #load_templates()
     if console_level == 'DEBUG':
         open_debug_screen()
 

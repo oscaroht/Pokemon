@@ -117,7 +117,7 @@ def godown(*args):
         n = int(args[0])
     btndown(n, goRatio)
 
-def test_controls():
+def test1():
     '''' Meant to test the control settings. In order to do so find an area in the game where you can walk in a circle,
     run this function and visually assess Also check 'Options' -> 'Video' -> Vsync '''
 
@@ -162,5 +162,5 @@ def test3():
 if __name__ == '__main__':
 
     time.sleep(3)
-    test2()
+    test1()
     test = 1
