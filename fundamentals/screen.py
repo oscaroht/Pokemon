@@ -34,23 +34,23 @@ def screen_grab(resize=False, test = False):
 
     return screen
 
-def read_bar():
-    import pytesseract
-
-    os.chdir(os.path.dirname(os.path.realpath(__file__)))
-    param = config('../settings.ini', 'window_size')
-    w = int(param['w'])
-    h = int(param['h'])
-    tesseract_path = config('../settings.ini', 'tesseract', 'path')
-
-    screen = screen_grab()
-
-    pytesseract.pytesseract.tesseract_cmd = tesseract_path
-
-    roi_bar = screen[int(103 * h / 144):int(138 * h / 144), int(8 * w / 160):int(153 * w / 160)]
-
-    text = pytesseract.image_to_string(roi_bar, lang='Pokemon')
-    return text
+# def read_bar():
+#     import pytesseract
+#
+#     os.chdir(os.path.dirname(os.path.realpath(__file__)))
+#     param = config('../settings.ini', 'window_size')
+#     w = int(param['w'])
+#     h = int(param['h'])
+#     tesseract_path = config('../settings.ini', 'tesseract', 'path')
+#
+#     screen = screen_grab()
+#
+#     pytesseract.pytesseract.tesseract_cmd = tesseract_path
+#
+#     roi_bar = screen[int(103 * h / 144):int(138 * h / 144), int(8 * w / 160):int(153 * w / 160)]
+#
+#     text = pytesseract.image_to_string(roi_bar, lang='Pokemon')
+#     return text
 
 
 if __name__ == '__main__':
