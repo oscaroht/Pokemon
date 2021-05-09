@@ -4,12 +4,12 @@ import re
 import difflib
 import os
 from fundamentals.config import config
-from fundamentals.screen import screen_grab, read_bar
+from fundamentals.screen import screen_grab
 from fundamentals.load_templates import load_templates
 import numpy as np
 import cv2
-from pokemon import party, own_pokemon, df_pokemon, df_moves, df_strength_weakness
-from pokemon import WildPokemon
+from fight.pokemon import party, own_pokemon, df_pokemon, df_moves, df_strength_weakness
+from fight.pokemon import WildPokemon
 
 def create_foe():
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
@@ -75,7 +75,7 @@ def calculate_damage(my_pokemon, move ,foe ):
     physical_moves=['normal','fighting','flying','ground','rock','bug','ghost','poison']
 
     if move.type == my_pokemon.type1 or move.type == my_pokemon.type2:
-        stab = 1.5
+        stab = 1.5      # same type attack bonus (stab)
     else:
         stab = 1
 
@@ -83,7 +83,7 @@ def calculate_damage(my_pokemon, move ,foe ):
     if foe.type2 != '-':
         multiplier_2 = df_strength_weakness[ (df_strength_weakness['atk'] == move.type) & (df_strength_weakness['def'] == foe.type2) ].iloc[0]['multiplier'] # has to be iloc instead of loc because we are not using the indexes
         multiplier *= multiplier_2
-    random = 235.5/254 # this is a normally distributed range between 217 and 254
+    random = int(235.5/254) # this is a normally distributed range between 217 and 254 divided by 254
 
     modifier = random * multiplier * stab
 

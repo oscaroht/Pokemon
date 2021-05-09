@@ -82,6 +82,15 @@ def load_pokemon():
     engine = create_engine(f"postgresql+psycopg2://postgres:{config('../users.ini','postgres','password')}@localhost/pokemon")
 
     with engine.connect() as con:
+        pokemon_dict ={}
+        temp = {}
+        for row in con.execute(f"select * from mappings.pokemon;"):
+            # get all the atributes in a dict instead of a tuple
+            temp = dict((key, value) for key, value in row.items())
+            # create 2 keys on pokemon_id and on pokemon_name
+            pokemon_dict[row['pokemon_id']] = temp
+            pokemon_dict[row['pokemon_name']] = temp
+
         df_pokemon = pd.read_sql_table('pokemon', con=con, schema='mappings', index_col='pokemon_id')
         df_moves = pd.read_sql_table('pokemon_move', con=con, schema='mappings', index_col='move_id')
         df_strength_weakness = pd.read_sql_table('strength_weakness', con=con, schema='mart')
@@ -115,7 +124,7 @@ def load_pokemon():
     for index, row in df_own_pokemon.iterrows():
         own_id = row['own_pokemon_id']
         party.add(own_pokemon.get_pokemon_by_id(own_id))
-    return party, own_pokemon, df_pokemon, df_moves, df_strength_weakness
+    return party, own_pokemon, df_pokemon, df_moves, df_strength_weakness, pokemon_dict
 
 class Move:
     def __init__(self, id,name, type1, power, accuracy, max_pp):
@@ -283,7 +292,7 @@ class Party(list):
 
 # LOAD
 
-party, own_pokemon, df_pokemon, df_moves, df_strength_weakness = load_pokemon()
+party, own_pokemon, df_pokemon, df_moves, df_strength_weakness, pokemon_dict = load_pokemon()
 
 
 if __name__=='__main__':

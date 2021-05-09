@@ -50,7 +50,7 @@ class FightOCR(OCR):
                 'special': [int(79*scale_factor),int(90*scale_factor),int(80*scale_factor),int(153*scale_factor)]
                         }
 
-    '''' Arrow that shows we are in a fight '''
+    '''' Arrow that shows at the beginning of a fight '''
     roi_arrow=[int(85*scale_factor),
                int(97*scale_factor),
                int(70*scale_factor),

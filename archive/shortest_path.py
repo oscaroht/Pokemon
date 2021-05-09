@@ -3,23 +3,16 @@
 ''''This file is used to make a graphical representation of a graph. It is ment to resemble the screen. It is used for
 debugging'''
 
-from sqlalchemy import create_engine
 import networkx as nx
-import matplotlib.pyplot as plt
 import threading
-
-import os
 from time import sleep
 
 
 from orientation import get_orientation
-from location import get_position_wrapper, LocationNotFound
-
-from fundamentals.config import config
+from position import get_position, LocationNotFound
 from fundamentals.controls import *
-
-from fundamentals.globals import temp_list, G_lvl0, G_lvl1, df_edges_lvl1
-
+from fundamentals.state_controller import StateController
+from walk.graphs import G_lvl0, G_lvl1, df_edges_lvl1
 
 class WrongStep(Exception):
     pass
@@ -70,8 +63,10 @@ def path_interpreter_multi_t(cor_list, node1):
 
 
 def next_step(current, next, ori):
-
-    """ press the buttons to perform the next turn and step """
+    """ press the buttons to perform the next turn and step. input:
+     current: triple tuple (. . .)
+     next: tuple (. .)
+     ori: string like 'up' """
 
     (_, x_current, y_current, ori_current) = current # ignore map
     (x_next, y_next) = next
@@ -101,7 +96,7 @@ def next_step(current, next, ori):
     ori[0]=ori_current
 
 def check(current, status):
-    _, _, x, y = get_position_wrapper(current[0]) # ignore map, id
+    _, _, x, y = get_position(current[0]) # ignore map, id
     if (x, y) != (current[1], current[2]):
         status[0] = False
 
@@ -178,7 +173,7 @@ def get_shortest_path(current_map, goal_cor, return_type='cor_list'):
         current_map_name = current_map
         current_map_id = df_edges_lvl1[df_edges_lvl1['from_name'] == current_map].iloc[0]['from_id']
 
-    (current_map_name, from_id, x, y) = get_position_wrapper(current_map_name)
+    (current_map_name, from_id, x, y) = get_position(current_map_name)
     current_map_id = df_edges_lvl1[df_edges_lvl1['from_name'] == current_map_name].iloc[0]['from_id']
 
     print(f'Current is: {current_map_name}, {from_id}')
@@ -188,8 +183,6 @@ def get_shortest_path(current_map, goal_cor, return_type='cor_list'):
 
     # GLOBAL PATH
     # if the current map is not the goal map than we need to go to the right map first
-
-    # TODO lets put this in a loop and create the full path
 
     print(f'Goal: {goal_cor}')
 
@@ -301,7 +294,7 @@ if __name__ == '__main__':
     goal_cor = ('mom_lvl1', 56)
 
 
-    while True:
+    while StateController.state_name() == 'walk':
         try:
             cor_list = get_shortest_path(current_map, goal_cor, return_type='cor_list')
             print(cor_list)

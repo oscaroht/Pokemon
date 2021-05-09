@@ -5,19 +5,15 @@ Maybe we can even store the shrunk cpo versions. Maybe this improves performance
 
 import numpy as np
 import cv2
-from time import sleep
 
-from fundamentals.load_templates import load_templates
-
-from fundamentals.globals import temp_list
-
+from walk.templates import temp_list
 from fundamentals.screen import screen_grab
 
 class LocationNotFound(Exception):
     pass
 
 
-def get_current_map(map):
+def _get_current_map(map):
     ''''This is a temporary function used to to take the current map from the the temp_list'''
 
     # if 'temp_list' not in globals():
@@ -44,7 +40,7 @@ def get_current_map(map):
                 return t.id
 
 
-def cpo(img, tile_size):
+def _cpo(img, tile_size):
     ''''This function cuts the player out. It works both on the map(template) as on the screen. In case the screen is
     used the tilesize should be set to w / 16*10 or h / 16*9. In case the map is used, use the native tile size of 16
     pixels per tile.'''
@@ -59,7 +55,7 @@ def cpo(img, tile_size):
     return vis
 
 
-def map_to_cor(im): # im is a large map
+def _map_to_cor(im): # im is a large map
     ''''The idea is to iterate over the image using the same iterator as was used to create the coordinates tables for
     the database. The ids will be the same as long as the map is made with care.'''
     mapping = {}
@@ -67,15 +63,15 @@ def map_to_cor(im): # im is a large map
     id = 1
     for y in range(int(h / 16) - 8):
         for x in range(int(w / 16) - 9):
-            mapping[id] = {'img' :cpo(im[y*16:(y*16+144),x*16:(x*16+160)],16), 'x':x, 'y':y }
+            mapping[id] = {'img' :_cpo(im[y * 16:(y * 16 + 144), x * 16:(x * 16 + 160)], 16), 'x':x, 'y':y}
 
             id += 1
     return mapping
 
-def get_position(mapping, screen):
+def _get_position_in_map(mapping, screen):
     ''''This function returns the node0_id where the player is at this very moment.'''
 
-    screen_cpo = cpo(screen, 16*4) ## It appears to be 16 times 4 Not sure about the 16, should check
+    screen_cpo = _cpo(screen, 16 * 4) ## It appears to be 16 times 4 Not sure about the 16, should check
 
     # testing
     # cv2.imshow('screen_cpo', screen_cpo)
@@ -103,24 +99,23 @@ def get_position(mapping, screen):
     best_y = mapping[best_id]['y']
     return best_id, best_x , best_y
 
-def get_position_wrapper(map):
-    # if 'temp_list' not in globals():
-    #     print('not in globals')
-    #     global temp_list
-    #     temp_list = load_templates()
-
+def get_position(map = None):
+    ''''
+    map: int or str '''
     cor = None
-    cor = get_position(map_to_cor(get_current_map(map)),screen_grab())
-    if cor != None:
-        return (map, *cor)
 
-    # sleep(5)
-    # check other maps
+    '''' if a map name or id is given is given than check if we find a coordinate. If not move on to all templates'''
+    if map != None:
+        cor = _get_position_in_map(_map_to_cor(_get_current_map(map)), screen_grab())
+        if cor != None:
+            return (map, *cor)
+
+    '''' no map name or id was given. Lets look in all templates and finc the position  '''
     for t in temp_list:
         # iterate over all map templates
         if t.group == 'map':
             print(f' trying {t.name}')
-            cor = get_position(map_to_cor(get_current_map(t.name)), screen_grab())
+            cor = _get_position_in_map(_map_to_cor(_get_current_map(t.name)), screen_grab())
             if cor != None:
                 print('found')
                 return (t.name , *cor)
@@ -135,11 +130,11 @@ if __name__ == '__main__':
 
 
     # Make sure to load this only once!!!
-    img = get_current_map('mom_lvl1')
-    mapping = map_to_cor(img)
+    img = _get_current_map('mom_lvl1')
+    mapping = _map_to_cor(img)
 
     # only this depends per coordinate!!
-    (id, x, y) = get_position(mapping,screen_grab())
+    (id, x, y) = _get_position_in_map(mapping, screen_grab())
 
     # img = cpo(screen_grab(),16*4)
     # cv2.imshow('screen',img)
