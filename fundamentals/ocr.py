@@ -28,7 +28,7 @@ class OCR:
     roi_lower = [int((roi_bar[0]+roi_bar[1])/2), roi_bar[1], roi_bar[2], roi_bar[3] ]
 
     char = {}
-    for i, ch in enumerate('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.!'):
+    for i, ch in enumerate("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzé.!?/'"):
         char[i] = ch
         char[ch] = i
 
@@ -87,11 +87,24 @@ class OCR:
             b = bbox_copy.pop(0)
 
             """" if the next box's end is before this box's end. With a small margin"""
-            if len(bbox_copy) > 0:
-                if bbox_copy[0][2] < b[2] + 5:
-                    bbox_out.append(union(b, bbox_copy[0]))
-                    bbox_copy.pop(0)
-                    continue
+            # if len(bbox_copy) > 0:
+            #     if bbox_copy[0][2] < b[2] + 5:
+            #         bbox_out.append(union(b, bbox_copy[0]))
+            #         bbox_copy.pop(0)
+            #         continue
+            # bbox_out.append(b)
+
+            """ so check for every next bbox if it fits in the current bbox"""
+            #if len(bbox_copy) > 0:
+            times = 0
+            for i in range(len(bbox_copy)):
+                if bbox_copy[i][2] < b[2] + 5:
+                    b = union(b, bbox_copy[i])
+                    times += 1
+
+            for t in range(times):
+                bbox_copy.pop(0)
+
             bbox_out.append(b)
 
         ''''output is a list of boxes so [[x0,y0,x1,y1]]'''
@@ -128,8 +141,8 @@ class OCR:
             image_list.append(img)
 
             ## use this for testing
-            cv2.imshow('a',img)
-            cv2.waitKey()
+            # cv2.imshow('a',img)
+            # cv2.waitKey()
 
 
         chr_codes = np.argmax(cls.model.predict(np.array(image_list)), axis=1)
@@ -157,5 +170,5 @@ class OCR:
 
 if __name__ == '__main__':
     text = OCR.read_bar()
-    print('main ocr')
+    print(text)
     pass

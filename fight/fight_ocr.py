@@ -29,11 +29,13 @@ class FightOCR(OCR):
              int(93*scale_factor),
              int(146*scale_factor)]
 
+    # RETIRED
     # roi_stat_update = [int(23*scale_factor),
     #                    int(90*scale_factor),
     #                    int(80*scale_factor),
     #                    int(153*scale_factor)]
 
+    # RETIRED
     # # both text and number
     # roi_stat_update = {
     #             'attack': [int(23*scale_factor),int(40*scale_factor),int(80*scale_factor),int(153*scale_factor)],
@@ -73,8 +75,11 @@ class FightOCR(OCR):
 
         # add a white part above and below the name. This makes it easier to find contours.
         h1, w1 = roi_im.shape
-        white = 248 * np.ones((10, w1), dtype=np.uint8)
+        white = 248 * np.ones((5, w1), dtype=np.uint8)
         roi_im = cv2.vconcat([white, roi_im, white])
+        h1, w1 = roi_im.shape
+        white = 248 * np.ones((h1,5), dtype=np.uint8)
+        roi_im = cv2.hconcat([white, roi_im, white])
 
         # # for testing
         # cv2.imshow('a', roi_im)
@@ -82,6 +87,14 @@ class FightOCR(OCR):
 
         contours = super(FightOCR,cls)._preprocess_for_contours(roi_im)   # find the rectangles around contours
         bboxes = super(FightOCR,cls)._get_bbox(contours)                # get a list of bounding boxes around character
+
+        # testing
+        # roi_im = cv2.cvtColor(roi_im, cv2.COLOR_GRAY2RGB)
+        # for box in bboxes:
+        #     cv2.rectangle(roi_im, (box[0], box[1]), (box[2], box[3]), (255,0,0))
+        # cv2.imshow('a', roi_im)
+        # cv2.waitKey()
+        # roi_im = cv2.cvtColor(roi_im, cv2.COLOR_RGB2GRAY)
 
         ''''splits the roi in images defined by the bounding boxes'''
         images_for_nn = super(FightOCR,cls)._char_images( roi_im,bboxes )
@@ -121,7 +134,7 @@ class FightOCR(OCR):
 
 if __name__ == '__main__':
 
-    r = FightOCR.read_stat_update()
+    r = FightOCR.read_pp()
 
     pass
 

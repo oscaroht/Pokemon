@@ -1,7 +1,7 @@
 
 import cv2
 
-from walk.position import get_position
+from walk.position import Position
 from fundamentals.initialization import load_templates
 from fundamentals.screen import screen_grab
 from fundamentals.open_vba import open_vba
@@ -27,7 +27,7 @@ def open_debug_screen(map_name):
         debug_screen = cv2.cvtColor(debug_screen,cv2.COLOR_GRAY2RGB)
         # Write some Text
 
-        loc = get_position(map_name)
+        loc = Position.get_position(map_name)
         ori = get_orientation(0.15)
 
         font = cv2.FONT_HERSHEY_SIMPLEX
@@ -61,7 +61,7 @@ def debug_multi_t():
         t_imshow.join()
 
 def loc_ori(map, result):
-    loc = get_position(map)
+    loc = Position.get_position(map)
     ori = get_orientation(0.15)
     result = (*loc, ori)
 

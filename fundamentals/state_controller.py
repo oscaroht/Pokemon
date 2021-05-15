@@ -76,8 +76,9 @@ def state_check(state):
     def decorator(func):
         def wrapper(*args, **kwargs):
             state_bool = func(*args, **kwargs)
-            if state_bool == None and StateController.state != state:
+            if state_bool != None and StateController.state != state:
                 StateController.state.switch(state)
+            return state_bool
         return wrapper
     return decorator
 

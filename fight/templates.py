@@ -1,3 +1,4 @@
+
 import os
 import cv2
 
@@ -33,12 +34,12 @@ class Template:
 
 
 def load_templates():
-    os.chdir(os.path.dirname(os.path.realpath(__file__)))
-    param = config('../settings.ini', 'dirs')
-    templates_folder = param['base_dir'] + param['templates']  # this is the root of the templates folder
+
+    path = os.path.dirname(os.path.abspath(__file__))
+    templates_folder = path + '\\templates\\'  # this is the root of the templates folder
 
     os.chdir(templates_folder)
-    global temp_list
+
     temp_list = []
     for path, subdirs, files in os.walk(templates_folder):
         # if the folder contains a mask, use the mask for all templates
@@ -64,6 +65,9 @@ def load_templates():
     return temp_list
 
 
-temp_list = load_templates()
+f_temp_list = load_templates()
 
 pass
+
+
+

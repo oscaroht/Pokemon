@@ -93,8 +93,8 @@ class Stepper:
 
     @classmethod
     def check(cls,current, status):
-        from position import get_position
+        from position import Position
 
-        _, _, x, y = get_position(current[0])  # ignore map, id
+        _, _, x, y = Position.get_position()  # ignore map, id
         if (x, y) != (current[1], current[2]):
             status[0] = False

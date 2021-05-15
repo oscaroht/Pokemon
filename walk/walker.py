@@ -12,12 +12,15 @@ class Walker:
 
     @classmethod
     def go(cls, goal_cor):
+        '''' goal_cor: tuple like ('mom_lvl1, 58) '''
         from fundamentals import StateController
         from path import Path
         from stepper import Stepper, WrongStep
+        from position import Position
         from time import sleep
 
-        while StateController.state_name() == 'walk': # and while location != goal_cor
+        while StateController.state_name() == 'walk' and Position.position[:len(goal_cor)] != goal_cor:
+            print(Position.position[:len(goal_cor)])
             try:
                 path = Path(goal_cor)
                 for key, value in path.cor_dict.items():

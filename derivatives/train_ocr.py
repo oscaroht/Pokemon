@@ -7,30 +7,11 @@ import numpy as np
 from sklearn.utils import shuffle
 from tensorflow.keras import datasets, layers, models
 
-test=1
 
-
-class TwoWayDict(dict):
-    def __setitem__(self, key, value):
-        # Remove any previous connections with these values
-        if key in self:
-            del self[key]
-        if value in self:
-            del self[value]
-        dict.__setitem__(self, key, value)
-        dict.__setitem__(self, value, key)
-
-    def __delitem__(self, key):
-        dict.__delitem__(self, self[key])
-        dict.__delitem__(self, key)
-
-    def __len__(self):
-        """Returns the number of connections"""
-        return dict.__len__(self) // 2
-
-char = TwoWayDict()
-for i, ch in enumerate('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.!'):
+char = {}
+for i, ch in enumerate("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzé.!?/'"):
     char[i] = ch
+    char[ch] = i
 
 
 def LoadData(FP = '.'):
@@ -75,13 +56,13 @@ model = tf.keras.Sequential(
     # tf.keras.layers.Dropout(0.2),
 
     tf.keras.layers.Conv2D(64, (3,3), padding='same', activation="relu"),
-    tf.keras.layers.MaxPooling2D((3, 3), strides=2),
+    tf.keras.layers.MaxPooling2D((5, 5), strides=2),
     tf.keras.layers.Dropout(0.1),
 
     tf.keras.layers.Flatten(),
     tf.keras.layers.Dense(128, activation="relu"),
     tf.keras.layers.Dropout(0.1),
-    tf.keras.layers.Dense(64, activation="softmax")
+    tf.keras.layers.Dense(68, activation="softmax")
 ]
 )
 
@@ -94,13 +75,13 @@ model.compile(optimizer='adam', #adam
 
 model.fit(X, y, epochs=5)
 
-model.save('model')
+model.save('ocr_model')
 
 
 
 
 
-# prediction = model(A[:1]).numpy()
+# prediction = model(X[:1341]).numpy()
 # probabs = tf.nn.softmax(prediction).numpy()
 
 
