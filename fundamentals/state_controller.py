@@ -26,12 +26,30 @@ class TalkState(WalkState):
         return 'talk'
 
 class FightState(State):
-
     def __init__(self):
         self.name = 'fight'
-
     def __str__(self):
         return 'fight'
+class FightInitState(State):
+    def __init__(self):
+        self.name = 'fight_init'
+    def __str__(self):
+        return 'fight_init'
+class FightMenuState(State):
+    def __init__(self):
+        self.name = 'fight_menu'
+    def __str__(self):
+        return 'fight_menu'
+class FightMoveState(State):
+    def __init__(self):
+        self.name = 'fight_move'
+    def __str__(self):
+        return 'fight_move'
+class FightWaitArrowState(State):
+    def __init__(self):
+        self.name = 'fight_wait_arrow'
+    def __str__(self):
+        return 'fight_wait_arrow'
 
 class StoryState(State):
     pass
@@ -49,7 +67,7 @@ class StartUpState(State):
 class StateController:
 
 
-    state = WalkState() #eval_state()  #StartUpState() # self.get_state() # we could check but we know we start with the
+    state = FightState() #eval_state()  #StartUpState() # self.get_state() # we could check but we know we start with the
 
     @classmethod
     def state_name(cls):
@@ -62,11 +80,29 @@ class StateController:
          or at the startup. Unfortunately it cannot be called to set StateController.state because we do not initialize
          a class. '''
         from walk import get_orientation
+        from fight import Selector
 
-        # get orientation also has a @state_check so we do not have to set something. Just to make sure
-        if get_orientation() != None:
-            cls.state.switch(WalkState)
+        def _set_state():
+            state_name = Selector.eval_fight_states()
+            if state_name == 'wait_arrow':
+                StateController.state.switch(FightWaitArrowState)
+            elif state_name == 'menu':
+                StateController.state.switch(FightMenuState)
+            elif state_name == 'move':
+                StateController.state.switch(FightMoveState)
+            elif state_name == 'init':
+                StateController.state.switch(FightInitState)
+            # else:
+            #     StateController.state.switch(FightState) #TODO remove so we can get into a walk state
 
+            # get orientation also has a @state_check so we do not have to set something. Just to make sure
+            if get_orientation() != None:
+                cls.state.switch(WalkState)
+
+        _set_state()
+        while cls.state == None:
+            print('state not found, keep looking')
+            _set_state()
 
     # def change(self,new_state):
     #     self.state.switch(new_state)
