@@ -3,7 +3,7 @@ import cv2
 from fundamentals import screen_grab
 from fundamentals import StateController, WalkState, state_check
 
-from templates import temp_list
+from walk.templates import temp_list
 
 @state_check(WalkState)
 def get_orientation(threshold=0.15):
