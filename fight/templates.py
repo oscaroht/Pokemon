@@ -50,7 +50,7 @@ def load_templates():
         for filename in files:
             if filename.endswith('.tmp'):
                 # TODO change to logger
-                print('Loading.. template' + filename)
+                print('Loading.. template ' + filename)
 
                 subdir = path.replace(templates_folder, '')
                 group = subdir.split('\\')[0]

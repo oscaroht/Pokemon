@@ -1,3 +1,5 @@
 
 
-from .fight import Fight
+from .fighter import Fight
+
+from .selector import Selector
