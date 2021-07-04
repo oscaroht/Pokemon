@@ -70,13 +70,6 @@ def load_pokemon():
     join mappings.pokemon_move e on a.move3_id = e.move_id 
     join mappings.pokemon_move f on a.move4_id = f.move_id; """
 
-    # if 'df_pokemon' not in globals() or 'df_moves' not in globals() or 'own_pokemon' not in globals() or 'party' not in globals():
-    #     print('Loading.. pokemon tables')
-    #     global df_pokemon
-    #     global df_moves
-    #     global own_pokemon
-    #     global party
-    #     print('Done loading.. pokemon tables')
 
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
     engine = create_engine(f"postgresql+psycopg2://postgres:{config('../users.ini','postgres','password')}@localhost/pokemon")
@@ -90,6 +83,14 @@ def load_pokemon():
             # create 2 keys on pokemon_id and on pokemon_name
             pokemon_dict[row['pokemon_id']] = temp
             pokemon_dict[row['pokemon_name']] = temp
+
+        for row in con.execute(f"select * from mappings.pokemon_move;"):
+            Move( id =row['move_id'],
+                  name = row['move_name'],
+                  type1 = row['move_type'],
+                  power=row['move_power'],
+                  accuracy = row['move_accuracy'],
+                  max_pp = row['max_pp'])
 
         df_pokemon = pd.read_sql_table('pokemon', con=con, schema='mappings', index_col='pokemon_id')
         df_moves = pd.read_sql_table('pokemon_move', con=con, schema='mappings', index_col='move_id')
@@ -113,12 +114,17 @@ def load_pokemon():
                         row['max_pp3'], row['move3_pp'])
         move4 = OwnMove(row['move4_id'], row['move4'], row['move4_type'], row['move4_power'], row['move4_accuracy'],
                         row['max_pp4'], row['move4_pp'])
+        moves = []
+        for m in [move1,move2,move3,move4]:
+            if m.id != -1:
+                moves.append(m)
+
 
         stats = {'hp': row['max_hp'], 'atk': row['atk'], 'def': row['defe'], 'spa': row['spa'], 'spd': row['spd'],
                  'spe': row['spe']}
 
         own_pokemon.append(OwnPokemon(row['pokemon_id'], row['own_pokemon_name'], row['type1'], row['type2'], stats,
-                                      row['own_pokemon_id'], row['own_pokemon_name'], row['lvl'], [move1,move2,move3,move4],
+                                      row['own_pokemon_id'], row['own_pokemon_name'], row['lvl'], moves,
                                       current_hp=row['hp'], status=row['status']))
     party = Party()  # create empty party
     for index, row in df_own_pokemon.iterrows():
@@ -127,17 +133,33 @@ def load_pokemon():
     return party, own_pokemon, df_pokemon, df_moves, df_strength_weakness, pokemon_dict
 
 class Move:
-    def __init__(self, id,name, type1, power, accuracy, max_pp):
+
+    all = {'id':{}, 'name':{}}
+
+    def __init__(self, id,name, type1, power, accuracy, max_pp, adding=True):
         self.id = id
         self.name = name
         self.type = type1
         self.power = power
         self.accuracy = accuracy
         self.max_pp = max_pp
+        if adding:
+            Move.all['name'][name] = self
+            Move.all['id'][id] = self
+
+    @classmethod
+    def get_move_by_id(cls, id):
+        return cls.all['id'][id]
+
+    @classmethod
+    def get_move_by_name(cls, name):
+        return cls.all['name'][name]
+
 
 class OwnMove(Move):
+
     def __init__(self, id, name, type1, power, accuracy, max_pp, pp):
-        super(OwnMove,self).__init__(id, name, type1, power, accuracy, max_pp)
+        super(OwnMove,self).__init__(id, name, type1, power, accuracy, max_pp, adding=False)
         self.pp = pp
 
     def lower_pp(self):
@@ -149,18 +171,35 @@ class OwnMove(Move):
 
 class Pokemon:
 
-    def __init__(self,pokemon_id, pokemon_name, type1, type2, base_stats):#, base_stats):
+    _pokemon_dict = {'id':{},'name':{}}
+
+    def __init__(self,pokemon_id, pokemon_name, type1, type2, base_stats, adding=True):#, base_stats):
         self.pokemon_id = pokemon_id
         self.name = pokemon_name
         self.type1 = type1
         self.type2 = type2
         self.base_stats = base_stats # dict {'hp':82, 'atk':50, ...}
-        #self.evolve = evolve # dict {'method':'level', 'by': 16, 'into_name': 'Charizard'}
+        #self.evolve = evolve # dict {'method':'level', 'by': 16, 'into_name': 'Charmeleon'}
+        if adding:
+            self._add_to_dict()
+
+    def _add_to_dict(self):
+        print(Pokemon._pokemon_dict)
+        Pokemon._pokemon_dict['id'][self.pokemon_id] = self
+        Pokemon._pokemon_dict['name'][self.pokemon_name] = self
+
+    @classmethod
+    def get_pokemon_by_id(cls, id):
+        return cls._pokemon_dict['id'][id]
+
+    @classmethod
+    def get_pokemon_by_name(cls, name):
+        return cls._pokemon_dict['name'][name]
 
 class WildPokemon(Pokemon):
 
     def __init__(self,pokemon_id, pokemon_name, type1, type2, base_stats, level):
-        super(WildPokemon, self).__init__(pokemon_id, pokemon_name, type1, type2, base_stats)
+        super(WildPokemon, self).__init__(pokemon_id, pokemon_name, type1, type2, base_stats, adding=False)
 
         self.level = level
 
@@ -179,8 +218,10 @@ class WildPokemon(Pokemon):
 
 class OwnPokemon(Pokemon):
 
+    all = []
+
     def __init__(self,pokemon_id, pokemon_name, type1, type2, stats, own_id,own_name,level, own_moves, current_hp = 0, status = 'normal'): # add some kind of move id or move object
-        super(OwnPokemon, self).__init__(pokemon_id, pokemon_name, type1, type2, stats)
+        super(OwnPokemon, self).__init__(pokemon_id, pokemon_name, type1, type2, stats, adding= False)
 
         self.own_id = own_id
         self.own_name =own_name
@@ -190,18 +231,22 @@ class OwnPokemon(Pokemon):
         self.status = status
         self.level = level
 
-        self.move1 = own_moves[0]
-        self.move2 = own_moves[1]
-        self.move3 = own_moves[2]
-        self.move4 = own_moves[3]
+        # self.move1 = own_moves[0]
+        # self.move2 = own_moves[1]
+        # self.move3 = own_moves[2]
+        # self.move4 = own_moves[3]
 
-        self.moves = [self.move1, self.move2, self.move3, self.move4]
+        self.moves = own_moves #[self.move1, self.move2, self.move3, self.move4]
+
+        OwnPokemon.all.append(self)
 
     def heal(self):
-        self.move1.pp = self.move1.max_pp
-        self.move2.pp = self.move2.max_pp
-        self.move3.pp = self.move3.max_pp
-        self.move4.pp = self.move4.max_pp
+        # self.move1.pp = self.move1.max_pp
+        # self.move2.pp = self.move2.max_pp
+        # self.move3.pp = self.move3.max_pp
+        # self.move4.pp = self.move4.max_pp
+        for m in self.moves:
+            m.pp = m.max_pp
         self.current_hp = self.stats['max_hp']
 
     def level_up(self, new_level,hp, atk, defe, spa, spe):
@@ -240,6 +285,15 @@ class OwnPokemon(Pokemon):
         with engine.connect() as con:
             con.execute(query)
 
+    def add_move(self, m, i):
+        if len(self.moves) < 4:
+            self.moves.append(m)
+            return
+        if len(self.moves) == 4 and i <= 4:
+            self.moves[i] = m
+            return
+        print(f'ERROR trying to add a move on index {i} but failed')
+
 @singleton
 class AllOwnPokemon(list):
 
@@ -250,6 +304,9 @@ class AllOwnPokemon(list):
 
 @singleton
 class Party(list):
+    ''' This is a list containing the party. It cannot exceed length 6 since a party cannot hold more than 6 Pokemon.
+    Also, only OwnPokemon object can populate the Party. The index of the list is the position in the party the pokemon
+    is in. '''
 
     def add(self, pokemon):
         if len(self) < 6:
@@ -275,6 +332,7 @@ class Party(list):
             raise PartyError('Pokemon not found in party.')
 
     def heal(self):
+        ''' Heal all pokemon in the party '''
         for pokemon in range(self):
             pokemon.heal()
 
