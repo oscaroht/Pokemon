@@ -4,9 +4,10 @@ import numpy as np
 
 from fundamentals.ocr import OCR
 from screen import screen_grab
+from templates import f_temp_list
 
 
-class FightOCR(OCR):
+class FightRec(OCR):
 
     from settings import scale_factor
 
@@ -16,6 +17,12 @@ class FightOCR(OCR):
                      int(18 * scale_factor),
                      int(40 * scale_factor),
                      int(60 * scale_factor)]  # roi screen shot size roi = screen[0:9, 0:100]
+
+    '''' Check the hp of our pokemon in the format 26/ 26'''
+    roi_foe_hp= [int(15*scale_factor),
+             int(25*scale_factor),
+             int(30*scale_factor),
+             int(85*scale_factor)]
 
     '''' The region of interest containing the pp of a move in format 35/35'''
     roi_pp = [int(87*scale_factor),
@@ -52,6 +59,8 @@ class FightOCR(OCR):
                 'special': [int(79*scale_factor),int(90*scale_factor),int(80*scale_factor),int(153*scale_factor)]
                         }
 
+
+
     '''' Arrow that shows at the beginning of a fight '''
     roi_arrow=[int(85*scale_factor),
                int(97*scale_factor),
@@ -85,8 +94,8 @@ class FightOCR(OCR):
         # cv2.imshow('a', roi_im)
         # cv2.waitKey()
 
-        contours = super(FightOCR,cls)._preprocess_for_contours(roi_im)   # find the rectangles around contours
-        bboxes = super(FightOCR,cls)._get_bbox(contours)                # get a list of bounding boxes around character
+        contours = super(FightRec, cls)._preprocess_for_contours(roi_im)   # find the rectangles around contours
+        bboxes = super(FightRec, cls)._get_bbox(contours)                # get a list of bounding boxes around character
 
         # testing
         # roi_im = cv2.cvtColor(roi_im, cv2.COLOR_GRAY2RGB)
@@ -97,9 +106,9 @@ class FightOCR(OCR):
         # roi_im = cv2.cvtColor(roi_im, cv2.COLOR_RGB2GRAY)
 
         ''''splits the roi in images defined by the bounding boxes'''
-        images_for_nn = super(FightOCR,cls)._char_images( roi_im,bboxes )
+        images_for_nn = super(FightRec, cls)._char_images(roi_im, bboxes)
 
-        characters = super(FightOCR,cls)._read_characters( images_for_nn )
+        characters = super(FightRec, cls)._read_characters(images_for_nn)
 
         return characters
 
@@ -131,10 +140,55 @@ class FightOCR(OCR):
             return_dict[key] = number
         return return_dict
 
+    @classmethod
+    def foe_hp(cls):
+        screen = screen_grab()
+        roi_im = screen[cls.roi_foe_hp[0]:cls.roi_foe_hp[1],cls.roi_foe_hp[2]:cls.roi_foe_hp[3]]
+
+        _, roi_im = cv2.threshold(roi_im,125,255, cv2.THRESH_BINARY)
+
+        ''' to estimate the hp of the foe we look at the hp bar of the foe and estimate 'how full it is'. This is done
+        by taking the sum of all pixel values in the roi (after thresholding), subtract the sum of pixel values of the
+        hp container and comparing that to '''
+        number_of_pixels = roi_im.shape[0]*roi_im.shape[1]
+        number_of_white_pixels = np.sum(np.sum(roi_im))/255 # black pixels have value 0 so do not contribute to the sum
+        number_of_black_pixels = number_of_pixels - number_of_white_pixels
+        threshold = 1600 # the number of black pixels in an empty hp container
+
+        foe_hp = (number_of_black_pixels - threshold) / (3136 - threshold)
+        return foe_hp
+
+    @classmethod
+    def is_wait_arrow_present(cls, group = 'wait_arrow', threshold = 0.2):
+        from selector import Selector
+        screen = screen_grab(resize=True)
+        # put the cursor on the right spot
+        best_score = 1
+        for t in f_temp_list:
+            #print(t.name)
+            if t.group == group:
+                #print('in menu group:' + t.name)
+                if t.mask is not None:
+                    res = cv2.matchTemplate(screen, t.img, cv2.TM_SQDIFF_NORMED, mask=t.mask)
+                else:
+                    res = cv2.matchTemplate(screen, t.img, cv2.TM_SQDIFF_NORMED)
+                min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+                if min_val < best_score:  # lowest score is the best for SQDIFF
+                    best_score = min_val
+                    t_best = t
+        if best_score > threshold:  # lowest score is the best for SQDIFF
+            return False
+        else:
+            print('wait arrow present')
+            Selector.state = 'wait_arrow'
+            return True
+
+
+
 
 if __name__ == '__main__':
 
-    r = FightOCR.read_pp()
+    r = FightRec.foe_hp()
 
     pass
 
