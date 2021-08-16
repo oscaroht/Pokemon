@@ -81,6 +81,7 @@ class StateController:
          a class. '''
         from walk import get_orientation
         from fight import Selector
+        from walk import Position
 
         def _set_state():
             state_name = Selector.eval_fight_states()
@@ -98,10 +99,11 @@ class StateController:
             # get orientation also has a @state_check so we do not have to set something. Just to make sure
             if get_orientation() != None:
                 cls.state.switch(WalkState)
+                #Position.get_position()     # position class gets forgotten in main after walking is done so we need to set the position again. Otherwise if we are at the end the main will not know
 
         _set_state()
         while cls.state == None:
-            print('state not found, keep looking')
+            print('state: STATE NOT FOUND, keep looking')
             _set_state()
 
     # def change(self,new_state):

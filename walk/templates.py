@@ -65,5 +65,3 @@ def load_templates():
 
 
 temp_list = load_templates()
-
-pass

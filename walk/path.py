@@ -14,8 +14,10 @@ class Path:
         return a function that brings you to the next map. If you are on the right map"""
 
         from walk.graphs import G_lvl1, G_lvl0, df_edges_lvl1
-        import networkx as nx
         from position import Position
+
+        import networkx as nx
+        import numpy as np
 
         # if isinstance(start_map, int):
         #     start_map_id = start_map
@@ -26,7 +28,8 @@ class Path:
         # elif start_map == None:
         #     start_map_name = None
 
-        (start_map_name, from_id, x, y) = Position.get_position()
+        (start_map_name, from_id, x, y) = Position.eval_position()
+        print(f"position is {(start_map_name, from_id, x, y)}")
         start_map_id = df_edges_lvl1[df_edges_lvl1['from_name'] == start_map_name].iloc[0]['from_id']
 
         print(f'Current is: {start_map_name}, {from_id}')
@@ -54,16 +57,25 @@ class Path:
             end_series = df_edges_lvl1[
                 (df_edges_lvl1['from_id'] == path_lvl1[idx]) & (df_edges_lvl1['to_id'] == path_lvl1[idx + 1])].iloc[0]
             end_node0_id = end_series['exit_node0_id']
+            end_node0_id_x = end_series['exit_x']
+            end_node0_id_y = end_series['exit_y']
+            if np.isnan(end_node0_id):
+                end_node0_id = max(G.nodes) + 1
 
             '''' and exit node. Add the node, find the nodes that are 'next' to it, add an edge '''
-            G.add_node(end_node0_id)
+            G.add_node(end_node0_id, x=end_node0_id_x, y=end_node0_id_y)
+            ''' FOR BETTER PERFORMANCE DO NOT LOOP BUT LOOK IF THE MINUS/PLUS 1 EXISTS'''
             for id, node in G.nodes(data=True):
                 ''' look for coordinates either 1 to left or right (x +- 1) and y the same, or 1 to upper of lower so
                  y +- 1 but with the x the same. So exit (3,5) has edges to (3,4) or (4,5)...'''
-                if ( abs(node['x'] - end_series['exit_x']) == 1 and node['y'] == end_series['exit_y'] ) \
-                        or ( abs(node['y'] - end_series['exit_y']) == 1 and node['x'] == end_series['exit_x'] ):
 
-                    G.add_edge(end_node0_id, id)
+                try:
+                    if ( abs(node['x'] - end_series['exit_x']) == 1 and node['y'] == end_series['exit_y'] ) \
+                            or ( abs(node['y'] - end_series['exit_y']) == 1 and node['x'] == end_series['exit_x'] ):
+
+                        G.add_edge(end_node0_id, id)
+                except:
+                    a=1
 
             ''' calculate the shortest path, reset the entry node (for the new map) '''
             path[node_lvl1] = nx.dijkstra_path(G, enter_node0_id, end_node0_id)

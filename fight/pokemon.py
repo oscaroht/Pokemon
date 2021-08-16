@@ -285,14 +285,20 @@ class OwnPokemon(Pokemon):
         with engine.connect() as con:
             con.execute(query)
 
-    def add_move(self, m, i):
-        if len(self.moves) < 4:
-            self.moves.append(m)
-            return
-        if len(self.moves) == 4 and i <= 4:
-            self.moves[i] = m
-            return
-        print(f'ERROR trying to add a move on index {i} but failed')
+    def add_move(self, m, i=5):
+        if isinstance(m, OwnMove):
+            if len(self.moves) < 4:
+                self.moves.append(m)
+                return
+            if len(self.moves) == 4 and i <= 4:
+                self.moves[i] = m
+                return
+            elif len(self.moves) == 4 and i > 4:
+                print('ERROR: use the i argument the set the position on which this move should be placed.')
+                return
+            print(f'ERROR trying to add a move on index {i} but failed.')
+        else:
+            print('ERROR: argument should be instance of OwnMove.')
 
 @singleton
 class AllOwnPokemon(list):

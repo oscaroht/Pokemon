@@ -30,5 +30,9 @@ def naive_creator(node1_id, w,h):
                 id += 1
 ## do not count from zero, count the rows
 ## create pellet town w = 18, and h = 16
-#create mom_lvl1 2, 8, 8
-naive_creator(2, 8, 8)                       # uncheck to write to database
+#create mom_lvl1 2, 8, 7
+#create mom_lvl2 3, 8, 7
+#create oaks_lab 4, 10,11
+#create route1 5, 14, 43
+
+naive_creator(5, 14, 43)                       # uncheck to write to database

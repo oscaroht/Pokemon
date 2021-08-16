@@ -1,8 +1,8 @@
 from fundamentals import FightState, state_check, screen_grab, goleft,goup,godown,goright,btnA,btnB
-from fight_rec import FightRec
-from pokemon import pokemon_dict, WildPokemon, party, df_strength_weakness, OwnPokemon, OwnMove
+from .fight_rec import FightRec
+from .pokemon import pokemon_dict, WildPokemon, party, df_strength_weakness, OwnPokemon, OwnMove
+from .templates import f_temp_list
 
-from templates import f_temp_list
 import difflib
 import cv2
 import numpy as np
@@ -14,7 +14,7 @@ class FightMenuState(FightState):
 class FoePokemonNotFound(Exception):
     pass
 
-class Fight:
+class Fight(OwnPokemon): # inherits OwnPokemon so the OwnPokemon objects get updated when changed
     ''' A fight is defined as two pokemon in battle. On pokemon is your own, the other the foe. When one pokemon exits
     the fight the fight is over. Another pokemon might occur. This is a new fight and the Fight class is instanciated
     again.
@@ -49,6 +49,7 @@ class Fight:
                       int(foe_level) )
 
         self.foe_hp_fraction = FightRec.foe_hp()
+        print(f'set my pokemon to {party[0].name}')
         self.my_pokemon = party[0]
 
         Fight.state = 'menu'
@@ -96,7 +97,8 @@ class Fight:
                 (df_strength_weakness['atk'] == move.type) & (df_strength_weakness['def'] == self.foe.type2)].iloc[0][
                 'multiplier']  # has to be iloc instead of loc because we are not using the indexes
             multiplier *= multiplier_2
-        random = int(235.5 / 254)  # this is a normally distributed range between 217 and 254 divided by 254
+        random = 235.5 / 254  # this is a normally distributed range between 217 and 254 divided by 254. So on average
+                                # it is 235.5/254
 
         modifier = random * multiplier * stab
 
@@ -113,15 +115,24 @@ class Fight:
         else:
             raise Exception(f'Move type {move.type} unknown.')
 
+        print(f"Move {move.name} has power {move.power} with my_pokemon has level {self.my_pokemon.level} and attack "
+              f"{self.my_pokemon.stats['atk']} and spa {self.my_pokemon.stats['spa']}. Foe def {self.foe.stats['def']}"
+              f"and spd {self.foe.stats['spd']}. Modifier {modifier}")
+
         return damage
 
     def calculate_best_move(self, mode = 'max_damage'):
         d = []
 
+        print(f"Pokemon {self.my_pokemon.name}'s moves are {[x.name for x in self.my_pokemon.moves]}")
         for i in range(len(self.my_pokemon.moves)):
             if self.my_pokemon.moves[i].pp == 0:
                 d += [-1] # lets append -1 so this move is not chosen
-            d += [self._calculate_damage(self.my_pokemon.moves[i])]
+            elif self.my_pokemon.moves[i].power == 0:
+                d += [0] # the _calculate_damage equation becomes slightly positive so lets set it back to 0
+            else:
+                d += [self._calculate_damage(self.my_pokemon.moves[i])]
+        print(f"with expected damages: {d}")
 
         # for i in range(len(self.my_pokemon.moves)):
         #     if self.my_pokemon.moves[i].id != -1 and self.my_pokemon.moves[i].pp > 0:     # nice conditionals are checked one at a time
@@ -134,11 +145,12 @@ class Fight:
 
     def execute_best_move(self, mode='max_damage'):
         ''' mode can be 'best', 'save_pp' '''
-        from selector import Selector
+        from .selector import Selector
 
+        print(f'fight: COMBAT MODE is {mode}')
         # calculate the best move for this mode
         move_idx = self.calculate_best_move(mode=mode)
-        print('best move_idx = '+str(move_idx))
+        print(f'best move is on {self.my_pokemon.moves[move_idx].name}')
 
         # select the best move Selector
         Selector.select_move_by_idx(move_idx)
@@ -190,8 +202,8 @@ class Fight:
 
     def _bar_new_move_learned(self,text):
         ''' this function used the difflib to figure out what move it is.'''
-        from pokemon import Move
-        from selector import Selector
+        from .pokemon import Move, OwnMove
+        from .selector import Selector
         import re
 
         t = text.replace(self.my_pokemon.name.upper(), '')
@@ -199,13 +211,12 @@ class Fight:
 
         new_move_name = difflib.get_close_matches(t, [str(x).upper() for x in list(Move.all['name'].keys())], n=1)[0]
         new_move = Move.get_move_by_name(new_move_name.lower())
+        new_own_move = OwnMove(new_move.id, new_move.name, new_move.type, new_move.power, new_move.accuracy, new_move.max_pp, new_move.max_pp)
         '''' if we have less than 4 moves we can just add it '''
         if len(self.my_pokemon.moves) < 4:
-            self.my_pokemon.add_move(new_move)
+            self.my_pokemon.add_move(new_own_move)
         else:
             print('TO DO add handling of replacing a move')
-
-
 
 
 
@@ -225,13 +236,16 @@ class Fight:
         elif 'Critical hit' in text:
             return 'critical_hit'
         elif 'Enem' in text and 'fell' in text:
+            print('fight: ENEMY DEFEATED')
             return 'enemy_stat_fell'
         elif 'learn' in text:
-            print('NEW MOVE LEARED!')
+            print('fight: NEW MOVE LEARED!')
             return self._bar_new_move_learned(text)
         elif 'level' in text:
+            print('fight: LEVEL UP')
             return self._bar_level_up(text)
         elif 'fell' in text:
+            print('fight: STATS FELL' )
             return self._bar_stat_fell(text)
 
 
@@ -241,14 +255,16 @@ class Fighter:
 
     @classmethod
     def handle_fight(cls):
-        from state_controller import StateController
-        from selector import Selector
+        from fundamentals import StateController
+        from .selector import Selector
         from fundamentals import btnA
 
         # first lets check again
         StateController.eval_state()
-        while 'fight' or 'none' in StateController.state_name():
+        sn = StateController.state_name()
+        while 'fight' in sn or 'none' in sn:
             StateController.eval_state()
+            sn = StateController.state_name()
             print(f'State name {StateController.state_name()}')
             if StateController.state_name() == 'fight_init':
                 Selector.init_fight()
@@ -261,6 +277,7 @@ class Fighter:
                 print(text)
                 f.interpret_bar(text)
                 btnA()
+                time.sleep(0.3)
             elif StateController.state_name() in ['fight_menu', 'fight_item', 'fight_pokemon','fight_move']:
                 # we are in the main fight
                 f.execute_best_move()

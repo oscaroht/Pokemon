@@ -6,7 +6,7 @@ Maybe we can even store the shrunk cpo versions. Maybe this improves performance
 import numpy as np
 import cv2
 
-from walk.templates import temp_list
+from templates import temp_list
 from fundamentals.screen import screen_grab
 
 class LocationNotFound(Exception):
@@ -20,6 +20,10 @@ class Position:
     y = -1
 
     position = (map_name, cor_id, x, y)
+
+    @classmethod
+    def get_position(cls):
+        return cls.map_name, cls.cor_id, cls.x, cls.y
 
     @classmethod
     def _set_position(cls,map,id,x,y):
@@ -115,7 +119,7 @@ class Position:
         return best_id, best_x , best_y
 
     @classmethod
-    def get_position(cls):
+    def eval_position(cls):
         ''''
         map: int or str '''
         cor = (cls.map_name, cls.x, cls.y)
@@ -124,6 +128,7 @@ class Position:
         if cls.map_name != None:
             cor = cls._get_position_in_map(cls._map_to_cor(cls._get_current_map(cls.map_name)), screen_grab())
             if cor != None:                     # if cor is not None than this was indeed the map
+                cls._set_position(cls.map_name, *cor)
                 return (cls.map_name, *cor)
 
         '''' no map name was given or no cor was found for the given map name. Lets look in all templates and find the
@@ -141,7 +146,7 @@ class Position:
 
 
 def main():
-    Position.get_position()
+    Position.eval_position()
     print(Position.position)
 
 if __name__ == '__main__':

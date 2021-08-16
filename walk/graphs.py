@@ -28,6 +28,10 @@ def load_graph(*args):
             nodes = con.execute(f'select node0_id, x, y from mart.nodes_lvl0 where node1_id = {node1_id};')
             for roww in nodes:
                 G_current.add_node(roww[0], x=roww[1], y=roww[2])
+                try:
+                    roww[0]+1
+                except:
+                    a=1
             for roww in edges:
                 # item = row.items()
                 G_current.add_edge(roww['node0_id_from'], roww['node0_id_to'])

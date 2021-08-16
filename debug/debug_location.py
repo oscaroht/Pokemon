@@ -27,7 +27,7 @@ def open_debug_screen(map_name):
         debug_screen = cv2.cvtColor(debug_screen,cv2.COLOR_GRAY2RGB)
         # Write some Text
 
-        loc = Position.get_position(map_name)
+        loc = Position.eval_position(map_name)
         ori = get_orientation(0.15)
 
         font = cv2.FONT_HERSHEY_SIMPLEX
@@ -61,7 +61,7 @@ def debug_multi_t():
         t_imshow.join()
 
 def loc_ori(map, result):
-    loc = Position.get_position(map)
+    loc = Position.eval_position(map)
     ori = get_orientation(0.15)
     result = (*loc, ori)
 

@@ -12,9 +12,6 @@ def open_vba():
     160x144.'''
 
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
-    param = config('../settings.ini', 'window_size' )
-    w = int(param['w']) ##+int(param['horizontal_offset'])
-    h = int(param['h'])+int(param['vertical_menu_offset'])
     base_dir = config('../settings.ini','dirs','base_dir')
 
     os.startfile( base_dir + 'Pokemon Blue.gb') # make sure to associate .gb with the vba.exe. Now the startfile command opens

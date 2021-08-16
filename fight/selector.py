@@ -1,7 +1,6 @@
 
 ''' This file describes how to push the buttons to execute moves, change pokemon, accept newly learned moves, ect.'''
-from templates import f_temp_list
-from fight import Fight
+from .templates import f_temp_list
 from fundamentals import screen_grab, goleft, goup, godown, goright, btnB, btnA, state_check, FightState
 
 import time
@@ -27,14 +26,14 @@ class Selector:
                 else:
                     res = cv2.matchTemplate(screen, t.img, cv2.TM_SQDIFF_NORMED)
                 min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-                print(f'{t.option} with {min_val}')
+                #print(f'{t.option} with {min_val}')
                 if min_val < best_score:  # lowest score is the best for SQDIFF
                     best_score = min_val
                     t_best = t
-                    print(f'new best is {t_best.option}')
+                    #print(f'new best is {t_best.option}')
         if best_score > threshold:  # lowest score is the best for SQDIFF
-            print('No fight template found.')
-            print(f'class state stays {cls.state}')
+            #('No fight template found.')
+            #print(f'class state stays {cls.state}')
             return None
         #print(f'{t_best.name} with a score of {best_score}')
         cls.state = t_best.option

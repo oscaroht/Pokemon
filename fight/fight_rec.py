@@ -3,8 +3,8 @@ import cv2
 import numpy as np
 
 from fundamentals.ocr import OCR
-from screen import screen_grab
-from templates import f_temp_list
+from fundamentals.screen import screen_grab
+from .templates import f_temp_list
 
 
 class FightRec(OCR):
@@ -130,14 +130,12 @@ class FightRec(OCR):
 
     @classmethod
     def read_stat_update(cls):
-        '''' argument is of type dict containing the regions of interest of the lines attack, defense, speed and special
-        '''
         return_dict = {}
         number = ''
         for key,value in cls.roi_stat_update.items():
             characters = cls._core_ocr(value)
             number = ''.join([x for x in characters if x.isdigit()])
-            return_dict[key] = number
+            return_dict[key] = int(number)
         return return_dict
 
     @classmethod
@@ -160,7 +158,7 @@ class FightRec(OCR):
 
     @classmethod
     def is_wait_arrow_present(cls, group = 'wait_arrow', threshold = 0.2):
-        from selector import Selector
+        from .selector import Selector
         screen = screen_grab(resize=True)
         # put the cursor on the right spot
         best_score = 1

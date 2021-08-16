@@ -47,13 +47,14 @@ class Stepper:
             t_step = threading.Thread(target=cls.next_step, args=(current, cor_list[num + 1], ori))
             t_step.start()
 
+            # waiting for both to be done
+            t_step.join()
+            t_check.join()
+
             # we did a miss step. Lets break
             if status[0] == False:
                 raise WrongStep
 
-            # waiting for both to be done
-            t_step.join()
-            t_check.join()
 
     @classmethod
     def next_step(cls,current, next, ori):
@@ -95,6 +96,9 @@ class Stepper:
     def check(cls,current, status):
         from position import Position
 
-        _, _, x, y = Position.get_position()  # ignore map, id
+        try:
+            a, b, x, y = Position.eval_position()  # ignore map, id. get position can throw a LocationNotFoundError
+        except:
+            status[0] = False
         if (x, y) != (current[1], current[2]):
             status[0] = False

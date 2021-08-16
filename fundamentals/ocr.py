@@ -37,12 +37,17 @@ class OCR:
 
     @classmethod
     def _preprocess_for_contours(cls, roi):
-        # blur the image so the mega pixels get joined in on contour
-        kernel = np.ones((5, 5), np.float32) / 25
+        # blur the image so the letter's pixels become the same contour instead of every pixel its own contour
+        kernel = np.ones((5, 5), np.float32) / 22 # was 25
         img = cv2.filter2D(roi, -1, kernel)
 
-        # threshold after blurring. Set quite high so blure was effective
-        _, thresh = cv2.threshold(img, 170, 255, 0)
+        # threshold after blurring. Threshold is set quite high so blur does not fuse letters
+        _, thresh = cv2.threshold(img, 185, 255, 0) # was 170
+
+        ## for testing
+        # cv2.imshow('contour', thresh)
+        # cv2.waitKey()
+
         return thresh
 
     @classmethod
@@ -130,7 +135,7 @@ class OCR:
             does not fit reshape it.'''
             img = np.zeros([32, 32], dtype=np.uint8)
             img.fill(255)
-            if char_img.shape > img.shape:
+            if char_img.shape > img.shape: #if char_img.shape[0] > img.shape[0] or char_img.shape[1] > img.shape[1]:
                 char_img = cv2.resize(char_img, img.shape)
             img[0:char_img.shape[0], 0:char_img.shape[1]] = char_img
 
@@ -141,7 +146,7 @@ class OCR:
             image_list.append(img)
 
             ## use this for testing
-            # cv2.imshow('a',img)
+            # cv2.imshow('read image',img)
             # cv2.waitKey()
 
 
@@ -171,4 +176,3 @@ class OCR:
 if __name__ == '__main__':
     text = OCR.read_bar()
     print(text)
-    pass
