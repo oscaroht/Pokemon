@@ -1,10 +1,14 @@
+# from position import Position
+# from graphs import G
+from path import Path
 
-from position import Position
 
 class WrongStep(Exception):
     pass
 
-class Stepper(Position):
+
+class Stepper(Path):  # With Position inherenting G
+
 
     @classmethod
     def path_interpreter(cls, cor_list, node1):
@@ -14,7 +18,7 @@ class Stepper(Position):
         used to check the previous step"""
 
         from orientation import get_orientation
-        from graphs import df_edges_lvl1
+        # from graphs import df_edges_lvl1
         import threading
         from time import sleep
 
@@ -28,7 +32,7 @@ class Stepper(Position):
         if isinstance(node1, int):
             # if a int (node1_id) was given transform it to an name
             node1_id = node1
-            node1_name = df_edges_lvl1[(df_edges_lvl1['from_id'] == node1_id)].iloc[0]['from_name']
+            node1_name = Path.df_edges_lvl1[(Path.df_edges_lvl1['from_id'] == node1_id)].iloc[0]['from_name']
         else:
             node1_name = node1
 
@@ -41,7 +45,7 @@ class Stepper(Position):
             t_check = threading.Thread(target=cls.check, args=(current, status))
             print(f'Check complete: {current} ')
             t_check.start()
-            sleep(0.01)
+            #sleep(0.01)
 
             # do next
             t_step = threading.Thread(target=cls.next_step, args=(current, cor_list[num + 1], ori))
@@ -60,9 +64,8 @@ class Stepper(Position):
         sleep(0.01)
         cls.check(current, status)
 
-
     @classmethod
-    def next_step(cls,current, next, ori):
+    def next_step(cls, current, next, ori):
         """ press the buttons to perform the next turn and step. input:
          current: triple tuple (. . .)
          next: tuple (. .)
@@ -98,13 +101,14 @@ class Stepper(Position):
         ori[0] = ori_current
 
     @classmethod
-    def check(cls,current, status):
-        #from position import Position
+    def check(cls, current, status):
+        # from position import Position
 
         try:
-            _, _, x, y = Position.eval_position()  # ignore map, id. get position can throw a LocationNotFoundError
+            _, _, x, y = Path.eval_position()  # ignore map, id. get position can throw a LocationNotFoundError
         except:
             status[0] = False
-        #actual check
+            return
+        # actual check
         if (x, y) != (current[1], current[2]):
             status[0] = False

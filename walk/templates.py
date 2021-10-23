@@ -62,5 +62,5 @@ def load_templates():
 
     return temp_list
 
-
-temp_list = load_templates()
+class T:
+    temp_list = load_templates()

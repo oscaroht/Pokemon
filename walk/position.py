@@ -6,13 +6,14 @@ Maybe we can even store the shrunk cpo versions. Maybe this improves performance
 import numpy as np
 import cv2
 
-from templates import temp_list
+from templates import T
 from fundamentals.screen import screen_grab
+from graphs import G
 
 class LocationNotFound(Exception):
     pass
 
-class Position:
+class Position(G,T):
 
     map_name = None
     cor_id = -1
@@ -36,8 +37,8 @@ class Position:
 
     @classmethod
     def _set_map_by_id(cls,map_id):
-        from graphs import G_lvl1, G_lvl0, df_edges_lvl1
-        cls.map_name = df_edges_lvl1[df_edges_lvl1['from_id'] == 2].iloc[0]['from_name']
+        #from graphs import G_lvl1, G_lvl0, df_edges_lvl1
+        cls.map_name = G.df_edges_lvl1[G.df_edges_lvl1['from_id'] == 2].iloc[0]['from_name']
 
         cls.position = ((cls.map_name, cls.cor_id, cls.x, cls.y))
 
@@ -47,12 +48,12 @@ class Position:
 
         if isinstance(map,str):
             ''''Need better way to navigate the data structure. Maybe indexing.'''
-            for t in temp_list:
+            for t in T.temp_list:
                 if t.name == map: # 'pellet_town':
                     return t.img
             # maybe it is a group
             list=[]
-            for t in temp_list:
+            for t in T.temp_list:
                 if t.group == map:
                     list.append(t)
             if list != []:
@@ -60,7 +61,7 @@ class Position:
 
         elif isinstance(map,int):
             ''''Need better way to navigate the data structure. Maybe indexing.'''
-            for t in temp_list:
+            for t in T.temp_list:
                 if t.id == map: # 'pellet_town':
                     return t.id
 
@@ -142,7 +143,7 @@ class Position:
          position  '''
         '''' if two maps are similar, like mom_lvl1 and mom_lvl2 this is problematic because the first one will be 
         found'''
-        for t in temp_list:
+        for t in T.temp_list:
             # iterate over all map templates
             if t.group == 'map':
                 print(f' trying {t.name}')

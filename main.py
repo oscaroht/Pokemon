@@ -17,8 +17,6 @@ def main():
 if __name__ == '__main__':
     # start_bot(console_level='INFO')
 
-
-
     while Walker.map_name != 'mom_lvl1' and Walker.cor_id != 56:
         StateController.eval_state()
         if StateController.state_name() == 'walk':

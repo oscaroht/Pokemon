@@ -7,7 +7,7 @@ import pandas as pd
 class PP_below_zero(Exception):
     pass
 
-class PartyError(Exception):
+class InvalidPartyError(Exception):
     pass
 
 def singleton(class_):
@@ -318,7 +318,7 @@ class Party(list):
         if len(self) < 6:
             self.append(pokemon)
         else:
-            raise PartyError('Already 6 pokemon in party.')
+            raise InvalidPartyError('Already 6 pokemon in party.')
 
     def rmv(self, pokemon): # remove is a list function
         if len(self.party) > 1:
@@ -326,16 +326,16 @@ class Party(list):
                 index = self.index(pokemon)
                 self.pop(index)
             else:
-                raise PartyError('Pokemon not found in party.')
+                raise InvalidPartyError('Pokemon not found in party.')
         else:
-            raise PartyError('Not enough pokemon in party to remove one.')
+            raise InvalidPartyError('Not enough pokemon in party to remove one.')
 
     def switch_position(self, pokemon, position = 0):
         if pokemon in self:
             old_position = self.index(pokemon)
             self.insert(position,self.pop(old_position))
         else:
-            raise PartyError('Pokemon not found in party.')
+            raise InvalidPartyError('Pokemon not found in party.')
 
     def heal(self):
         ''' Heal all pokemon in the party '''

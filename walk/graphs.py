@@ -2,14 +2,13 @@ import os
 import networkx as nx
 from fundamentals.config import config
 from sqlalchemy import create_engine
+import pandas as pd
 
-
-def load_graph(*args):
+def load_graph():
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
     password = config('../users.ini', 'postgres', 'password')
     engine = create_engine(f'postgresql+psycopg2://postgres:{password}@localhost/pokemon')
 
-    import pandas as pd
     G_lvl1 = nx.Graph()
     with engine.connect() as con:
         edges = con.execute(f"select * from mappings.edges_lvl1;")
@@ -29,9 +28,9 @@ def load_graph(*args):
             for roww in nodes:
                 G_current.add_node(roww[0], x=roww[1], y=roww[2])
                 try:
-                    roww[0]+1
+                    roww[0] + 1
                 except:
-                    a=1
+                    a = 1
             for roww in edges:
                 # item = row.items()
                 G_current.add_edge(roww['node0_id_from'], roww['node0_id_to'])
@@ -40,4 +39,5 @@ def load_graph(*args):
     return G_lvl1, G_lvl0, df_edges_lvl1
 
 
-G_lvl1, G_lvl0, df_edges_lvl1 = load_graph()
+class G:
+    G_lvl1, G_lvl0, df_edges_lvl1 = load_graph()
