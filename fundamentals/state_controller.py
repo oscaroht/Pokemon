@@ -8,8 +8,9 @@
 class State:
 
     def switch(self,state):
-        self.__class__ = state
-        print(f'state switched to: {state}')
+        if self.__class__ != state:
+            self.__class__ = state
+            print(f'state switched to: {state}')
 
 class WalkState(State):
 

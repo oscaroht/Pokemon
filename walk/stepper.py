@@ -1,10 +1,10 @@
 
-
+from position import Position
 
 class WrongStep(Exception):
     pass
 
-class Stepper:
+class Stepper(Position):
 
     @classmethod
     def path_interpreter(cls, cor_list, node1):
@@ -55,6 +55,11 @@ class Stepper:
             if status[0] == False:
                 raise WrongStep
 
+        # check for the last step
+        current = (node1_name, *cor_list[-1], ori[0])  # final element of cor_list
+        sleep(0.01)
+        cls.check(current, status)
+
 
     @classmethod
     def next_step(cls,current, next, ori):
@@ -94,11 +99,12 @@ class Stepper:
 
     @classmethod
     def check(cls,current, status):
-        from position import Position
+        #from position import Position
 
         try:
-            a, b, x, y = Position.eval_position()  # ignore map, id. get position can throw a LocationNotFoundError
+            _, _, x, y = Position.eval_position()  # ignore map, id. get position can throw a LocationNotFoundError
         except:
             status[0] = False
+        #actual check
         if (x, y) != (current[1], current[2]):
             status[0] = False

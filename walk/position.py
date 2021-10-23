@@ -35,6 +35,13 @@ class Position:
         cls.position = ((map, id, x, y))
 
     @classmethod
+    def _set_map_by_id(cls,map_id):
+        from graphs import G_lvl1, G_lvl0, df_edges_lvl1
+        cls.map_name = df_edges_lvl1[df_edges_lvl1['from_id'] == 2].iloc[0]['from_name']
+
+        cls.position = ((cls.map_name, cls.cor_id, cls.x, cls.y))
+
+    @classmethod
     def _get_current_map(cls,map):
         ''''This is a temporary function used to to take the current map from the the temp_list'''
 
@@ -124,7 +131,7 @@ class Position:
         map: int or str '''
         cor = (cls.map_name, cls.x, cls.y)
 
-        '''' if a map name or id is given is given than check if we find a coordinate. If not move on to all templates'''
+        '''' if a map name or id is given than check if we find a coordinate. If not move on to all templates'''
         if cls.map_name != None:
             cor = cls._get_position_in_map(cls._map_to_cor(cls._get_current_map(cls.map_name)), screen_grab())
             if cor != None:                     # if cor is not None than this was indeed the map
@@ -133,6 +140,8 @@ class Position:
 
         '''' no map name was given or no cor was found for the given map name. Lets look in all templates and find the
          position  '''
+        '''' if two maps are similar, like mom_lvl1 and mom_lvl2 this is problematic because the first one will be 
+        found'''
         for t in temp_list:
             # iterate over all map templates
             if t.group == 'map':

@@ -35,6 +35,8 @@ class Walker(Position):
 
                     Stepper.path_interpreter(value, int(key))
                     sleep(1) # wait to go to the next map
+                    Position._set_map_by_id(int(key)) # some maps are similar so we need to actively set the map instead of doing the loop in finding the map because then the first map in the list gets foound
+
             except WrongStep:
                 print('walk: WRONG STEP. recalculate route')
                 pass

@@ -15,26 +15,30 @@ def main():
     start_bot(console_level='INFO')
 
 if __name__ == '__main__':
-    #start_bot(console_level='INFO')
+    # start_bot(console_level='INFO')
 
-    # while Walker.map_name != 'mom_lvl1' and Walker.cor_id != 56:
+
+
+    while Walker.map_name != 'mom_lvl1' and Walker.cor_id != 56:
+        StateController.eval_state()
+        if StateController.state_name() == 'walk':
+            # try:
+            Walker.go(('mom_lvl1', 56))
+            # except Exception as e:
+            #     print(F'ERROR: {e}')
+        elif 'fight' or 'none' in StateController.state_name():
+            Fighter.handle_fight()
+
+    # route1 7
+    # mom_lvl2
+    # while Walker.map_name != 'mom_lvl2' and Walker.cor_id != 4:
     #     StateController.eval_state()
     #     if StateController.state_name() == 'walk':
     #         try:
-    #             Walker.go(('mom_lvl1', 56))
+    #             Walker.go(('mom_lvl2', 4))
     #         except Exception as e:
     #             print(e)
     #     elif 'fight' or 'none' in StateController.state_name():
     #         Fighter.handle_fight()
-
-    while Walker.map_name != 'route1' and Walker.cor_id != 7:
-        StateController.eval_state()
-        if StateController.state_name() == 'walk':
-            try:
-                Walker.go(('route1', 7))
-            except Exception as e:
-                print(e)
-        elif 'fight' or 'none' in StateController.state_name():
-            Fighter.handle_fight()
 
 
