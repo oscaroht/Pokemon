@@ -28,6 +28,7 @@ class Position(G,T):
 
     @classmethod
     def _set_position(cls,map,id,x,y):
+        #print(f'Position: position set to {map}, {id}, {x}, {y}')
         cls.map_name = map
         cls.cor_id = id
         cls.x = x
@@ -38,8 +39,8 @@ class Position(G,T):
     @classmethod
     def _set_map_by_id(cls,map_id):
         #from graphs import G_lvl1, G_lvl0, df_edges_lvl1
-        cls.map_name = G.df_edges_lvl1[G.df_edges_lvl1['from_id'] == 2].iloc[0]['from_name']
-
+        cls.map_name = G.df_edges_lvl1[G.df_edges_lvl1['from_id'] == map_id].iloc[0]['from_name']
+        #print(f'Set map by id {}')
         cls.position = ((cls.map_name, cls.cor_id, cls.x, cls.y))
 
     @classmethod

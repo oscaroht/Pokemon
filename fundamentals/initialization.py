@@ -9,7 +9,7 @@ import logging
 from fundamentals.config import config
 from fundamentals.load_templates import load_templates
 from fundamentals.open_vba import open_vba
-from debug.debug_location import open_debug_screen
+
 
 from io import StringIO
 
@@ -101,6 +101,7 @@ def start_bot(console_level='INFO'):
     #logger.debug('Loading templates')
     #load_templates()
     if console_level == 'DEBUG':
+        from debug.debug_location import open_debug_screen
         open_debug_screen()
 
     # more stuff here regarding the the console_level

@@ -1,6 +1,6 @@
 # from position import Position
 # from graphs import G
-from path import Path
+from path import Path, LocationNotFound
 
 
 class WrongStep(Exception):
@@ -9,6 +9,8 @@ class WrongStep(Exception):
 
 class Stepper(Path):  # With Position inherenting G
 
+    def __init__(self, *args):
+        super(Stepper, self).__init__(*args)
 
     @classmethod
     def path_interpreter(cls, cor_list, node1):
@@ -32,7 +34,7 @@ class Stepper(Path):  # With Position inherenting G
         if isinstance(node1, int):
             # if a int (node1_id) was given transform it to an name
             node1_id = node1
-            node1_name = Path.df_edges_lvl1[(Path.df_edges_lvl1['from_id'] == node1_id)].iloc[0]['from_name']
+            node1_name = cls.df_edges_lvl1[(cls.df_edges_lvl1['from_id'] == node1_id)].iloc[0]['from_name']
         else:
             node1_name = node1
 
@@ -105,7 +107,7 @@ class Stepper(Path):  # With Position inherenting G
         # from position import Position
 
         try:
-            _, _, x, y = Path.eval_position()  # ignore map, id. get position can throw a LocationNotFoundError
+            _, _, x, y = cls.eval_position()  # ignore map, id. get position can throw a LocationNotFoundError
         except:
             status[0] = False
             return

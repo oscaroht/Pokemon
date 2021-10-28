@@ -1,5 +1,5 @@
 from graphs import G
-from position import Position
+from position import Position, LocationNotFound
 
 
 class Path(Position):
@@ -61,8 +61,8 @@ class Path(Position):
                     a = 1
             return G
 
-        (start_map_name, from_id, x, y) = Position.eval_position()
-        print(f"position is {(start_map_name, from_id, x, y)}")
+        (start_map_name, from_id, x, y) = Path.eval_position()
+        print(f"Path: position is {(start_map_name, from_id, x, y)}")
         start_map_id = Path.df_edges_lvl1[Path.df_edges_lvl1['from_name'] == start_map_name].iloc[0]['from_id']
 
         print(f'Current is: {start_map_name}, {from_id}')
