@@ -2,9 +2,10 @@ import tensorflow as tf
 import cv2
 import numpy as np
 
+from .templates import f_temp_list
 from fundamentals.ocr import OCR
 from fundamentals.screen import screen_grab
-from .templates import f_temp_list
+
 
 
 class FightRec(OCR):
@@ -140,6 +141,7 @@ class FightRec(OCR):
 
     @classmethod
     def foe_hp(cls):
+        # returns the hp ratio (between 1 and 0) left
         screen = screen_grab()
         roi_im = screen[cls.roi_foe_hp[0]:cls.roi_foe_hp[1],cls.roi_foe_hp[2]:cls.roi_foe_hp[3]]
 
@@ -186,7 +188,7 @@ class FightRec(OCR):
 
 if __name__ == '__main__':
 
-    r = FightRec.foe_hp()
+    print(FightRec.read_bar())
 
     pass
 

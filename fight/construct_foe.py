@@ -8,7 +8,7 @@ from fundamentals.screen import screen_grab
 from fundamentals.load_templates import load_templates
 import numpy as np
 import cv2
-from fight.pokemon import party, own_pokemon, df_pokemon, df_moves, df_strength_weakness
+from fight.pokemon import df_pokemon, df_strength_weakness, OwnPokemon
 from fight.pokemon import WildPokemon
 
 def create_foe():
@@ -113,7 +113,7 @@ def calculate_best_move(my_pokemon, foe):
 
 
 if __name__ == '__main__':
-    my_pokemon = own_pokemon[0]
+    my_pokemon = OwnPokemon.party[0]
     foe = create_foe()
 
     best_move_idx = calculate_best_move(my_pokemon,foe)

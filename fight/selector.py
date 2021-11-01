@@ -166,7 +166,11 @@ class Selector:
 
     @classmethod
     def use_item(cls, item_name):
-        pass
+        import time
+        if cls.state != 'item':
+            cls._go_to('item')
+            time.sleep(0.3)
+        btnA()
 
     @classmethod
     def init_fight(cls):

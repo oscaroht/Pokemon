@@ -100,9 +100,9 @@ def start_bot(console_level='INFO'):
     initialize_logger(logging_directory='log', console_level=console_level, include_lowest_level=False)
     #logger.debug('Loading templates')
     #load_templates()
-    if console_level == 'DEBUG':
-        from debug.debug_location import open_debug_screen
-        open_debug_screen()
+    # if console_level == 'DEBUG':
+    #     #from debug.debug_location import open_debug_screen
+    #     open_debug_screen()
 
     # more stuff here regarding the the console_level
 

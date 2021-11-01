@@ -204,3 +204,25 @@ def move_selector():
     ''' afterwards change the name and extension to fight_menu.msk'''
     cv2.imwrite('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\move\\3\\3_mask.png', mask)
 
+
+
+
+img = cv2.imread('/fight/templates/states/pokedex/pokedex.tmp')
+
+img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
+cv2.waitKey()
+
+mask = np.zeros(img.shape[:2], dtype="uint8")
+cv2.rectangle(mask, (0, 72), (160, 79), 254, -1)
+
+mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
+
+masked = cv2.bitwise_and(img, img, mask=mask)
+masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
+
+cv2.imshow('mask', masked)
+cv2.waitKey()
+
+''' afterwards change the name and extension to fight_menu.msk'''
+cv2.imwrite('/fight/templates/states/pokedex/pokedex_mask.msk', mask)

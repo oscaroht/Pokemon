@@ -79,7 +79,7 @@ def load_pokemon():
         temp = {}
         for row in con.execute(f"select * from mappings.pokemon;"):
             # get all the atributes in a dict instead of a tuple
-            temp = dict((key, value) for key, value in row.items())
+            temp = dict((key, value) for key, value in row._mapping.items())
             # create 2 keys on pokemon_id and on pokemon_name
             pokemon_dict[row['pokemon_id']] = temp
             pokemon_dict[row['pokemon_name']] = temp
@@ -92,58 +92,70 @@ def load_pokemon():
                   accuracy = row['move_accuracy'],
                   max_pp = row['max_pp'])
 
+
+        party_id_list = [row['own_pokemon_id'] for row in con.execute(f"select * from mart.party;")]
+
         df_pokemon = pd.read_sql_table('pokemon', con=con, schema='mappings', index_col='pokemon_id')
         df_moves = pd.read_sql_table('pokemon_move', con=con, schema='mappings', index_col='move_id')
         df_strength_weakness = pd.read_sql_table('strength_weakness', con=con, schema='mart')
 
         # for internal use. down here
-        df_own_pokemon = pd.read_sql(query, con=con)
+        # df_own_pokemon = pd.read_sql(query, con=con)
 
         # I have a separate data holder for these..
         #df_party = pd.read_sql_table('party', con=con, schema='mart')
         #df_own_pokemon = pd.read_sql_table('own_pokemon', con=con, schema='mart')
 
+    #own_pokemon = AllOwnPokemon()
+        for row in con.execute(query):
+            move1 = OwnMove(row['move1_id'], row['move1'], row['move1_type'], row['move1_power'], row['move1_accuracy'],
+                            row['max_pp1'], row['move1_pp'])
+            move2 = OwnMove(row['move2_id'], row['move2'], row['move2_type'], row['move2_power'], row['move2_accuracy'],
+                            row['max_pp2'], row['move2_pp'])
+            move3 = OwnMove(row['move3_id'], row['move3'], row['move3_type'], row['move3_power'], row['move3_accuracy'],
+                            row['max_pp3'], row['move3_pp'])
+            move4 = OwnMove(row['move4_id'], row['move4'], row['move4_type'], row['move4_power'], row['move4_accuracy'],
+                            row['max_pp4'], row['move4_pp'])
+            moves = []
+            for m in [move1,move2,move3,move4]:
+                if m.id != -1:
+                    moves.append(m)
 
-    own_pokemon = AllOwnPokemon()
-    for index, row in df_own_pokemon.iterrows():
-        move1 = OwnMove(row['move1_id'], row['move1'], row['move1_type'], row['move1_power'], row['move1_accuracy'],
-                        row['max_pp1'], row['move1_pp'])
-        move2 = OwnMove(row['move2_id'], row['move2'], row['move2_type'], row['move2_power'], row['move2_accuracy'],
-                        row['max_pp2'], row['move2_pp'])
-        move3 = OwnMove(row['move3_id'], row['move3'], row['move3_type'], row['move3_power'], row['move3_accuracy'],
-                        row['max_pp3'], row['move3_pp'])
-        move4 = OwnMove(row['move4_id'], row['move4'], row['move4_type'], row['move4_power'], row['move4_accuracy'],
-                        row['max_pp4'], row['move4_pp'])
-        moves = []
-        for m in [move1,move2,move3,move4]:
-            if m.id != -1:
-                moves.append(m)
+
+            stats = {'hp': row['max_hp'], 'atk': row['atk'], 'def': row['defe'], 'spa': row['spa'], 'spd': row['spd'],
+                     'spe': row['spe']}
+
+            if row['own_pokemon_id'] in party_id_list:
+                ip = True
+            else:
+                ip = False
+
+            OwnPokemon(row['pokemon_id'], row['own_pokemon_name'], row['type1'], row['type2'], stats,
+                       row['own_pokemon_id'], row['own_pokemon_name'], row['lvl'], moves,
+                       current_hp=row['hp'], status=row['status'], in_party=ip)
 
 
-        stats = {'hp': row['max_hp'], 'atk': row['atk'], 'def': row['defe'], 'spa': row['spa'], 'spd': row['spd'],
-                 'spe': row['spe']}
-
-        own_pokemon.append(OwnPokemon(row['pokemon_id'], row['own_pokemon_name'], row['type1'], row['type2'], stats,
-                                      row['own_pokemon_id'], row['own_pokemon_name'], row['lvl'], moves,
-                                      current_hp=row['hp'], status=row['status']))
-    party = Party()  # create empty party
-    for index, row in df_own_pokemon.iterrows():
-        own_id = row['own_pokemon_id']
-        party.add(own_pokemon.get_pokemon_by_id(own_id))
-    return party, own_pokemon, df_pokemon, df_moves, df_strength_weakness, pokemon_dict
+        # own_pokemon.append(OwnPokemon(row['pokemon_id'], row['own_pokemon_name'], row['type1'], row['type2'], stats,
+        #                               row['own_pokemon_id'], row['own_pokemon_name'], row['lvl'], moves,
+        #                               current_hp=row['hp'], status=row['status']))
+    #party = Party()  # create empty party
+    # for index, row in df_own_pokemon.iterrows():
+    #     own_id = row['own_pokemon_id']
+    #     party.add(own_pokemon.get_pokemon_by_id(own_id))
+    return df_pokemon, df_moves, df_strength_weakness, pokemon_dict
 
 class Move:
 
     all = {'id':{}, 'name':{}}
 
-    def __init__(self, id,name, type1, power, accuracy, max_pp, adding=True):
+    def __init__(self, id,name, type1, power, accuracy, max_pp, add_to_all=True):
         self.id = id
         self.name = name
         self.type = type1
         self.power = power
         self.accuracy = accuracy
         self.max_pp = max_pp
-        if adding:
+        if add_to_all:
             Move.all['name'][name] = self
             Move.all['id'][id] = self
 
@@ -159,7 +171,7 @@ class Move:
 class OwnMove(Move):
 
     def __init__(self, id, name, type1, power, accuracy, max_pp, pp):
-        super(OwnMove,self).__init__(id, name, type1, power, accuracy, max_pp, adding=False)
+        super(OwnMove,self).__init__(id, name, type1, power, accuracy, max_pp, add_to_all=False)
         self.pp = pp
 
     def lower_pp(self):
@@ -203,24 +215,91 @@ class WildPokemon(Pokemon):
 
         self.level = level
 
-        hp = int( (base_stats['hp'] * 2 * level)/100 + level + 10 )
+        max_hp = int( (base_stats['hp'] * 2 * level)/100 + level + 10 )
 
         def other_stats(a):
-            return int(base_stats[a] * 2 * level)/100 + 5
+            return int(int(base_stats[a] * 2 * level)/100 + 5)
 
-        self.stats = {'hp': hp,
+        self.stats = {'hp': max_hp,
                       'atk': other_stats('atk'),
                       'def': other_stats('def'),
                       'spa': other_stats('spa'),
                       'spd': other_stats('spa'),
                       'spe': other_stats('spe')}
 
+    def caught(self):
+        max_own_id = max([pok.own_id for pok in OwnPokemon.all])  # create new own_id by incrementing the max by 1
+        own_id = max_own_id + 1
+
+        if len(OwnPokemon.party) < 6: # if the party is less then 6 long the pokemon is added to the party
+            ip = True
+        else:
+            ip = False
+
+        OwnPokemon(self.pokemon_id,
+                   self.name,
+                   self.type1,
+                   self.type2,
+                   self.stats,
+                   own_id,
+                   self.name,
+                   self.level,
+                   [],
+                   in_party = ip)
+
+
+@singleton
+class Party(list):
+    ''' This is a list containing the party. It cannot exceed length 6 since a party cannot hold more than 6 Pokemon.
+    Also, only OwnPokemon object can populate the Party. The index of the list is the position in the party the pokemon
+    is in. '''
+
+    def add(self, pokemon):
+        if len(self) < 6:
+            self.append(pokemon)
+        else:
+            raise InvalidPartyError('Already 6 pokemon in party.')
+
+    def rmv(self, pokemon): # remove is a list function
+        if len(self.party) > 1:
+            if pokemon in self:
+                index = self.index(pokemon)
+                self.pop(index)
+            else:
+                raise InvalidPartyError('Pokemon not found in party.')
+        else:
+            raise InvalidPartyError('Not enough pokemon in party to remove one.')
+
+    def switch_position(self, pokemon, position = 0):
+        if pokemon in self:
+            old_position = self.index(pokemon)
+            self.insert(position,self.pop(old_position))
+        else:
+            raise InvalidPartyError('Pokemon not found in party.')
+
+    def heal(self):
+        ''' Heal all pokemon in the party '''
+        for pokemon in range(self):
+            pokemon.heal()
+
+    def save(self):
+        query = "begin; truncate table mart.party;"
+        for i in range(len(self)):
+            query += f"insert into mart.party (own_pokemon_id) values ({self[i].own_id});"
+        query += 'commit;'
+
+        os.chdir(os.path.dirname(os.path.realpath(__file__)))
+        engine = create_engine(f"postgresql+psycopg2://postgres:{config('../users.ini','postgres','password')}@localhost/pokemon")
+        with engine.connect() as con:
+            con.execute(query)
+
 
 class OwnPokemon(Pokemon):
 
     all = []
+    party = Party()
 
-    def __init__(self,pokemon_id, pokemon_name, type1, type2, stats, own_id,own_name,level, own_moves, current_hp = 0, status = 'normal'): # add some kind of move id or move object
+    def __init__(self,pokemon_id, pokemon_name, type1, type2, stats, own_id,own_name,level, own_moves, current_hp = 0, status = 'normal', in_party=False): # add some kind of move id or move object
         super(OwnPokemon, self).__init__(pokemon_id, pokemon_name, type1, type2, stats, adding= False)
 
         self.own_id = own_id
@@ -239,6 +318,8 @@ class OwnPokemon(Pokemon):
         self.moves = own_moves #[self.move1, self.move2, self.move3, self.move4]
 
         OwnPokemon.all.append(self)
+        if in_party:
+            OwnPokemon.party.add(self)
 
     def heal(self):
         # self.move1.pp = self.move1.max_pp
@@ -247,7 +328,7 @@ class OwnPokemon(Pokemon):
         # self.move4.pp = self.move4.max_pp
         for m in self.moves:
             m.pp = m.max_pp
-        self.current_hp = self.stats['max_hp']
+        self.current_hp = self.stats['hp']
 
     def level_up(self, new_level,hp, atk, defe, spa, spe):
         if new_level != self.level + 1:
@@ -300,66 +381,20 @@ class OwnPokemon(Pokemon):
         else:
             print('ERROR: argument should be instance of OwnMove.')
 
-@singleton
-class AllOwnPokemon(list):
+# @singleton
+# class AllOwnPokemon(list):
+#
+#     def get_pokemon_by_id(self,own_id):
+#         for i in range(len(self)):
+#             if self[i].own_id == own_id:
+#                 return self[i]
 
-    def get_pokemon_by_id(self,own_id):
-        for i in range(len(self)):
-            if self[i].own_id == own_id:
-                return self[i]
 
-@singleton
-class Party(list):
-    ''' This is a list containing the party. It cannot exceed length 6 since a party cannot hold more than 6 Pokemon.
-    Also, only OwnPokemon object can populate the Party. The index of the list is the position in the party the pokemon
-    is in. '''
-
-    def add(self, pokemon):
-        if len(self) < 6:
-            self.append(pokemon)
-        else:
-            raise InvalidPartyError('Already 6 pokemon in party.')
-
-    def rmv(self, pokemon): # remove is a list function
-        if len(self.party) > 1:
-            if pokemon in self:
-                index = self.index(pokemon)
-                self.pop(index)
-            else:
-                raise InvalidPartyError('Pokemon not found in party.')
-        else:
-            raise InvalidPartyError('Not enough pokemon in party to remove one.')
-
-    def switch_position(self, pokemon, position = 0):
-        if pokemon in self:
-            old_position = self.index(pokemon)
-            self.insert(position,self.pop(old_position))
-        else:
-            raise InvalidPartyError('Pokemon not found in party.')
-
-    def heal(self):
-        ''' Heal all pokemon in the party '''
-        for pokemon in range(self):
-            pokemon.heal()
-
-    def save(self):
-        query = "begin; truncate table mart.party;"
-        for i in range(len(self)):
-            query += f"insert into mart.party (own_pokemon_id) values ({self[i].own_id});"
-        query += 'commit;'
-
-        os.chdir(os.path.dirname(os.path.realpath(__file__)))
-        engine = create_engine(f"postgresql+psycopg2://postgres:{config('../users.ini','postgres','password')}@localhost/pokemon")
-        with engine.connect() as con:
-            con.execute(query)
 
 
 # LOAD
-
-party, own_pokemon, df_pokemon, df_moves, df_strength_weakness, pokemon_dict = load_pokemon()
-
-
+df_pokemon, df_moves, df_strength_weakness, pokemon_dict = load_pokemon()
 if __name__=='__main__':
-
     test=1
-
+# else:
+#     df_pokemon, df_moves, df_strength_weakness, pokemon_dict = load_pokemon()

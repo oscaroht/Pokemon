@@ -26,6 +26,12 @@ class TalkState(WalkState):
     def __str__(self):
         return 'talk'
 
+class FightPokedex(State):
+    def __init__(self):
+        self.name = 'fight_pokedex'
+    def __str__(self):
+        return 'fight_pokedex'
+
 class FightState(State):
     def __init__(self):
         self.name = 'fight'
@@ -94,11 +100,15 @@ class StateController:
                 StateController.state.switch(FightMoveState)
             elif state_name == 'init':
                 StateController.state.switch(FightInitState)
+            elif state_name == 'pokedex':
+                StateController.state.switch(FightPokedex)
             # else:
             #     StateController.state.switch(FightState) #TODO remove so we can get into a walk state
 
+
             # get orientation also has a @state_check so we do not have to set something. Just to make sure
             if get_orientation() != None:
+
                 cls.state.switch(WalkState)
                 #Position.get_position()     # position class gets forgotten in main after walking is done so we need to set the position again. Otherwise if we are at the end the main will not know
 

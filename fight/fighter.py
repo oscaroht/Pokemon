@@ -1,6 +1,6 @@
 from fundamentals import FightState, state_check, screen_grab, goleft,goup,godown,goright,btnA,btnB
 from .fight_rec import FightRec
-from .pokemon import pokemon_dict, WildPokemon, party, df_strength_weakness, OwnPokemon, OwnMove
+from .pokemon import pokemon_dict, WildPokemon, df_strength_weakness, OwnPokemon, OwnMove
 from .templates import f_temp_list
 
 import difflib
@@ -14,7 +14,7 @@ class FightMenuState(FightState):
 class FoePokemonNotFound(Exception):
     pass
 
-class Fight(OwnPokemon): # inherits OwnPokemon so the OwnPokemon objects get updated when changed
+class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects get updated when changed.
     ''' A fight is defined as two pokemon in battle. On pokemon is your own, the other the foe. When one pokemon exits
     the fight the fight is over. Another pokemon might occur. This is a new fight and the Fight class is instanciated
     again.
@@ -49,8 +49,8 @@ class Fight(OwnPokemon): # inherits OwnPokemon so the OwnPokemon objects get upd
                       int(foe_level) )
 
         self.foe_hp_fraction = FightRec.foe_hp()
-        print(f'set my pokemon to {party[0].name}')
-        self.my_pokemon = party[0]
+        print(f'set my pokemon to {OwnPokemon.party[0].name}')
+        self.my_pokemon = OwnPokemon.party[0]
 
         Fight.state = 'menu'
 
@@ -121,9 +121,9 @@ class Fight(OwnPokemon): # inherits OwnPokemon so the OwnPokemon objects get upd
 
         return damage
 
+
     def calculate_best_move(self, mode = 'max_damage'):
         d = []
-
         print(f"Pokemon {self.my_pokemon.name}'s moves are {[x.name for x in self.my_pokemon.moves]}")
         for i in range(len(self.my_pokemon.moves)):
             if self.my_pokemon.moves[i].pp == 0:
@@ -134,30 +134,63 @@ class Fight(OwnPokemon): # inherits OwnPokemon so the OwnPokemon objects get upd
                 d += [self._calculate_damage(self.my_pokemon.moves[i])]
         print(f"with expected damages: {d}")
 
-        # for i in range(len(self.my_pokemon.moves)):
-        #     if self.my_pokemon.moves[i].id != -1 and self.my_pokemon.moves[i].pp > 0:     # nice conditionals are checked one at a time
-        #         d += [ self._calculate_damage(self.my_pokemon.moves[i]) ]
-
-        # d2 = calculate_damage(my_pokemon, my_pokemon.move2, foe)
-        # d3 = calculate_damage(my_pokemon, my_pokemon.move3, foe)
-        # d4 = calculate_damage(my_pokemon, my_pokemon.move4, foe)
-        return np.argmax(d) # so argmax 0 becomes move 1
+        if mode == 'max_damage':
+            return np.argmax(d), max(d) # so argmax 0 becomes move 1
+        elif mode == 'catch':
+            hp_fraction = FightRec.foe_hp() # check the foes current hp
+            hp = hp_fraction * self.foe.stats['hp']
+            print(f"Estimated hp: {hp}  with max hp: {self.foe.stats['hp']}")
+            for i in range(len(d)):
+                if d[i] > hp: # if the attack does more damage than the hp do not use it
+                    d[i] = -2
+            return np.argmax(d), max(d)
 
     def execute_best_move(self, mode='max_damage'):
         ''' mode can be 'best', 'save_pp' '''
         from .selector import Selector
 
-        print(f'fight: COMBAT MODE is {mode}')
-        # calculate the best move for this mode
-        move_idx = self.calculate_best_move(mode=mode)
-        print(f'best move is on {self.my_pokemon.moves[move_idx].name}')
+        d = []
+        print(f"Pokemon {self.my_pokemon.name}'s moves are {[x.name for x in self.my_pokemon.moves]}")
+        for i in range(len(self.my_pokemon.moves)):
+            if self.my_pokemon.moves[i].pp == 0:
+                d += [-1] # lets append -1 so this move is not chosen
+            elif self.my_pokemon.moves[i].power == 0:
+                d += [0] # the _calculate_damage equation becomes slightly positive so lets set it back to 0
+            else:
+                d += [self._calculate_damage(self.my_pokemon.moves[i])]
+        print(f"with expected damages: {d}")
 
+        if mode == 'max_damage':
+            if max(d) > 0:
+                move_idx = np.argmax(d) # so argmax 0 becomes move 1
+                self._perform_move(move_idx)
+            else:
+                print("No damaging move left")
+        elif mode == 'catch':
+            hp_fraction = FightRec.foe_hp() # check the foe's current hp
+            hp = hp_fraction * self.foe.stats['hp']
+            print(f"Estimated hp: {hp}  with max hp: {self.foe.stats['hp']}")
+            max_idx = None
+            max_dam = 0
+            for i, md in enumerate(d):
+                if hp > md > 0:  # a valid move does damage (md > 0) and does not eliminate the foe (md < hp)
+                    if md > max_dam: # check if this valid move is also the one with most damage
+                        max_idx = i
+                        max_dam = md
+            if max_idx != None:
+                self._perform_move(max_idx)
+            else:
+                print("throw ball")
+                Selector.use_item('pokeball')
+
+
+    def _perform_move(self, idx):
+        from .selector import Selector
         # select the best move Selector
-        Selector.select_move_by_idx(move_idx)
+        Selector.select_move_by_idx(idx)
 
         # lower the pp in the move object associated with the pokemon
-        self.my_pokemon.moves[move_idx].lower_pp()
-
+        self.my_pokemon.moves[idx].lower_pp()
         # set the state to a waiting state
         Selector.state = None
 
@@ -247,14 +280,18 @@ class Fight(OwnPokemon): # inherits OwnPokemon so the OwnPokemon objects get upd
         elif 'fell' in text:
             print('fight: STATS FELL' )
             return self._bar_stat_fell(text)
-
+        elif 'wascaught' in text:
+            print('fight: FOE CAUGHT')
+            return self.foe.caught()
+        elif 'nickname' in text:
+            return btnB()
 
 
 class Fighter:
 
 
     @classmethod
-    def handle_fight(cls):
+    def handle_fight(cls, mode = 'max_damage'):
         from fundamentals import StateController
         from .selector import Selector
         from fundamentals import btnA
@@ -271,6 +308,29 @@ class Fighter:
             elif not ('f' in globals() or 'f' in locals()):
                 # so the fight was not yet initiated
                 f = Fight()
+            elif StateController.state_name() == 'fight_pokedex':
+                '''' A new pokemon was recently caught. Besides skipping the pokedex window we should add it to our 
+                party'''
+
+                # maybe add the foe to the party or PC and leave out the needed info. make a state that checks if the
+                # info of all pokemon present and if that is not the case it goes and checks it. This state is a
+                # substate of the walk state as we can only check the states from the game menu (ony accessible when the
+                # player is visible or in the walk state)
+
+                # ISSUE this should not be done in the pokedex state because if a pokemon is caught for the 2nd time the
+                # pokedex will not pop up. So we need to create a obtain pokemon function which is called/ triggered by
+                # the text in the bar. But it is always the end of the fight.
+
+                #f.foe.caught() # add foe to own pookemon
+
+                del f
+                break
+
+
+                btnB()
+                time.sleep(0.5)
+                btnB()
+
             elif StateController.state_name() == 'fight_wait_arrow':
                 text = FightRec.read_bar()
                 # interpret text
@@ -280,7 +340,7 @@ class Fighter:
                 time.sleep(0.3)
             elif StateController.state_name() in ['fight_menu', 'fight_item', 'fight_pokemon','fight_move']:
                 # we are in the main fight
-                f.execute_best_move()
+                f.execute_best_move(mode=mode)
         del f
 
 
