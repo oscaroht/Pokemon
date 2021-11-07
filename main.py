@@ -1,5 +1,3 @@
-
-
 import os
 import time
 import pygetwindow as gw
@@ -9,23 +7,42 @@ from walker import Walker
 #from walk.position import
 from fundamentals.state_controller import StateController
 from fight import Fighter
+from stepper import WrongStep
+from position import LocationNotFound
 
 
 def main():
     start_bot(console_level='INFO')
 
 if __name__ == '__main__':
-    #start_bot(console_level='INFO')
+    # start_bot(console_level='INFO')
 
     while Walker.map_name != 'mom_lvl1' and Walker.cor_id != 56:
         StateController.eval_state()
         if StateController.state_name() == 'walk':
             try:
                 Walker.go(('mom_lvl1', 56))
-            except Exception as e:
+            except (WrongStep,LocationNotFound) as e:
                 print(F'ERROR: {e}')
         elif 'fight' or 'none' in StateController.state_name():
             Fighter.handle_fight(mode = 'catch')
+        elif StateController.state_name() == 'walk_evalstat':
+            Fighter.eval_pokemon_stats()
+    #
+    #
+    # while Walker.map_name != 'route1' or Walker.cor_id != 36:
+    #     StateController.eval_state()
+    #     if StateController.state_name() == 'walk':
+    #         try:
+    #             Walker.go(('route1', 36))
+    #         except (WrongStep,LocationNotFound) as e:
+    #             print(e)
+    #     elif 'fight' or 'none' in StateController.state_name():
+    #         Fighter.handle_fight(mode='catch')
+    #     elif StateController.state_name() == 'walk_evalstat':
+    #         Fighter.eval_pokemon_stats()
+
+
     # #
     # # route1 7
     # # mom_lvl2

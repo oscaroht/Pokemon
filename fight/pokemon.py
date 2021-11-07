@@ -282,6 +282,19 @@ class Party(list):
         for pokemon in range(self):
             pokemon.heal()
 
+    def stats_need_evaluation(self,return_party_idx = False):
+        for i, pokemon in enumerate(self):
+            pokemon.moves=[]
+            print(f"Pokemon {pokemon.name} stats and moves should be evaluated")
+            if return_party_idx:
+                return i
+            else:
+                return True
+        if return_party_idx:
+            return None
+        else:
+            return False
+
     def save(self):
         query = "begin; truncate table mart.party;"
         for i in range(len(self)):

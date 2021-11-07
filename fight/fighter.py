@@ -291,6 +291,15 @@ class Fighter:
 
 
     @classmethod
+    def eval_pokemon_stats(cls):
+        from .selector import Selector
+        idx = Fight.stats_need_evaluation(return_party_idx = True)
+        if idx == None:
+            # print("eval_pokemon_stats needed says SC but no pokemon was found which need evaluation")
+            raise Exception("eval_pokemon_stats needed says SC but no pokemon was found which need evaluation")
+        Selector.eval_pokemon_stats_by_idx()
+
+    @classmethod
     def handle_fight(cls, mode = 'max_damage'):
         from fundamentals import StateController
         from .selector import Selector

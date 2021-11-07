@@ -125,6 +125,7 @@ class Path(Position):
         G = Path.G_lvl0[int(path_lvl1[-1])]
 
         # we need to add the enter node
+        start_node0_id = enter_node0_id
         if len(path_lvl1) > 1:
             end_series = Path.df_edges_lvl1[
                 (Path.df_edges_lvl1['from_id'] == path_lvl1[-2]) & (Path.df_edges_lvl1['to_id'] == path_lvl1[-1])].iloc[
@@ -136,7 +137,7 @@ class Path(Position):
             G = add_entry_node(G, start_node0_id, end_series['enter_x'], end_series['enter_y'])
 
         # the actual path
-        path[path_lvl1[-1]] = nx.dijkstra_path(G, enter_node0_id, end_cor[1])
+        path[path_lvl1[-1]] = nx.dijkstra_path(G, start_node0_id, end_cor[1])
         self.id_path = path  # save id_path, might be useful later
 
         # ''' if we made it here we are in the final graph. This is the graph with id last in the path_lvl1 list.
