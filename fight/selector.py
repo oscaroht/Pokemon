@@ -13,14 +13,14 @@ class Selector:
 
     @classmethod
     def eval_pokemon_stats_by_idx(cls, idx):
+        from .fight_rec import FightRec
         cls.state = cls.eval_fight_states()
         if cls.state != 'stats_page_stats':
             cls._in_switch_or_stats_choose(idx, option= 'stats')
-        print("read stats!")
-
-
-        print("cal function to read stats")
-
+        # stats = FightRec.read_stat_gm_lookup()
+        # hp_current, hp_max = FightRec.read_stat_gm_hp()
+        # stats['hp'] = hp_max
+        # return stats, hp_current
 
     @classmethod
     def _in_switch_or_stats_choose(cls,idx,option):

@@ -1,5 +1,6 @@
 from fundamentals import FightState, state_check, screen_grab, goleft,goup,godown,goright,btnA,btnB
 from .fight_rec import FightRec
+#import fight_rec
 from .pokemon import pokemon_dict, WildPokemon, df_strength_weakness, OwnPokemon, OwnMove
 from .templates import f_temp_list
 
@@ -297,7 +298,14 @@ class Fighter:
         if idx == None:
             # print("eval_pokemon_stats needed says SC but no pokemon was found which need evaluation")
             raise Exception("eval_pokemon_stats needed says SC but no pokemon was found which need evaluation")
-        Selector.eval_pokemon_stats_by_idx()
+        Selector.eval_pokemon_stats_by_idx(idx)  # bring us to the
+        # read the values
+        stats = FightRec.read_stat_gm_lookup()
+        hp_current, hp_max = FightRec.read_stat_gm_hp()
+        stats['hp'] = hp_max
+        # update pokemon object
+        OwnPokemon.party[idx].stats = stats
+        OwnPokemon.party[idx].current_hp = hp_current
 
     @classmethod
     def handle_fight(cls, mode = 'max_damage'):
@@ -350,10 +358,10 @@ class Fighter:
             elif StateController.state_name() in ['fight_menu', 'fight_item', 'fight_pokemon','fight_move']:
                 # we are in the main fight
                 f.execute_best_move(mode=mode)
-        del f
+
 
 
 if __name__ == '__main__':
-    Fighter.handle_fight()
+    Fighter.eval_pokemon_stats()
     test=1
 

@@ -2,7 +2,6 @@ import tensorflow as tf
 import cv2
 import numpy as np
 
-from .templates import f_temp_list
 from fundamentals.ocr import OCR
 from fundamentals.screen import screen_grab
 
@@ -60,7 +59,14 @@ class FightRec(OCR):
                 'special': [int(79*scale_factor),int(90*scale_factor),int(80*scale_factor),int(153*scale_factor)]
                         }
 
-
+    # this one is used when a stat is looked up through the game_menu
+    roi_stat_gm_lookup = {
+                'attack': [int(80*scale_factor),int(88*scale_factor),int(43*scale_factor),int(72*scale_factor)],
+                'defense': [int(95*scale_factor),int(104*scale_factor),int(43*scale_factor),int(72*scale_factor)],
+                'speed': [int(111*scale_factor),int(120*scale_factor),int(43*scale_factor),int(72*scale_factor)],
+                'special': [int(127*scale_factor),int(136*scale_factor),int(43*scale_factor),int(72*scale_factor)]
+                        }
+    roi_stat_gm_hp = [int(32*scale_factor),int(40*scale_factor),int(80*scale_factor),int(153*scale_factor)]
 
     '''' Arrow that shows at the beginning of a fight '''
     roi_arrow=[int(85*scale_factor),
@@ -140,6 +146,23 @@ class FightRec(OCR):
         return return_dict
 
     @classmethod
+    def read_stat_gm_lookup(cls):
+        return_dict = {}
+        number = ''
+        for key,value in cls.roi_stat_gm_lookup.items():
+            characters = cls._core_ocr(value)
+            number = ''.join([x for x in characters if x.isdigit()])
+            return_dict[key] = int(number)
+        return return_dict
+
+    @classmethod
+    def read_stat_gm_hp(cls):
+        txt = cls._core_ocr(cls.roi_stat_gm_hp)
+        if '/' in txt:
+            hp_current, hp_max = txt.split('/')
+        return hp_current, hp_max
+
+    @classmethod
     def foe_hp(cls):
         # returns the hp ratio (between 1 and 0) left
         screen = screen_grab()
@@ -161,6 +184,7 @@ class FightRec(OCR):
     @classmethod
     def is_wait_arrow_present(cls, group = 'wait_arrow', threshold = 0.2):
         from .selector import Selector
+        from .templates import f_temp_list
         screen = screen_grab(resize=True)
         # put the cursor on the right spot
         best_score = 1
@@ -188,7 +212,8 @@ class FightRec(OCR):
 
 if __name__ == '__main__':
 
-    print(FightRec.read_bar())
+    print(FightRec.read_stat_gm_lookup())
+    print(FightRec.read_stat_gm_hp())
 
     pass
 

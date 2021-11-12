@@ -97,7 +97,7 @@ def copy_to_db(conn, df, table):
 
 def start_bot(console_level='INFO'):
     open_vba()
-    initialize_logger(logging_directory='log', console_level=console_level, include_lowest_level=False)
+    #initialize_logger(logging_directory='log', console_level=console_level, include_lowest_level=False)
     #logger.debug('Loading templates')
     #load_templates()
     # if console_level == 'DEBUG':
@@ -106,8 +106,6 @@ def start_bot(console_level='INFO'):
 
     # more stuff here regarding the the console_level
 
-##### test
-# img = load_templates()
-# temp = Template('template_down_x1', 'Position//x//Down', 'Position', 'Down',1,img)
-#
-# test=1
+
+if __name__ == '__main__':
+    start_bot()
