@@ -3,6 +3,7 @@ from sqlalchemy import create_engine
 from fundamentals.config import config
 import os
 import pandas as pd
+import difflib
 
 class PP_below_zero(Exception):
     pass
@@ -165,7 +166,8 @@ class Move:
 
     @classmethod
     def get_move_by_name(cls, name):
-        return cls.all['name'][name]
+        move_name = difflib.get_close_matches(name, [str(x) for x in list(cls.all['name'].keys())], n=1)[0]
+        return cls.all['name'][move_name]
 
 
 class OwnMove(Move):
@@ -180,6 +182,13 @@ class OwnMove(Move):
         else:
             raise PP_below_zero()
 
+    @classmethod
+    def create_own_move_by_name(cls,name):
+        # this command creates an own move, given a name of a move
+        new_move = Move.get_move_by_name(name.lower())
+        new_own_move = OwnMove(new_move.id, new_move.name, new_move.type, new_move.power, new_move.accuracy,
+                               new_move.max_pp, new_move.max_pp)
+        return new_own_move
 
 class Pokemon:
 
@@ -285,7 +294,7 @@ class Party(list):
     def stats_need_evaluation(self,return_party_idx = False):
         for i, pokemon in enumerate(self):
             if pokemon.moves==[]:
-                print(f"Pokemon {pokemon.name} stats and moves should be evaluated")
+                print(f"Pokemon {pokemon.name} stats and moves should be evaluated. Return idx? {return_party_idx}")
                 if return_party_idx:
                     return i
                 else:
@@ -380,20 +389,28 @@ class OwnPokemon(Pokemon):
         with engine.connect() as con:
             con.execute(query)
 
-    def add_move(self, m, i=5):
+    def add_move(self, m, i=4):
+        # m is the OwnMove object, i is the index (0,1,2, or 3) at which the move should be inserted
         if isinstance(m, OwnMove):
+            if m in self.moves:
+                raise OwnPokemon.OwnPokemonException("Move to be added already in moves")
+
             if len(self.moves) < 4:
                 self.moves.append(m)
                 return
-            if len(self.moves) == 4 and i <= 4:
+            elif len(self.moves) == 4 and i <= 3:
+                # already 4 moves so we overwrite another move. This move to be overwritten is at index i
                 self.moves[i] = m
                 return
-            elif len(self.moves) == 4 and i > 4:
+            elif len(self.moves) == 4 and i > 3: # default i=4 so if one does not specify i but the own pokemon already has 4 moves we throw this error
                 print('ERROR: use the i argument the set the position on which this move should be placed.')
-                return
+                raise OwnPokemon.OwnPokemonException("Use the i argument the set the position on which this move should be placed.")
             print(f'ERROR trying to add a move on index {i} but failed.')
         else:
             print('ERROR: argument should be instance of OwnMove.')
+
+    class OwnPokemonException(Exception):
+        pass
 
 # @singleton
 # class AllOwnPokemon(list):

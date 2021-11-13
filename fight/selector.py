@@ -13,7 +13,7 @@ class Selector:
 
     @classmethod
     def eval_pokemon_stats_by_idx(cls, idx):
-        from .fight_rec import FightRec
+        # from .fight_rec import FightRec
         cls.state = cls.eval_fight_states()
         if cls.state != 'stats_page_stats':
             cls._in_switch_or_stats_choose(idx, option= 'stats')
@@ -21,6 +21,18 @@ class Selector:
         # hp_current, hp_max = FightRec.read_stat_gm_hp()
         # stats['hp'] = hp_max
         # return stats, hp_current
+
+    @classmethod
+    def eval_pokemon_moves_by_idx(cls, idx):
+        # I do not feel like making this network for the cursor since there is only one direction and 1 edge
+        # only clicking A (or B) from the stats page brings you here and you cannot go back.
+        cls.state = cls.eval_fight_states()
+        if cls.state != 'stats_page_stats':
+            cls._in_switch_or_stats_choose(idx, option= 'stats')
+        time.sleep(0.3)
+        btnB()
+        time.sleep(0.3)
+        # assume we are there
 
     @classmethod
     def _in_switch_or_stats_choose(cls,idx,option):
@@ -36,14 +48,13 @@ class Selector:
         time.sleep(0.5)
         cls.state = cls.eval_fight_states()
 
-
     @classmethod
     def _set_stats_switch_cursor(cls, to):
-        cursor = cls._get_cursor_position('party_menu')
+        cursor = cls._get_cursor_position('party_menu') # out of the templates in party menu where is the cursor
         if cursor == None:
             return
         tries = 0
-        while cursor != to and tries < 5:
+        while cursor != to and tries < 5: # if the cursor is not in the desired position move it
             tries += 1
             if to == 'stats':
                 godown()
@@ -54,18 +65,16 @@ class Selector:
 
     @classmethod
     def _in_party_menu_choose_pokemon_by_idx(cls, idx, option= 'stats'):
+        print(f"In party menu choose idx {idx}")
         #cls.state = cls.eval_fight_states()
         if cls.state not in ['stats_or_switch','pkmn']:
             cls._in_game_menu_choose('gm_pokemon')
 
         if cls.state == 'pkmn':
-            if idx == 0:
-                btnA()
-                time.sleep(0.5)
-                cls.state = cls.eval_fight_states()
-                #cls._in_switch_or_stats_choose(idx, option=option)
-            else:
-                raise Exception(f"Only idx 0 can be used for now")
+            cls._set_party_menu_cursor(idx)
+            btnA()
+            time.sleep(0.5)
+            cls.state = cls.eval_fight_states()
         elif cls.state == 'stats_or_switch':
             cls._in_switch_or_stats_choose(option)
 
@@ -79,6 +88,7 @@ class Selector:
         ''' in the game menu chose 'gm_pokedex','gm_pokoemon' 'gm_item',ect. '''
         if option not in ['gm_pokedex', 'gm_pokemon', 'gm_item', 'gm_save', 'gm_player_name', 'gm_option']:
             raise Exception(f"Invalid input argument option {option}")
+        print(f"In game menu choose {option}")
         cls.state = cls.eval_fight_states()
         if cls.state != 'game_menu':
             cls._go_to_game_menu()
@@ -92,14 +102,32 @@ class Selector:
     @classmethod
     def _go_to_game_menu(cls):
         # not done yet but for lack of something better we start with this
-        btnB()
-        time.sleep(0.3)
-        btnB()
-        time.sleep(0.3)
+        print("Open game menu")
+        # btnB()
+        # time.sleep(0.3)
+        # btnB()
+        # time.sleep(0.3)
         btnStart()
         time.sleep(0.5)
         cls.state = cls.eval_fight_states()
 
+    @classmethod
+    def _set_party_menu_cursor(cls, to):
+        cursor = cls._get_cursor_position('party_menu')
+        cursor_int = [int(s) for s in cursor.split() if s.isdigit()][0] # find the one and only digit
+        if cursor == None:
+            return
+        tries = 0
+        while cursor_int != to and tries < 10:
+            tries += 1
+            if cursor_int < to:
+                godown()
+                cursor = cls._get_cursor_position('party_menu')
+                cursor_int = [int(s) for s in cursor.split() if s.isdigit()][0]  # find the one and only digit
+            else:
+                goup()
+                cursor = cls._get_cursor_position('party_menu')
+                cursor_int = [int(s) for s in cursor.split() if s.isdigit()][0]  # find the one and only digit
 
     @classmethod
     def _set_game_menu_cursor(cls, to):
@@ -107,7 +135,7 @@ class Selector:
         if cursor == None:
             return
         tries = 0
-        while cursor != to and tries < 5:
+        while cursor != to and tries < 10:
             tries += 1
             if to == 'gm_pokedex':
                 goup()
@@ -177,7 +205,7 @@ class Selector:
     #@state_check(FightState)
     def eval_fight_states(cls):
         state = cls._get_cursor_position('states')
-        print(f"State is {state}")
+        print(f"Eval fightstates: State is {state}")
         return state
 
 
@@ -233,6 +261,7 @@ class Selector:
                 elif cursor == 'run':
                     goright()
                     cursor = cls._get_cursor_position('menu')
+        print(f"Cursor is now on {cursor}")
 
     @classmethod
     def _set_move_cursor(cls,move_idx):
@@ -260,6 +289,7 @@ class Selector:
         cls._set_menu_cursor(menu_name)
         btnA()
         time.sleep(0.5)
+        cls.eval_fight_states()
         StateController.eval_state()
 
 
@@ -307,7 +337,9 @@ class Selector:
         if cls.state != 'item':
             cls._in_fight_menu_choose('item')
             time.sleep(0.3)
-        btnA()
+        # if all is correct it is now menu
+        if cls.state == 'item':
+            btnA()
 
     @classmethod
     def init_fight(cls):

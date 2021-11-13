@@ -67,6 +67,13 @@ class FightRec(OCR):
                 'special': [int(127*scale_factor),int(136*scale_factor),int(43*scale_factor),int(72*scale_factor)]
                         }
     roi_stat_gm_hp = [int(32*scale_factor),int(40*scale_factor),int(80*scale_factor),int(153*scale_factor)]
+    roi_moves_gm = {
+                1: [int(70*scale_factor),int(83*scale_factor),int(15*scale_factor),int(80*scale_factor)],
+                2: [int(85*scale_factor),int(98*scale_factor),int(15*scale_factor),int(80*scale_factor)],
+                3: [int(101*scale_factor),int(114*scale_factor),int(15*scale_factor),int(80*scale_factor)],
+                4: [int(117*scale_factor),int(130*scale_factor),int(15*scale_factor),int(80*scale_factor)]
+                        }
+
 
     '''' Arrow that shows at the beginning of a fight '''
     roi_arrow=[int(85*scale_factor),
@@ -163,6 +170,16 @@ class FightRec(OCR):
         return hp_current, hp_max
 
     @classmethod
+    def read_moves_gm(cls):
+        moves = []
+        for key,value in cls.roi_moves_gm.items():
+            characters = cls._core_ocr(value)
+            if len(characters) > 1: # if the length is 1 or less, it is the - indicating no move
+                moves.append(characters)
+        #print(moves)
+        return moves
+
+    @classmethod
     def foe_hp(cls):
         # returns the hp ratio (between 1 and 0) left
         screen = screen_grab()
@@ -212,8 +229,8 @@ class FightRec(OCR):
 
 if __name__ == '__main__':
 
-    print(FightRec.read_stat_gm_lookup())
-    print(FightRec.read_stat_gm_hp())
+    print(FightRec.read_moves_gm())
+    #print(FightRec.read_stat_gm_hp())
 
     pass
 

@@ -431,36 +431,34 @@ def switch_or_stats_choose():
         'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\party_menu\\stats\\switch_or_stats_mask.png',
         mask)
 
+def praty_menu_cursor():
+    img = cv2.imread(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\party_menu\\0\\party_menu_0.png')
 
-img = cv2.imread(
-    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\party_menu\\stats\\stats.png')
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
+    cv2.waitKey()
 
-img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
-cv2.waitKey()
+    mask = 254 * np.ones(img.shape[:2], dtype="uint8")  # choose a white (254* ones) or black (zeros) mask to start with
 
-mask = 254 * np.zeros(img.shape[:2], dtype="uint8")  # choose a white (254* ones) or black (zeros) mask to start with
+    #cv2.rectangle(mask, (8, 0), (160, 95), 0, -1)
+    cv2.rectangle(mask, (8, 0), (160, 95), 0, -1)
+    # cv2.rectangle(mask, (87, 60), (150, 74), 0, -1)
+    # cv2.rectangle(mask, (87, 10), (93, 120), 0, -1)
+    # cv2.rectangle(mask, (0, 127), (160, 144), 0, -1)
+    #cv2.rectangle(mask, (0, 55), (60, 63), 0, -1)
+    #cv2.rectangle(mask, (7, 72), (150, 135), 0, -1)
+    #cv2.rectangle(mask, (80, 72), (150, 135), 0, -1)
 
-#cv2.rectangle(mask, (0, 0), (160, 87), 0, -1)
-#cv2.rectangle(mask, (0, 87), (85, 95), 0, -1)
+    mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
 
-cv2.rectangle(mask, (95, 95), (102, 136), 254, -1)
-# cv2.rectangle(mask, (87, 60), (150, 74), 0, -1)
-# cv2.rectangle(mask, (87, 10), (93, 120), 0, -1)
-# cv2.rectangle(mask, (0, 127), (160, 144), 0, -1)
-#cv2.rectangle(mask, (0, 55), (60, 63), 0, -1)
-#cv2.rectangle(mask, (7, 72), (150, 135), 0, -1)
-#cv2.rectangle(mask, (80, 72), (150, 135), 0, -1)
+    masked = cv2.bitwise_and(img, img, mask=mask)
+    masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
 
-mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
+    cv2.imshow('mask', masked)
+    cv2.waitKey()
 
-masked = cv2.bitwise_and(img, img, mask=mask)
-masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
-
-cv2.imshow('mask', masked)
-cv2.waitKey()
-
-''' afterwards change the name and extension to fight_menu.msk'''
-cv2.imwrite(
-    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\party_menu\\stats\\switch_or_stats_mask.png',
-    mask)
+    ''' afterwards change the name and extension to fight_menu.msk'''
+    cv2.imwrite(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\party_menu\\1\\party_menu_idx.png',
+        mask)

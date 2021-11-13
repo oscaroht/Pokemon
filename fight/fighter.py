@@ -1,11 +1,9 @@
 from fundamentals import FightState, state_check, screen_grab, goleft,goup,godown,goright,btnA,btnB
-from .fight_rec import FightRec
+from fight.fight_rec import FightRec
 #import fight_rec
-from .pokemon import pokemon_dict, WildPokemon, df_strength_weakness, OwnPokemon, OwnMove
-from .templates import f_temp_list
+from fight.pokemon import pokemon_dict, WildPokemon, df_strength_weakness, OwnPokemon, Move, OwnMove
 
 import difflib
-import cv2
 import numpy as np
 import time
 
@@ -148,7 +146,7 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
 
     def execute_best_move(self, mode='max_damage'):
         ''' mode can be 'best', 'save_pp' '''
-        from .selector import Selector
+        from fight.selector import Selector
 
         d = []
         print(f"Pokemon {self.my_pokemon.name}'s moves are {[x.name for x in self.my_pokemon.moves]}")
@@ -293,12 +291,14 @@ class Fighter:
 
     @classmethod
     def eval_pokemon_stats(cls):
-        from .selector import Selector
-        idx = Fight.stats_need_evaluation(return_party_idx = True)
+        from fight.selector import Selector
+        idx = OwnPokemon.party.stats_need_evaluation(return_party_idx = True)
+        print(f"Doing the evaluation in fighter for idx {idx}")
         if idx == None:
             # print("eval_pokemon_stats needed says SC but no pokemon was found which need evaluation")
             raise Exception("eval_pokemon_stats needed says SC but no pokemon was found which need evaluation")
-        Selector.eval_pokemon_stats_by_idx(idx)  # bring us to the
+        print(f"Go to stats page of game menu for pokemon {idx}")
+        Selector.eval_pokemon_stats_by_idx(idx)  # bring us to the stats page in the game menu
         # read the values
         stats = FightRec.read_stat_gm_lookup()
         hp_current, hp_max = FightRec.read_stat_gm_hp()
@@ -307,10 +307,21 @@ class Fighter:
         OwnPokemon.party[idx].stats = stats
         OwnPokemon.party[idx].current_hp = hp_current
 
+        test=1
+
+        #evaluate moves
+        if OwnPokemon.party[idx].moves == []:
+            Selector.eval_pokemon_moves_by_idx(idx)
+            moves = FightRec.read_moves_gm()
+            for m in moves:
+                new_own_m = OwnMove.create_own_move_by_name(m) # also a name that is similar, reading mistakes allowed
+                OwnPokemon.party[idx].add_move(new_own_m)
+
+
     @classmethod
     def handle_fight(cls, mode = 'max_damage'):
         from fundamentals import StateController
-        from .selector import Selector
+        from fight.selector import Selector
         from fundamentals import btnA
 
         # first lets check again
@@ -329,6 +340,8 @@ class Fighter:
                 '''' A new pokemon was recently caught. Besides skipping the pokedex window we should add it to our 
                 party'''
 
+                print("handle pokedex state")
+
                 # maybe add the foe to the party or PC and leave out the needed info. make a state that checks if the
                 # info of all pokemon present and if that is not the case it goes and checks it. This state is a
                 # substate of the walk state as we can only check the states from the game menu (ony accessible when the
@@ -340,13 +353,12 @@ class Fighter:
 
                 #f.foe.caught() # add foe to own pookemon
 
-                del f
-                break
-
-
-                btnB()
-                time.sleep(0.5)
-                btnB()
+                for i in range(3):
+                    print("Bash B")
+                    btnB()
+                    time.sleep(1)
+                    btnB()
+                StateController.eval_state()
 
             elif StateController.state_name() == 'fight_wait_arrow':
                 text = FightRec.read_bar()

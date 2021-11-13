@@ -19,52 +19,21 @@ if __name__ == '__main__':
 
     while Walker.map_name != 'mom_lvl1' and Walker.cor_id != 56:
         StateController.eval_state()
-        if StateController.state_name() == 'walk':
+        sn = StateController.state_name() # state name
+        print(F"SC in main thinks state is {StateController.state_name()}")
+        if sn == 'walk':
             try:
                 Walker.go(('mom_lvl1', 56))
             except (WrongStep,LocationNotFound) as e:
                 print(F'ERROR: {e}')
-        elif 'fight' or 'none' in StateController.state_name():
+        elif 'fight' in sn or 'none' in sn:
             Fighter.handle_fight(mode = 'catch')
-        elif StateController.state_name() == 'walk_evalstat':
+        elif sn == 'walk_evalstats':
+            print(f"Inside state handler")
             Fighter.eval_pokemon_stats()
     #
     #
     # while Walker.map_name != 'route1' or Walker.cor_id != 36:
-    #     StateController.eval_state()
-    #     if StateController.state_name() == 'walk':
-    #         try:
-    #             Walker.go(('route1', 36))
-    #         except (WrongStep,LocationNotFound) as e:
-    #             print(e)
-    #     elif 'fight' or 'none' in StateController.state_name():
-    #         Fighter.handle_fight(mode='catch')
-    #     elif StateController.state_name() == 'walk_evalstat':
-    #         Fighter.eval_pokemon_stats()
 
-
-    # #
-    # # route1 7
-    # # mom_lvl2
-    # while Walker.map_name != 'route1' or Walker.cor_id != 92:
-    #     StateController.eval_state()
-    #     if StateController.state_name() == 'walk':
-    #         try:
-    #             Walker.go(('route1', 92))
-    #         except Exception as e:
-    #             print(e)
-    #     elif 'fight' or 'none' in StateController.state_name():
-    #         Fighter.handle_fight()
-    #     print(f"walker copid {Walker.cor_id}")
-    #
-    # while Walker.map_name != 'route1' or Walker.cor_id != 36:
-    #     StateController.eval_state()
-    #     if StateController.state_name() == 'walk':
-    #         try:
-    #             Walker.go(('route1', 36))
-    #         except Exception as e:
-    #             print(e)
-    #     elif 'fight' or 'none' in StateController.state_name():
-    #         Fighter.handle_fight()
 
 

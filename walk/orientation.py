@@ -5,7 +5,7 @@ from fundamentals import StateController, WalkState, state_check
 
 from walk.templates import temp_list
 
-@state_check(WalkState)
+#@state_check(WalkState)
 def get_orientation(threshold=0.15):
     screen = screen_grab(resize=True)
 
