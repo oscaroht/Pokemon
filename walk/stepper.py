@@ -43,7 +43,7 @@ class Stepper(Path):  # With Position inherenting G
             current = (node1_name, *cor_list[num], ori[0])  # variable that represents the current position
 
             # check if current is the same as previous next step
-            sleep(0.01)
+            sleep(0.001)
             t_check = threading.Thread(target=cls.check, args=(current, status))
             print(f'Check complete: {current} ')
             t_check.start()

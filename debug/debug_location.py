@@ -27,11 +27,11 @@ def open_debug_screen(map_name):
         debug_screen = cv2.cvtColor(debug_screen,cv2.COLOR_GRAY2RGB)
         # Write some Text
 
-        loc = Position.eval_position(map_name)
+        loc = Position.eval_position()
         ori = get_orientation(0.15)
 
         font = cv2.FONT_HERSHEY_SIMPLEX
-        cv2.putText(debug_screen, str(loc), (int(w/2), int(h/2)), font, 1, (0, 125, 255), 2, cv2.LINE_AA)
+        cv2.putText(debug_screen, str(loc), (int(w/5), int(h/1.8)), font, 1, (0, 125, 255), 2, cv2.LINE_AA)
         cv2.putText(debug_screen, str(ori), (int(w/2.5), int(h/2.5)), font, 1, (255, 125, 255), 2, cv2.LINE_AA)
 
         cv2.imshow(window_name, debug_screen)

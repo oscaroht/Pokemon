@@ -10,11 +10,13 @@ def load_graph():
     engine = create_engine(f'postgresql+psycopg2://postgres:{password}@localhost/pokemon')
 
     G_lvl1 = nx.Graph()
+    edges_lvl1={}
     with engine.connect() as con:
         edges = con.execute(f"select * from mappings.edges_lvl1;")
-        df_edges_lvl1 = pd.read_sql_table('edges_lvl1', con=con, schema='mappings')
+        df_edges_lvl1 = pd.read_sql_table('edges_lvl1', con=con, schema='mappings',coerce_float=False)
     for row in edges:
         G_lvl1.add_edge(row['from_id'], row['to_id'])
+        edges_lvl1[row['from_id'],row['to_id']]=dict(row)
 
     G_lvl0 = {}
     with engine.connect() as con:
@@ -36,8 +38,12 @@ def load_graph():
                 G_current.add_edge(roww['node0_id_from'], roww['node0_id_to'])
             G_lvl0[node1_id] = G_current
 
-    return G_lvl1, G_lvl0, df_edges_lvl1
+    return G_lvl1, G_lvl0, df_edges_lvl1, edges_lvl1
 
 
 class G:
-    G_lvl1, G_lvl0, df_edges_lvl1 = load_graph()
+    G_lvl1, G_lvl0, df_edges_lvl1, edges_lvl1 = load_graph()
+
+
+if __name__ == '__main__':
+    test=1

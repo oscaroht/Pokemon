@@ -3,6 +3,7 @@
 
 from sqlalchemy import create_engine
 from fundamentals.config import config
+import cv2
 
 password = config('../users.ini','postgres','password')
 engine = create_engine(f'postgresql+psycopg2://postgres:{password}@localhost/pokemon')
@@ -34,5 +35,18 @@ def naive_creator(node1_id, w,h):
 #create mom_lvl2 3, 8, 7
 #create oaks_lab 4, 10,11
 #create route1 5, 14, 43
+# create viridian city (6, 32, 33)
+# create route2a naive_creator(9, 12, 26)
 
-naive_creator(5, 14, 43)                       # uncheck to write to database
+# use this to calculate the w en h of the network
+im = cv2.imread("C:\\Users\\oscar\\PycharmProjects\\Pokemon\\templates\\map\\viridian_forest_ptb_route2b.tmp")
+cv2.imshow('bla', im)
+cv2.waitKey()
+
+# im2 = cv2.hconcat([im, im[:,365:366,:]])
+# cv2.imshow('ad',im2)
+# cv2.waitKey()
+
+print(f"width: {im.shape[1]/16 - 9}\nheight: {im.shape[0]/16 - 8}") # so the number of pixels devided by 16x16 pixels per tile, minus 9 adn 8 for the edges of the image
+
+naive_creator(13, 10, 7)

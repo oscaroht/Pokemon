@@ -12,7 +12,7 @@ engine = create_engine(f'postgresql+psycopg2://postgres:{password}@localhost/pok
 
 node1_id = 5
 
-G_current_lvl0 = nx.Graph()
+G_current_lvl0 = nx.Graph() # create empty graph
 
 with engine.connect() as con:
     mart_edges = con.execute(f"select * from mart.edges_lvl0 where node1_id = {node1_id}; ")

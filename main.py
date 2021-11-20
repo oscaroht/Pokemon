@@ -17,20 +17,23 @@ def main():
 if __name__ == '__main__':
     # start_bot(console_level='INFO')
 
-    while Walker.map_name != 'mom_lvl1' and Walker.cor_id != 56:
-        StateController.eval_state()
-        sn = StateController.state_name() # state name
-        print(F"SC in main thinks state is {StateController.state_name()}")
-        if sn == 'walk':
-            try:
-                Walker.go(('mom_lvl1', 56))
-            except (WrongStep,LocationNotFound) as e:
-                print(F'ERROR: {e}')
-        elif 'fight' in sn or 'none' in sn:
-            Fighter.handle_fight(mode = 'catch')
-        elif sn == 'walk_evalstats':
-            print(f"Inside state handler")
-            Fighter.eval_pokemon_stats()
+    def go_to(map, cor_id):
+        while Walker.map_name != map and Walker.cor_id != cor_id:
+            StateController.eval_state()
+            sn = StateController.state_name() # state name
+            if sn == 'walk':
+                try:
+                    Walker.go((map, cor_id))
+                except (WrongStep,LocationNotFound) as e:
+                    print(F'ERROR: {e}')
+            elif 'fight' in sn or 'none' in sn:
+                Fighter.handle_fight(mode = 'max_damage')  # catch or max_damage
+            elif sn == 'walk_evalstats':
+                Fighter.eval_pokemon_stats()
+
+    go_to('mom_lvl1', 3)
+    go_to('route2a', 1)
+
     #
     #
     # while Walker.map_name != 'route1' or Walker.cor_id != 36:

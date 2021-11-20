@@ -37,7 +37,7 @@ class Position(G,T):
         cls.position = ((map, id, x, y))
 
     @classmethod
-    def _set_map_by_id(cls,map_id):
+    def set_map_by_id(cls, map_id):
         #from graphs import G_lvl1, G_lvl0, df_edges_lvl1
         cls.map_name = G.df_edges_lvl1[G.df_edges_lvl1['from_id'] == map_id].iloc[0]['from_name']
         #print(f'Set map by id {}')
@@ -96,7 +96,7 @@ class Position(G,T):
         return mapping  # a dict with img, x, y as keys
 
     @classmethod
-    def _get_position_in_map(cls,mapping, screen):
+    def _get_position_in_map(cls,mapping, screen, threshold = 0.9):
         ''''This function returns the node0_id where the player is at this very moment.'''
 
         screen_cpo = cls._cpo(screen, 16 * 4)
@@ -119,7 +119,7 @@ class Position(G,T):
                 res_max = res
                 best_id = id
 
-        if res_max < 0.5:
+        if res_max < threshold:
             print('threshold of 0.5 not passed')
             return None
 
