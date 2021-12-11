@@ -31,6 +31,8 @@ if __name__ == '__main__':
             elif sn == 'walk_evalstats':
                 Fighter.eval_pokemon_stats()
 
+
+    go_to('viridian_forest', 1)
     go_to('mom_lvl1', 3)
     go_to('route2a', 1)
 

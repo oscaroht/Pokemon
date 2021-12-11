@@ -317,6 +317,56 @@ class Fighter:
                 new_own_m = OwnMove.create_own_move_by_name(m) # also a name that is similar, reading mistakes allowed
                 OwnPokemon.party[idx].add_move(new_own_m)
 
+    @classmethod
+    def handle_wild_fight(cls,mode='max_damage'):
+        from fundamentals import StateController
+        from fight.selector import Selector
+        from fundamentals import btnA
+
+        # first lets check again
+        StateController.eval_state()
+        sn = StateController.state_name()
+        while 'fight' in sn or 'none' in sn:
+            StateController.eval_state()
+            sn = StateController.state_name()
+            print(f'State name {StateController.state_name()}')
+            if not ('f' in globals() or 'f' in locals()):
+                # so the fight was not yet initiated
+                f = Fight()
+            elif StateController.state_name() == 'fight_pokedex':
+                '''' A new pokemon was recently caught. Besides skipping the pokedex window we should add it to our 
+                party'''
+
+                print("handle pokedex state")
+
+                # maybe add the foe to the party or PC and leave out the needed info. make a state that checks if the
+                # info of all pokemon present and if that is not the case it goes and checks it. This state is a
+                # substate of the walk state as we can only check the states from the game menu (ony accessible when the
+                # player is visible or in the walk state)
+
+                # ISSUE this should not be done in the pokedex state because if a pokemon is caught for the 2nd time the
+                # pokedex will not pop up. So we need to create a obtain pokemon function which is called/ triggered by
+                # the text in the bar. But it is always the end of the fight.
+
+                #f.foe.caught() # add foe to own pookemon
+
+                for i in range(3):
+                    print("Bash B")
+                    btnB()
+                    time.sleep(1)
+                    btnB()
+                StateController.eval_state()
+
+            elif StateController.state_name() == 'fight_wait_arrow':
+                text = FightRec.read_bar()
+                # interpret text
+                print(text)
+                f.interpret_bar(text)
+                btnA()
+                time.sleep(0.3)
+            elif StateController.state_name() in ['fight_menu', 'fight_item', 'fight_pokemon','fight_move']:
+                # we are in the main fight
+                f.execute_best_move(mode=mode)
 
     @classmethod
     def handle_fight(cls, mode = 'max_damage'):
@@ -331,6 +381,8 @@ class Fighter:
             StateController.eval_state()
             sn = StateController.state_name()
             print(f'State name {StateController.state_name()}')
+            if StateController.state_name() == 'fight_init_trainer':
+                Selector.init_fight()
             if StateController.state_name() == 'fight_init':
                 Selector.init_fight()
             elif not ('f' in globals() or 'f' in locals()):

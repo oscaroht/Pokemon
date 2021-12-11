@@ -65,7 +65,7 @@ class Path(Position):
 
         def get_cor_list(G, path):
             cor_list = []
-            for p in path[start_map_id]:
+            for p in path:
                 cor_list.append( (G.nodes[p]['x'], G.nodes[p]['y']) )
             return cor_list
 
@@ -117,21 +117,30 @@ class Path(Position):
             start = from_id
             goal = end_cor[1]
             eeps = [(a,b) for a, b in zip(path_lvl1, path_lvl1[1:])] # exit entry pair
-            for idx, eep in enumerate(eeps):
+            for idx, eep in enumerate(eeps+[(eeps[-1][1],eeps[-1][0])]):
                 from_map_id = eep[0]
                 G = Path.G_lvl0[from_map_id].copy() # we want to copy because se do not want to add the nodes permanently
 
                 if idx != 0:        # exclude the first pair (entry/exit)
                     G, start = add_exit_entry_node(G,series['enter_x'], series['enter_y']) # add entry node
                 series = Path.edges_lvl1[eep]
-                if idx != len(eeps)-1: # exclude the last pair (entry/exit)
-                    G, end = add_exit_entry_node(G, series['exit_x'], series['exit_y'])
+                if idx == len(eeps + [eeps[-1]])-1: # last one
+                    end = goal
                 else:
-                    end = goal # the last map we are not going to the exit, we are going to the goal coordinate
+                    G, end = add_exit_entry_node(G, series['exit_x'], series['exit_y'])
 
-                path[from_map_id] = nx.dijkstra_path(G, start, end)
-                rt[from_map_id] = get_cor_list(G, path[from_map_id])
+                # if idx != len(eeps)-1: # exclude the last pair (entry/exit)
+                #     G, end = add_exit_entry_node(G, series['exit_x'], series['exit_y'])
+                # else:
+                #     end = goal # the last map we are not going to the exit, we are going to the goal coordinate
 
+                current_path = nx.dijkstra_path(G, start, end)
+                print(f"current_path: {current_path}")
+                path[from_map_id] = current_path
+                rt[from_map_id] = get_cor_list(G, current_path)
+
+
+        print(f"path: {path}")
         self.id_path = path
         return rt
 

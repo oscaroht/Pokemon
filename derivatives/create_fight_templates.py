@@ -156,6 +156,8 @@ def fight_init2():
     ''' afterwards change the name and extension to fight_menu.msk'''
     cv2.imwrite('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\init\\init_mask.png', mask)
 
+
+
 def pass_mask():
     img = cv2.imread('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\pass\\pass.png')
 
@@ -462,3 +464,31 @@ def praty_menu_cursor():
     cv2.imwrite(
         'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\party_menu\\1\\party_menu_idx.png',
         mask)
+
+def fight_init_trainer():
+    img = cv2.imread('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\init_trainer\\fight_init_trainer.png')
+
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
+    cv2.waitKey()
+
+    mask = np.ones(img.shape[:2], dtype="uint8")
+    cv2.rectangle(mask, (15, 23), (89, 10), 0, -1)
+    cv2.rectangle(mask, (89, 0), (145, 87), 0, -1)  # (x0,y0), (x1,y1)
+    #cv2.rectangle(mask, (0, 0), (80, 100), 225, -1)
+    cv2.rectangle(mask, (8, 103), (150, 135), 0, -1)  # hides the bar
+
+    mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
+
+    masked = cv2.bitwise_and(img, img, mask=mask)
+    masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
+
+    cv2.imshow('mask', masked)
+    cv2.waitKey()
+
+    ''' afterwards change the name and extension to fight_menu.msk'''
+    cv2.imwrite('C:\\Users\\oscar\\PcharmProjects\\Pokemon\\fight\\templates\\states\\init_trainer\\init_trainer_mask.png', mask)
+
+
+
+
