@@ -297,6 +297,7 @@ class Selector:
     def _go_to_fight_menu(cls):
         ''' from any fight state we can get to the menu by pressing btnB'''
         #from fundamentals import StateController
+        print("press B to go to fight menu")
         btnB()
         time.sleep(0.5)
         StateController.eval_state()
@@ -355,4 +356,4 @@ class Selector:
 
 if __name__ == '__main__':
     time.sleep(1)
-    Selector.eval_pokemon_stats_by_idx(0)
+    Selector.eval_fight_states()

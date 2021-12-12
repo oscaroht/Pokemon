@@ -18,7 +18,7 @@ if __name__ == '__main__':
     # start_bot(console_level='INFO')
 
     def go_to(map, cor_id):
-        while Walker.map_name != map and Walker.cor_id != cor_id:
+        while not (Walker.map_name == map and Walker.cor_id == cor_id):
             StateController.eval_state()
             sn = StateController.state_name() # state name
             if sn == 'walk':
@@ -26,15 +26,17 @@ if __name__ == '__main__':
                     Walker.go((map, cor_id))
                 except (WrongStep,LocationNotFound) as e:
                     print(F'ERROR: {e}')
-            elif 'fight' in sn or 'none' in sn:
+            elif 'fight' in sn:  # or  'none' in sn:  ## removed this part
                 Fighter.handle_fight(mode = 'max_damage')  # catch or max_damage
             elif sn == 'walk_evalstats':
                 Fighter.eval_pokemon_stats()
+            print(f"LOOP MAIN. current {Walker.map_name} {Walker.cor_id} ")
+        print("END")
 
 
     go_to('viridian_forest', 1)
-    go_to('mom_lvl1', 3)
-    go_to('route2a', 1)
+    # go_to('mom_lvl1', 3)
+    # go_to('route2a', 1)
 
     #
     #

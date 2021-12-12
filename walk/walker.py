@@ -27,11 +27,12 @@ class Walker(Stepper):
         # will take the default which is fine because it is not the goal. Later, in creating the path variable the
         # Position.position is set
         #print(f'position: {Stepper.position} from walker go')
+        StateController.eval_state()
+        sn = StateController.state_name()
         if Stepper.position[:len(goal_cor)] == goal_cor:
             cls.goal_not_reached = False
-        while Stepper.position[:len(goal_cor)] != goal_cor and StateController.state_name() == 'walk':
+        while Stepper.position[:len(goal_cor)] != goal_cor and sn in ['walk','none_state']:
             print(f'Stepper.position: {Stepper.position[:len(goal_cor)]} != {goal_cor}' )
-            StateController.eval_state()
             try:
                 path = Stepper(goal_cor)
                 for key, value in path.cor_dict.items():
@@ -46,7 +47,8 @@ class Walker(Stepper):
 
             except (WrongStep, LocationNotFound):
                 print('walk: WRONG STEP or LOCATION NOT FOUND. recalculate route')
-                pass
+            StateController.eval_state()
+            sn = StateController.state_name()
 
     @classmethod
     def get_position(cls):

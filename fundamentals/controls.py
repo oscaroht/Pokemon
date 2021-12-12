@@ -9,6 +9,7 @@ turnRatio = 0.03
 goRatio = 0.068
 
 def btnA(*argv):
+    print("A")
     if len(argv) == 0:
         n=1
     else:
@@ -22,6 +23,7 @@ def btnA(*argv):
 
 
 def btnB(*args):
+    print("B")
     if len(args) == 0:
         n=1
     else:

@@ -137,7 +137,11 @@ class OCR:
             img.fill(255)
             if char_img.shape > img.shape: #if char_img.shape[0] > img.shape[0] or char_img.shape[1] > img.shape[1]:
                 char_img = cv2.resize(char_img, img.shape)
-            img[0:char_img.shape[0], 0:char_img.shape[1]] = char_img
+            try:
+                img[0:char_img.shape[0], 0:char_img.shape[1]] = char_img
+            except ValueError as e:
+                print(f"Value Exception in character rec. Probably it is inappropriate to read characters at this stage. {e}")
+                return
 
             ''''preprocess the image with a simple filter and divide by 255 for the neural network'''
             _, img = cv2.threshold(img, 170, 255, 0)

@@ -490,5 +490,57 @@ def fight_init_trainer():
     cv2.imwrite('C:\\Users\\oscar\\PcharmProjects\\Pokemon\\fight\\templates\\states\\init_trainer\\init_trainer_mask.png', mask)
 
 
+def change_pokemon_after_fight():
+    img = cv2.imread('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\change_pokemon\\fight_change_pokemon.tmp')
 
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
+    cv2.waitKey()
+
+    mask = np.ones(img.shape[:2], dtype="uint8")
+    cv2.rectangle(mask, (15, 23), (89, 10), 0, -1)
+    cv2.rectangle(mask, (80, 50), (145, 87), 0, -1)  # (x0,y0), (x1,y1)
+    cv2.rectangle(mask, (80, 50), (160, 70), 0, -1)  # (x0,y0), (x1,y1)
+    cv2.rectangle(mask, (48, 57), (60, 95), 0, -1)  #
+    #cv2.rectangle(mask, (0, 0), (80, 100), 225, -1)
+    cv2.rectangle(mask, (40, 103), (150, 120), 0, -1)
+
+    mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
+
+    masked = cv2.bitwise_and(img, img, mask=mask)
+    masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
+
+    cv2.imshow('mask', masked)
+    cv2.waitKey()
+
+    ''' afterwards change the name and extension to fight_menu.msk'''
+    cv2.imwrite('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\change_pokemon\\fight_change_pokemon_mask.png', mask)
+
+def level_up():
+    img = cv2.imread('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\level_up\\level_up.tmp')
+
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
+    cv2.waitKey()
+
+    mask = np.ones(img.shape[:2], dtype="uint8")
+    cv2.rectangle(mask, (0, 0), (70, 95), 0, -1)
+
+    cv2.rectangle(mask, (110, 32), (150, 38), 0, -1)  # (x0,y0), (x1,y1)
+    cv2.rectangle(mask, (110, 48), (150, 54), 0, -1)  # (x0,y0), (x1,y1)
+    cv2.rectangle(mask, (110, 64), (150, 70), 0, -1)  # (x0,y0), (x1,y1)
+    cv2.rectangle(mask, (110, 80), (150, 87), 0, -1)  # (x0,y0), (x1,y1)
+
+    cv2.rectangle(mask, (8, 103), (150, 135), 0, -1)  # hides the bar
+
+    mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
+
+    masked = cv2.bitwise_and(img, img, mask=mask)
+    masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
+
+    cv2.imshow('mask', masked)
+    cv2.waitKey()
+
+    ''' afterwards change the name and extension to fight_menu.msk'''
+    cv2.imwrite('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\level_up\\level_up.png', mask)
 
