@@ -544,3 +544,31 @@ def level_up():
     ''' afterwards change the name and extension to fight_menu.msk'''
     cv2.imwrite('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\level_up\\level_up.png', mask)
 
+
+def yn_talk():
+    img = cv2.imread('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\walk\\templates\\walk_states\\yn_talk\\yn_talk.tmp')
+
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
+    cv2.waitKey()
+
+    mask = np.ones(img.shape[:2], dtype="uint8")
+    cv2.rectangle(mask, (0, 0), (70, 95), 0, -1)
+
+    cv2.rectangle(mask, (0, 0), (111, 95), 0, -1)  # hides screen
+    cv2.rectangle(mask, (0, 0), (160, 55), 0, -1)  # hides screen
+
+    cv2.rectangle(mask, (8, 103), (150, 135), 0, -1)  # hides the bar
+
+    mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
+
+    masked = cv2.bitwise_and(img, img, mask=mask)
+    masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
+
+    cv2.imshow('mask', masked)
+    cv2.waitKey()
+    cv2.imwrite('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\walk\\templates\\walk_states\\yn_talk\\yn_talk_preview.png', masked)
+
+    ''' afterwards change the name and extension to fight_menu.msk'''
+    cv2.imwrite('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\walk\\templates\\walk_states\\yn_talk\\yn_talk_m.png', mask)
+

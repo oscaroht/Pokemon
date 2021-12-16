@@ -27,9 +27,12 @@ if __name__ == '__main__':
                 except (WrongStep,LocationNotFound) as e:
                     print(F'ERROR: {e}')
             elif 'fight' in sn:  # or  'none' in sn:  ## removed this part
-                Fighter.handle_fight(mode = 'max_damage')  # catch or max_damage
+                Fighter.handle_fight(mode='max_damage')  # catch or max_damage
             elif sn == 'walk_evalstats':
                 Fighter.eval_pokemon_stats()
+            elif sn == 'walk_talk':
+                Fighter.handle_talk()
+
             print(f"LOOP MAIN. current {Walker.map_name} {Walker.cor_id} ")
         print("END")
 

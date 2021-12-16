@@ -317,6 +317,9 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
 
 class Fighter:
 
+    @classmethod
+    def handle_talk(cls):
+        btnA()
 
     @classmethod
     def eval_pokemon_stats(cls):
@@ -363,14 +366,15 @@ class Fighter:
         StateController.eval_state()
         sn = StateController.state_name()
         print(f'State name {StateController.state_name()}')
-        while sn in ['fight_init', 'fright_init_trainer']:   # if we keep hanging in the init state than keep initting
+
+        while sn in ['fight_init', 'fright_init_trainer','fight_wait_arrow']:   # if we keep hanging in the init state than keep initting
             Selector.init_fight()
             StateController.eval_state()
             sn = StateController.state_name()
 
         f = Fight()
 
-
+        sn = 'fight'
         while ('fight' in sn or 'none' in sn):
             if sn == 'fight_pokedex':
                 '''' A new pokemon was recently caught. Besides skipping the pokedex window we should add it to our 
@@ -439,7 +443,7 @@ class Fighter:
         # first lets check again
         StateController.eval_state()
         sn = StateController.state_name()
-        while sn in ['fight_init', 'fright_init_trainer']: # if we keep hanging in the init state than keep initting
+        while sn in ['fight_init', 'fight_init_trainer']: # if we keep hanging in the init state than keep initting
             Selector.init_fight()
             StateController.eval_state()
             sn = StateController.state_name()
@@ -463,23 +467,24 @@ class Fighter:
 
 
     @classmethod
-    def handle_fight(cls, mode = 'max_damage'):
+    def handle_fight(cls, mode='max_damage'):
         from fundamentals import StateController
         from fight.selector import Selector
         from fundamentals import btnA
 
         # first lets check again
-        StateController.eval_state()
-        sn = StateController.state_name()
+        # StateController.eval_state()
+        # sn = StateController.state_name()
+        sn = 'fight'
         while 'fight' in sn or 'none' in sn:
-            StateController.eval_state()
-            sn = StateController.state_name()
             print(f'State name {StateController.state_name()}')
             if StateController.state_name() == 'fight_init_trainer':
                 cls.handle_wild_and_trainer_fight()
             elif StateController.state_name() == 'fight_init':
                 cls.handle_wild_and_trainer_fight(wild=True)
             print(f"new battle loop")
+            StateController.eval_state()
+            sn = StateController.state_name()
 
 
     # # ORIGINAL

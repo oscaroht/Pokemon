@@ -19,25 +19,24 @@ class NoneState(State):
         return 'none_state'
 
 class WalkState(State):
-
     def __init__(self):
-        pass
-
+        self.name = 'walk'
     def __str__(self):
         return 'walk'
 
+class WalkTalkState(WalkState):
+    def __init__(self):
+        self.name = 'walk_talk'
+    def __str__(self):
+        return 'walk_talk'
+
 class WalkEvalStats(WalkState):
     def __init__(self):
-        pass
-
+        self.name = 'walk_evalstats'
     def __str__(self):
         return 'walk_evalstats'
 
 
-class TalkState(WalkState):
-
-    def __str__(self):
-        return 'talk'
 
 class FightPokedex(State):
     def __init__(self):
@@ -118,40 +117,65 @@ class StateController:
         from walk import get_orientation
         from fight import Selector
         from fight import OwnPokemon
+        from walk.walk_rec import WalkRec
 
         def _set_state():
             state_name = Selector.eval_fight_states() # if this returns None than we still assume it is the same state as last time. Not sure if this is desired
             if state_name == 'wait_arrow':
                 StateController.state.switch(FightWaitArrowState)
+                # no return because this is a general arrow
             elif state_name == 'menu':
                 StateController.state.switch(FightMenuState)
+                return
             elif state_name == 'move':
                 StateController.state.switch(FightMoveState)
+                return
             elif state_name == 'init':
                 StateController.state.switch(FightInitState)
+                return
             elif state_name == 'init_trainer':
                 StateController.state.switch(FightInitTrainerState)
+                return
             elif state_name == 'level_up':
                 StateController.state.switch(FightLevelUpState)
+                return
             elif state_name == 'pokedex':
                 StateController.state.switch(FightPokedex)
+                return
             elif state_name == 'change_pokemon':
                 StateController.state.switch(FightChangePokemonState)
+                return
             # else:
             #     StateController.state.switch(FightState) #TODO remove so we can get into a walk state
             # get orientation also has a @state_check so we do not have to set something. Just to make sure
-            if state_name is None:
-                print("Check orientation")
-                state_name = get_orientation()
 
-                if state_name != None:
-                    if OwnPokemon.party.stats_need_evaluation():
-                        cls.state.switch(WalkEvalStats)
-                    else:
-                        cls.state.switch(WalkState)
+            print("Check orientation")
+            ori = get_orientation()
+            if ori != None:
+                bar_is_present = WalkRec.bar_present()
+                yn = WalkRec.yn_and_bar_present()
+                if yn:
+                    print("HANDLE YN IN BAR. PRESS A FOR NOW FIX LATER")
+                    cls.state.switch(WalkTalkState)
+                    return
+                elif bar_is_present:
+                    cls.state.switch(WalkTalkState)
+                    return
+                # player visible and free (not talk)
+                if OwnPokemon.party.stats_need_evaluation():
+                    cls.state.switch(WalkEvalStats)
+                    return
                 else:
-                    StateController.state.switch(NoneState)
-                    #Position.get_position()     # position class gets forgotten in main after walking is done so we need to set the position again. Otherwise if we are at the end the main will not know
+                    cls.state.switch(WalkState)
+                    return
+            elif state_name == 'wait_arrow':
+                StateController.state.switch(FightWaitArrowState)
+                # so it is the fight wait arrow but it is already set to this state
+                return
+            else:
+                # none state or senario state
+                StateController.state.switch(NoneState)
+                # Position.get_position()     # position class gets forgotten in main after walking is done so we need to set the position again. Otherwise if we are at the end the main will not know
 
         _set_state()
         while cls.state == None: # this never happens. I do not know why I put this here

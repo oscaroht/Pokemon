@@ -3,7 +3,7 @@ import cv2
 from fundamentals import screen_grab
 from fundamentals import StateController, WalkState, state_check
 
-from walk.templates import temp_list
+from walk.templates import T
 
 #@state_check(WalkState)
 def get_orientation(threshold=0.15):
@@ -11,7 +11,7 @@ def get_orientation(threshold=0.15):
 
     # evaluate all templates
     best_score = 1
-    for t in temp_list:
+    for t in T.temp_list:
         if t.group == 'orientation':
             if t.mask is not None:
                 res = cv2.matchTemplate(screen, t.img, cv2.TM_SQDIFF_NORMED, mask=t.mask)
