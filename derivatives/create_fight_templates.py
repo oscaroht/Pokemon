@@ -572,3 +572,378 @@ def yn_talk():
     ''' afterwards change the name and extension to fight_menu.msk'''
     cv2.imwrite('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\walk\\templates\\walk_states\\yn_talk\\yn_talk_m.png', mask)
 
+
+def start_menu():
+    img = cv2.imread('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\states\\start_menu\\start_menu.tmp')
+
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
+    cv2.waitKey()
+
+    mask = np.ones(img.shape[:2], dtype="uint8")
+    cv2.rectangle(mask, (8, 8), (14, 55), 0, -1)
+
+    # cv2.rectangle(mask, (0, 0), (111, 95), 0, -1)  # hides screen
+    # cv2.rectangle(mask, (0, 0), (160, 55), 0, -1)  # hides screen
+
+    cv2.rectangle(mask, (0, 56), (160, 144), 0, -1)
+
+
+    mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
+
+    masked = cv2.bitwise_and(img, img, mask=mask)
+    masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
+
+    cv2.imshow('mask', masked)
+    cv2.waitKey()
+    cv2.imwrite('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\states\\start_menu\\start_menu_preview.png', masked)
+
+    ''' afterwards change the name and extension to fight_menu.msk'''
+    cv2.imwrite('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\states\\start_menu\\start_menu_m.png', mask)
+
+def start_menu_continue():
+    img = cv2.imread(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\start_menu\\continue\\continue.tmp')
+
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
+    cv2.waitKey()
+
+    mask = np.ones(img.shape[:2], dtype="uint8")
+    # cv2.rectangle(mask, (8, 8), (14, 55), 0, -1)
+
+    # cv2.rectangle(mask, (0, 0), (111, 95), 0, -1)  # hides screen
+    # cv2.rectangle(mask, (0, 0), (160, 55), 0, -1)  # hides screen
+
+    cv2.rectangle(mask, (80, 65), (160, 144), 0, -1)
+
+    mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
+
+    masked = cv2.bitwise_and(img, img, mask=mask)
+    masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
+
+    cv2.imshow('mask', masked)
+    cv2.waitKey()
+    cv2.imwrite(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\start_menu\\continue\\continue_preview.png',
+        masked)
+
+    ''' afterwards change the name and extension to fight_menu.msk'''
+    cv2.imwrite('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\start_menu\\continue\\continue_m.png',
+                mask)
+
+def splash_screen():
+    img = cv2.imread(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\states\\splash_screen\\splash_screen.tmp')
+
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
+    cv2.waitKey()
+
+    mask = np.ones(img.shape[:2], dtype="uint8")
+    # cv2.rectangle(mask, (8, 8), (14, 55), 0, -1)
+
+    # cv2.rectangle(mask, (0, 0), (111, 95), 0, -1)  # hides screen
+    # cv2.rectangle(mask, (0, 0), (160, 55), 0, -1)  # hides screen
+
+    cv2.rectangle(mask, (0, 65), (100, 144), 0, -1)
+
+    mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
+
+    masked = cv2.bitwise_and(img, img, mask=mask)
+    masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
+
+    cv2.imshow('mask', masked)
+    cv2.waitKey()
+    cv2.imwrite(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\states\\splash_screen\\splash_screen_preview.png',
+        masked)
+
+    ''' afterwards change the name and extension to fight_menu.msk'''
+    cv2.imwrite(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\states\\splash_screen\\splash_screen_m.png',
+        mask)
+
+def choose_name_menu():
+    img = cv2.imread(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\states\\choose_player_name_menu\\choose_player_name_menu.tmp')
+
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
+    cv2.waitKey()
+
+    mask = np.ones(img.shape[:2], dtype="uint8")
+    # cv2.rectangle(mask, (8, 8), (14, 55), 0, -1)
+
+    # cv2.rectangle(mask, (0, 0), (111, 95), 0, -1)  # hides screen
+    # cv2.rectangle(mask, (0, 0), (160, 55), 0, -1)  # hides screen
+
+    cv2.rectangle(mask, (8, 10), (13, 80), 0, -1)
+
+    mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
+
+    masked = cv2.bitwise_and(img, img, mask=mask)
+    masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
+
+    cv2.imshow('mask', masked)
+    cv2.waitKey()
+    cv2.imwrite(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\states\\choose_player_name_menu\\choose_player_name_menu_preview.png',
+        masked)
+
+    ''' afterwards change the name and extension to fight_menu.msk'''
+    cv2.imwrite(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\states\\choose_player_name_menu\\choose_player_name_menu_m.png',
+        mask)
+
+def intro_story():
+    img = cv2.imread(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\states\\start_story1\\start_story1.tmp')
+
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
+    cv2.waitKey()
+
+    mask = np.ones(img.shape[:2], dtype="uint8")
+    # cv2.rectangle(mask, (8, 8), (14, 55), 0, -1)
+
+    cv2.rectangle(mask, (8, 103), (150, 135), 0, -1)
+
+    mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
+
+    masked = cv2.bitwise_and(img, img, mask=mask)
+    masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
+
+    cv2.imshow('mask', masked)
+    cv2.waitKey()
+    cv2.imwrite(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\states\\start_story1\\start_story1_preview.png',
+        masked)
+
+    ''' afterwards change the name and extension to fight_menu.msk'''
+    cv2.imwrite(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\states\\start_story1\\start_story1_m.png',
+        mask)
+
+def market_menu():
+    img = cv2.imread(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\walk\\templates\\market\\buy\\buy.tmp')
+
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
+    cv2.waitKey()
+
+    mask = np.ones(img.shape[:2], dtype="uint8")
+
+    cv2.rectangle(mask, (8, 8), (13, 47), 225, -1)
+    cv2.rectangle(mask, (95, 8), (150, 15), 0, -1)
+    cv2.rectangle(mask, (110, 60), (126, 95), 0, -1)
+
+    mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
+
+    masked = cv2.bitwise_and(img, img, mask=mask)
+    masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
+
+    cv2.imshow('mask', masked)
+    cv2.waitKey()
+    cv2.imwrite(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\walk\\templates\\market\\buy\\buy_preview.png',
+        masked)
+
+    ''' afterwards change the name and extension to fight_menu.msk'''
+    cv2.imwrite('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\walk\\templates\\market\\buy\\buy_m.png',
+                mask)
+
+def amount_in_market():
+    img = cv2.imread(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\market\\amount1\\amount1.tmp')
+
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
+    cv2.waitKey()
+
+    mask = 0 * np.ones(img.shape[:2], dtype="uint8")
+
+    cv2.rectangle(mask, (56, 72), (95, 95), 255, -1)
+
+    # cv2.rectangle(mask, (95, 8), (150, 15), 0, -1)
+    # cv2.rectangle(mask, (110, 60), (126, 95), 0, -1)
+
+    mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
+
+    masked = cv2.bitwise_and(img, img, mask=mask)
+    masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
+
+    cv2.imshow('mask', masked)
+    cv2.waitKey()
+    cv2.imwrite(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\market\\amount1\\amount1_preview.png',
+        masked)
+
+    ''' afterwards change the name and extension to fight_menu.msk'''
+    cv2.imwrite('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\market\\amount1\\amount1_m.png',
+                mask)
+
+
+def buy_menu_state():
+    img = cv2.imread(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\states\\buy_menu\\buy_menu.tmp')
+
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
+    cv2.waitKey()
+
+    mask = np.ones(img.shape[:2], dtype="uint8")
+
+    # cv2.rectangle(mask, (8, 8), (13, 47), 0, -1)
+    cv2.rectangle(mask, (95, 8), (150, 15), 0, -1)
+    cv2.rectangle(mask, (40, 25), (150, 95), 0, -1)
+
+    mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
+
+    masked = cv2.bitwise_and(img, img, mask=mask)
+    masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
+
+    cv2.imshow('mask', masked)
+    cv2.waitKey()
+    cv2.imwrite(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\states\\buy_menu\\buy_menu_preview.png',
+        masked)
+
+    ''' afterwards change the name and extension to fight_menu.msk'''
+    cv2.imwrite('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\states\\buy_menu\\buy_menu_m.png',
+                mask)
+
+
+def buy_confirm():
+    img = cv2.imread(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\states\\buy_confirm\\buy_confirm.tmp')
+
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
+    cv2.waitKey()
+
+    mask = np.ones(img.shape[:2], dtype="uint8")
+
+    # cv2.rectangle(mask, (8, 8), (13, 47), 0, -1)
+    cv2.rectangle(mask, (95, 8), (150, 15), 0, -1)
+    cv2.rectangle(mask, (40, 25), (150, 55), 0, -1)
+    cv2.rectangle(mask, (40, 25), (110, 70), 0, -1)
+    cv2.rectangle(mask, (40, 25), (55, 95), 0, -1)
+
+    cv2.rectangle(mask, (63, 80), (110, 88), 0, -1)  # price
+
+    cv2.rectangle(mask, (8, 125), (150, 135), 0, -1)  # lower line in bar
+
+    mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
+
+    masked = cv2.bitwise_and(img, img, mask=mask)
+    masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
+
+    cv2.imshow('mask', masked)
+    cv2.waitKey()
+    cv2.imwrite(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\states\\buy_confirm\\buy_confirm_preview.png',
+        masked)
+
+    ''' afterwards change the name and extension to fight_menu.msk'''
+    cv2.imwrite(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\states\\buy_confirm\\buy_confirm_m.png',
+        mask)
+
+def buy_amount():
+    img = cv2.imread(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\states\\buy_amount\\buy_amount.tmp')
+
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
+    cv2.waitKey()
+
+    mask = np.ones(img.shape[:2], dtype="uint8")
+
+    # cv2.rectangle(mask, (8, 8), (13, 47), 0, -1)
+    cv2.rectangle(mask, (95, 8), (150, 15), 0, -1)
+    cv2.rectangle(mask, (40, 25), (150, 70), 0, -1)
+    # cv2.rectangle(mask, (40, 25), (150, 70), 0, -1)
+    cv2.rectangle(mask, (40, 25), (55, 95), 0, -1)
+
+    cv2.rectangle(mask, (63, 80), (150, 88), 0, -1)  # price
+
+    # cv2.rectangle(mask, (8, 125), (150, 135), 0, -1) # lower line in bar
+
+    mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
+
+    masked = cv2.bitwise_and(img, img, mask=mask)
+    masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
+
+    cv2.imshow('mask', masked)
+    cv2.waitKey()
+    cv2.imwrite(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\states\\buy_amount\\buy_amount_preview.png',
+        masked)
+
+    ''' afterwards change the name and extension to fight_menu.msk'''
+    cv2.imwrite('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\states\\buy_amount\\buy_amount_m.png',
+                mask)
+
+def walk_player():
+    img = cv2.imread(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\walk\\templates\\map\\mask_create.png')
+
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
+    cv2.waitKey()
+
+    mask = np.ones(img.shape[:2], dtype="uint8")
+
+    # cv2.rectangle(mask, (40, 25), (150, 70), 0, -1)
+    cv2.rectangle(mask, (64, 56), (81, 75), 0, -1)
+
+    mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
+
+    masked = cv2.bitwise_and(img, img, mask=mask)
+    masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
+
+    cv2.imshow('mask', masked)
+    cv2.waitKey()
+    cv2.imwrite(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\walk\\templates\\map\\mask_create_preview.png',
+        masked)
+
+    ''' afterwards change the name and extension to fight_menu.msk'''
+    cv2.imwrite('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\walk\\templates\\map\\mask_create_m.png',
+                mask)
+
+
+
+
+img = cv2.imread(
+    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\walk\\templates\\map\\mask_create.png')
+
+img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
+cv2.waitKey()
+
+mask = np.ones(img.shape[:2], dtype="uint8")
+
+
+
+# cv2.rectangle(mask, (40, 25), (150, 70), 0, -1)
+cv2.rectangle(mask, (64, 56), (81, 75), 0, -1)
+
+
+mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
+
+masked = cv2.bitwise_and(img, img, mask=mask)
+masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
+
+cv2.imshow('mask', masked)
+cv2.waitKey()
+cv2.imwrite(
+    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\walk\\templates\\map\\mask_create_preview.png',
+    masked)
+
+''' afterwards change the name and extension to fight_menu.msk'''
+cv2.imwrite('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\walk\\templates\\map\\mask_create_m.png',
+            mask)
+

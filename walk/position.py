@@ -6,7 +6,7 @@ Maybe we can even store the shrunk cpo versions. Maybe this improves performance
 import numpy as np
 import cv2
 
-from templates import T
+from walk.templates import T
 from fundamentals.screen import screen_grab
 from graphs import G
 
@@ -51,7 +51,7 @@ class Position(G,T):
             ''''Need better way to navigate the data structure. Maybe indexing.'''
             for t in T.temp_list:
                 if t.name == map: # 'pellet_town':
-                    return t.img
+                    return t
             # maybe it is a group
             list=[]
             for t in T.temp_list:
@@ -66,61 +66,63 @@ class Position(G,T):
                 if t.id == map: # 'pellet_town':
                     return t.id
 
-    @classmethod
-    def _cpo(cls,img, tile_size):
-        ''''This function cuts the player out. It works both on the map(template) as on the screen. In case the screen is
-        used the tilesize should be set to w / 16*10 or h / 16*9. In case the map is used, use the native tile size of 16
-        pixels per tile.'''
+# Retired because we use a mask now
+    # @classmethod
+    # def _cpo(cls,img, tile_size):
+    #     ''''This function cuts the player out. It works both on the map(template) as on the screen. In case the screen is
+    #     used the tilesize should be set to w / 16*10 or h / 16*9. In case the map is used, use the native tile size of 16
+    #     pixels per tile.'''
+    #
+    #     im_ul = img[0:int(3.5 * tile_size), 0:int(3.5 * tile_size)]
+    #     im_ur = img[0:int(3.5 * tile_size), int(5.5 * tile_size):(10 * tile_size)]
+    #     im_dl = img[int(5.5 * tile_size): (9 * tile_size), 0:int(3.5 * tile_size)]
+    #     im_dr = img[int(5.5 * tile_size): (9 * tile_size), int(5.5 * tile_size):(10 * tile_size)]
+    #     vis_up = np.concatenate((im_ul, im_ur), axis=1)
+    #     vis_down = np.concatenate((im_dl, im_dr), axis=1)
+    #     vis = np.concatenate((vis_up, vis_down), axis=0)
+    #     return vis
 
-        im_ul = img[0:int(3.5 * tile_size), 0:int(3.5 * tile_size)]
-        im_ur = img[0:int(3.5 * tile_size), int(5.5 * tile_size):(10 * tile_size)]
-        im_dl = img[int(5.5 * tile_size): (9 * tile_size), 0:int(3.5 * tile_size)]
-        im_dr = img[int(5.5 * tile_size): (9 * tile_size), int(5.5 * tile_size):(10 * tile_size)]
-        vis_up = np.concatenate((im_ul, im_ur), axis=1)
-        vis_down = np.concatenate((im_dl, im_dr), axis=1)
-        vis = np.concatenate((vis_up, vis_down), axis=0)
-        return vis
-
     @classmethod
-    def _map_to_cor(cls,im): # im is a large map
+    def _map_to_cor(cls,t): # im is a large map
         ''''The idea is to iterate over the image using the same iterator as was used to create the coordinates tables for
         the database. The ids will be the same as long as the map is made with care.'''
         mapping = {}
-        h, w = im.shape
+        h, w = t.img.shape
         id = 1
         for y in range(int(h / 16) - 8):
             for x in range(int(w / 16) - 9):
-                mapping[id] = {'img' :cls._cpo(im[y * 16:(y * 16 + 144), x * 16:(x * 16 + 160)], 16), 'x':x, 'y':y}
+                mapping[id] = {'img' :t.img[y * 16:(y * 16 + 144), x * 16:(x * 16 + 160)], 'x':x, 'y':y, 'mask': t.mask}
 
                 id += 1
         return mapping  # a dict with img, x, y as keys
 
     @classmethod
-    def _get_position_in_map(cls,mapping, screen, threshold = 0.9):
+    def _get_position_in_map(cls,mapping, screen, threshold = 0.1):
         ''''This function returns the node0_id where the player is at this very moment.'''
 
-        screen_cpo = cls._cpo(screen, 16 * 4)
+        # screen_cpo = cls._cpo(screen, 16 * 4)
 
         # testing
         # cv2.imshow('screen_cpo', screen_cpo)
         # cv2.waitKey()
 
         h, w = mapping[1]['img'].shape
-        screen_cpo = cv2.resize(screen_cpo, (w, h))
+        # screen_cpo = cv2.resize(screen, (w, h))
+        screen = cv2.resize(screen, (w, h))
 
-        res_max = 0
+        res_max = 1
         node0_id = None
         best_id, best_x, best_y = None, None, None
-        for id in range(1, len(mapping)+1):                 # +1 because database id starts at 1
-            screen = cv2.resize(screen_cpo, (w, h))
+        for id in mapping:                 # +1 because database id starts at 1
+
             #TODO check the match function
-            res = cv2.matchTemplate(screen, mapping[id]['img'], cv2.TM_CCOEFF_NORMED)  # CCOEFF_NORMED) # CCORR_NORMED
-            if np.max(res)>res_max: # TODO maybe if match is higher than 90% or so break from the loop if performance is an issue
+            res = cv2.matchTemplate(screen, mapping[id]['img'], cv2.TM_SQDIFF_NORMED, mask=mapping[id]['mask'])  # CCOEFF_NORMED) # CCORR_NORMED
+            if np.max(res)<res_max: # TODO maybe if match is higher than 90% or so break from the loop if performance is an issue
                 res_max = res
                 best_id = id
 
-        if res_max < threshold:
-            print('threshold of 0.5 not passed')
+        if res_max > threshold:
+            print(f'threshold of >{threshold} not passed')
             return None
 
         best_x = mapping[best_id]['x']
@@ -148,7 +150,7 @@ class Position(G,T):
             # iterate over all map templates
             if t.group == 'map':
                 print(f' trying {t.name}')
-                cor = cls._get_position_in_map(cls._map_to_cor(cls._get_current_map(t.name)), screen_grab())
+                cor = cls._get_position_in_map(cls._map_to_cor(t), screen_grab())
                 if cor != None:
                     print('found')
                     cls._set_position(t.name, *cor)

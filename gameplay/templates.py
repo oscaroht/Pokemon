@@ -1,9 +1,6 @@
 import os
 import cv2
 
-from fundamentals import config
-
-
 class Template:
     extension = 'tmp'
     tile_size = 16
@@ -17,20 +14,6 @@ class Template:
         self.version = version  # if there are more templates
         self.img = img_gray  # array image of the template
         self.mask = mask
-
-
-# class Map(Template):
-#
-#     def __init__(self, filename, path, group, option, version, img_gray,mask, map_name ):
-#         super(Map, self).__init__(self, filename, path, group, option, version, img_gray,mask)
-#         load_graph(map_name)
-
-
-# class OrientationTemplate(Template):
-#     def __init__(self, orientation, *args, **kwargs):
-#         super(OrientationTemplate, self).__init__( *args, **kwargs)
-#         self.orientation = orientation
-
 
 def load_templates():
     path = os.path.dirname(os.path.abspath(__file__))
@@ -61,7 +44,7 @@ def load_templates():
 
     return temp_list
 
-class T:
+class GT:
     temp_list = load_templates()
 
     @classmethod
@@ -71,7 +54,7 @@ class T:
 
         # pick the right template
         best_score = 1
-        for t in T.temp_list:
+        for t in GT.temp_list:
             if t.group == group:
                 if t.mask is not None:
                     res = cv2.matchTemplate(screen, t.img, cv2.TM_SQDIFF_NORMED, mask=t.mask)

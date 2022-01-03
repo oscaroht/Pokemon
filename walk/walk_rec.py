@@ -1,6 +1,6 @@
 import cv2
 from fundamentals import screen_grab, goleft, goup, godown, goright, btnB, btnA, state_check, FightState,StateController, btnStart
-from templates import T
+from walk.templates import T
 
 class WalkRec:
 

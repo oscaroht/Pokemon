@@ -114,3 +114,4 @@ class Stepper(Path):  # With Position inherenting G
         # actual check
         if (x, y) != (current[1], current[2]):
             status[0] = False
+            print(f"check not satisfied")

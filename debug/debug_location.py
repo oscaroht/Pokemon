@@ -2,7 +2,7 @@
 import cv2
 
 from walk.position import Position
-from fundamentals.initialization import load_templates
+# from fundamentals.initialization import load_templates
 from fundamentals.screen import screen_grab
 from fundamentals.open_vba import open_vba
 from fundamentals.config import config
@@ -78,10 +78,10 @@ def show_screen(result,debug_screen, window_name,w,h):
 if __name__ == "__main__":
 
     #open_vba()
-    if 'temp_list' not in globals():
-        print('not in globals')
-        global temp_list
-        temp_list = load_templates()
+    # if 'temp_list' not in globals():
+    #     print('not in globals')
+    #     global temp_list
+    #     temp_list = load_templates()
 
     open_debug_screen('pellet_town')
 

@@ -173,6 +173,7 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
             else:
                 print("No damaging move left")
         elif mode == 'catch':
+            from gameplay.gamestats import OwnItems
             hp_fraction = FightRec.foe_hp() # check the foe's current hp
             hp = hp_fraction * self.foe.stats['hp']
             print(f"Estimated hp: {hp}  with max hp: {self.foe.stats['hp']}")
@@ -186,9 +187,12 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
             if max_idx != None:
                 self._perform_move(max_idx)
             else:
-                print("throw ball")
-                Selector.use_item('pokeball')
-
+                print("try to throw ball")
+                balls = OwnItems.get_item_by_name('Poke Ball')
+                print(f"Number of balls is {balls.amount}")
+                Selector.use_item('Poke Ball')
+                balls.lower_amount()
+                print(f"Number of balls is {balls.amount}")
 
     def _perform_move(self, idx):
         from fight.selector import Selector
@@ -329,7 +333,6 @@ class Fighter:
         idx = OwnPokemon.party.stats_need_evaluation(return_party_idx = True)
         print(f"Doing the evaluation in fighter for idx {idx}")
         if idx == None:
-            # print("eval_pokemon_stats needed says SC but no pokemon was found which need evaluation")
             raise Exception("eval_pokemon_stats needed says SC but no pokemon was found which need evaluation")
         print(f"Go to stats page of game menu for pokemon {idx}")
         Selector.eval_pokemon_stats_by_idx(idx)  # bring us to the stats page in the game menu
@@ -359,9 +362,11 @@ class Fighter:
 
 
     @classmethod
-    def handle_foe(cls, mode = 'max_damage'):
+    def handle_foe(cls, wild = False, mode = 'max_damage'):
         from fundamentals import StateController
         from fight.selector import Selector
+        from game_plan import Gameplan
+        from gameplay.gamestats import OwnItems
 
         StateController.eval_state()
         sn = StateController.state_name()
@@ -372,7 +377,16 @@ class Fighter:
             StateController.eval_state()
             sn = StateController.state_name()
 
+        StateController.in_fight = True
         f = Fight()
+
+        print(f.foe.name in Gameplan.catch_pokemon)
+        print(OwnItems.do_i_have("Poke Ball"))
+        print(wild)
+        print(not OwnPokemon.do_i_have_pokemon_by_name(f.foe.name))
+        if (f.foe.name in Gameplan.catch_pokemon) and OwnItems.do_i_have("Poke Ball") and wild and (not OwnPokemon.do_i_have_pokemon_by_name(f.foe.name)):
+            mode = 'catch'
+        print(mode)
 
         sn = 'fight'
         while ('fight' in sn or 'none' in sn):
@@ -400,7 +414,7 @@ class Fighter:
                     btnB()
                 StateController.eval_state()
 
-            elif sn in 'fight_wait_arrow':
+            elif StateController.wait_arrow:
                 text = FightRec.read_bar()
                 # interpret text
                 print(text)
@@ -433,7 +447,7 @@ class Fighter:
 
 
     @classmethod
-    def handle_wild_and_trainer_fight(cls, wild=True,mode='max_damage'):
+    def handle_wild_and_trainer_fight(cls, wild=False,mode='max_damage'):
         from fundamentals import StateController
         from fight.selector import Selector
         from fundamentals import btnA
@@ -447,10 +461,10 @@ class Fighter:
             Selector.init_fight()
             StateController.eval_state()
             sn = StateController.state_name()
-
+        StateController.in_fight = True
         print(f'State name {StateController.state_name()}')
         while 'fight' in sn or 'none' in sn:  # loop over foe's
-            next_foe_name = cls.handle_foe(mode)
+            next_foe_name = cls.handle_foe(wild=wild, mode=mode)
             if next_foe_name is not None: # if there is a next pokemon chose options
                 print("there is a next foe")
                 cls.choose_new_pokemon('current_pokemon')
@@ -482,6 +496,8 @@ class Fighter:
                 cls.handle_wild_and_trainer_fight()
             elif StateController.state_name() == 'fight_init':
                 cls.handle_wild_and_trainer_fight(wild=True)
+            else:
+                cls.handle_wild_and_trainer_fight() # this is default
             print(f"new battle loop")
             StateController.eval_state()
             sn = StateController.state_name()

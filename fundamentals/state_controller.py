@@ -37,6 +37,72 @@ class WalkEvalStats(WalkState):
         return 'walk_evalstats'
 
 
+class Gameplay(State):
+    def __init__(self):
+        self.name = 'gameplay'
+    def __str__(self):
+        return 'game_play'
+
+class GameplaySplashScreenState(Gameplay):
+    def __init__(self):
+        self.name = 'gameplay_splash_screen'
+    def __str__(self):
+        return 'gameplay_splash_screen'
+class GameplayStartMenuState(Gameplay):
+    def __init__(self):
+        self.name = 'gameplay_start_menu'
+    def __str__(self):
+        return 'gameplay_start_menu'
+class GameplayIntroState(Gameplay):
+    def __init__(self):
+        self.name = 'gameplay_intro'
+    def __str__(self):
+        return 'gameplay_intro'
+class GameplayChoosePlayerNameMenuState(Gameplay):
+    def __init__(self):
+        self.name = 'gameplay_choose_player_name_menu'
+    def __str__(self):
+        return 'gameplay_choose_player_name_menu'
+class GameplayChoosePlayerNameABCState(Gameplay):
+    def __init__(self):
+        self.name = 'gameplay_choose_player_name_abc'
+    def __str__(self):
+        return 'gameplay_choose_player_name_abc'
+class GameplayChooseRivalNameMenuState(Gameplay):
+    def __init__(self):
+        self.name = 'gameplay_choose_rival_name_menu'
+    def __str__(self):
+        return 'gameplay_choose_rival_name_menu'
+class GameplayChooseRivalNameABCState(Gameplay):
+    def __init__(self):
+        self.name = 'gameplay_choose_rival_name_abc'
+    def __str__(self):
+        return 'gameplay_choose_rival_name_abc'
+class GameplayBuyMenu(Gameplay):
+    def __init__(self):
+        self.name = 'gameplay_buy_menu'
+    def __str__(self):
+        return 'gameplay_buy_menu'
+class GameplaySellMenu(Gameplay):
+    def __init__(self):
+        self.name = 'gameplay_sell_menu'
+    def __str__(self):
+        return 'gameplay_sell_menu'
+class GameplayBuyAmount(Gameplay):
+    def __init__(self):
+        self.name = 'gameplay_buy_amount'
+    def __str__(self):
+        return 'gameplay_buy_amount'
+class GameplayBuyConfirm(Gameplay):
+    def __init__(self):
+        self.name = 'gameplay_buy_confirm'
+    def __str__(self):
+        return 'gameplay_buy_confirm'
+class GameplayBuyFinal(Gameplay):
+    def __init__(self):
+        self.name = 'gameplay_buy_final'
+    def __str__(self):
+        return 'gameplay_buy_final'
 
 class FightPokedex(State):
     def __init__(self):
@@ -104,6 +170,10 @@ class StateController:
 
     state = FightState() #eval_state()  #StartUpState() # self.get_state() # we could check but we know we start with the
 
+    wait_arrow = False
+
+    in_fight = False
+
     @classmethod
     def state_name(cls):
         # do checks to see whats the state
@@ -114,17 +184,23 @@ class StateController:
         '''' this function is meant to check what the current state is. It is used when we do not know the state anymore
          or at the startup. Unfortunately it cannot be called to set StateController.state because we do not initialize
          a class. '''
-        from walk import get_orientation
+        from walk.orientation import get_orientation
         from fight import Selector
         from fight import OwnPokemon
         from walk.walk_rec import WalkRec
+        from gameplay.gameplay import Gameplay
 
         def _set_state():
             state_name = Selector.eval_fight_states() # if this returns None than we still assume it is the same state as last time. Not sure if this is desired
+
             if state_name == 'wait_arrow':
-                StateController.state.switch(FightWaitArrowState)
+                # StateController.state.switch(FightWaitArrowState)
+                StateController.wait_arrow = True
                 # no return because this is a general arrow
-            elif state_name == 'menu':
+            else:
+                StateController.wait_arrow = False
+
+            if state_name == 'menu':
                 StateController.state.switch(FightMenuState)
                 return
             elif state_name == 'move':
@@ -153,6 +229,7 @@ class StateController:
             ori = get_orientation()
             if ori != None:
                 bar_is_present = WalkRec.bar_present()
+                print(f"Bar present: {bar_is_present}")
                 yn = WalkRec.yn_and_bar_present()
                 if yn:
                     print("HANDLE YN IN BAR. PRESS A FOR NOW FIX LATER")
@@ -168,10 +245,50 @@ class StateController:
                 else:
                     cls.state.switch(WalkState)
                     return
-            elif state_name == 'wait_arrow':
-                StateController.state.switch(FightWaitArrowState)
-                # so it is the fight wait arrow but it is already set to this state
-                return
+            # elif state_name == 'wait_arrow':
+            #     StateController.state.switch(FightWaitArrowState)
+            #     # so it is the fight wait arrow but it is already set to this state
+            #     return
+
+            # oke maybe it is a gameplay state
+            gameplay_state = Gameplay.eval_gameplay_states()
+            if gameplay_state is not None:
+                if gameplay_state == 'splash_screen':
+                    StateController.state.switch(GameplaySplashScreenState)
+                    return
+                elif gameplay_state == 'start_menu':
+                    StateController.state.switch(GameplayStartMenuState)
+                    return
+                elif 'intro_story' in gameplay_state:
+                    StateController.state.switch(GameplayIntroState)
+                    return
+                elif gameplay_state == 'choose_player_name_menu':
+                    StateController.state.switch(GameplayChoosePlayerNameMenuState)
+                    return
+                elif gameplay_state == 'abc_choose_player_name':
+                    StateController.state.switch(GameplayChoosePlayerNameABCState)
+                    return
+                elif gameplay_state == 'choose_rival_name_menu':
+                    StateController.state.switch(GameplayChooseRivalNameMenuState)
+                    return
+                elif gameplay_state == 'abc_choose_rival_name':
+                    StateController.state.switch(GameplayChooseRivalNameABCState)
+                    return
+                elif gameplay_state == 'buy_menu':
+                    StateController.state.switch(GameplayBuyMenu)
+                    return
+                elif gameplay_state == 'sell_menu':
+                    StateController.state.switch(GameplaySellMenu)
+                    return
+                elif gameplay_state == 'buy_confirm':
+                    StateController.state.switch(GameplayBuyConfirm)
+                    return
+                elif gameplay_state == 'buy_amount':
+                    StateController.state.switch(GameplayBuyAmount)
+                    return
+                elif gameplay_state == 'buy_final':
+                    StateController.state.switch(GameplayBuyFinal)
+                    return
             else:
                 # none state or senario state
                 StateController.state.switch(NoneState)
@@ -181,11 +298,12 @@ class StateController:
         while cls.state == None: # this never happens. I do not know why I put this here
             print('state: STATE NOT FOUND, keep looking')
             _set_state()
+        return str(cls.state)
 
     # def change(self,new_state):
     #     self.state.switch(new_state)
 
-# use like @state_check(FightState)
+#use like @state_check(FightState)
 def state_check(state):
     def decorator(func):
         def wrapper(*args, **kwargs):

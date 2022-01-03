@@ -344,6 +344,15 @@ class OwnPokemon(Pokemon):
         if in_party:
             OwnPokemon.party.add(self)
 
+    @classmethod
+    def do_i_have_pokemon_by_name(cls, pokemon_name):
+        pokemon_name = pokemon_name.lower()
+        name_list = [p.name.lower() for p in cls.all]
+        if pokemon_name in name_list:
+            return True
+        else:
+            return False
+
     def heal(self):
         # self.move1.pp = self.move1.max_pp
         # self.move2.pp = self.move2.max_pp
@@ -425,6 +434,7 @@ class OwnPokemon(Pokemon):
 
 # LOAD
 df_pokemon, df_moves, df_strength_weakness, pokemon_dict = load_pokemon()
+
 if __name__=='__main__':
     test=1
 # else:

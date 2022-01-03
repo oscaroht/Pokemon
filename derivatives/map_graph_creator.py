@@ -37,9 +37,11 @@ def naive_creator(node1_id, w,h):
 #create route1 5, 14, 43
 # create viridian city (6, 32, 33)
 # create route2a naive_creator(9, 12, 26)
+#create viridian_forest (12, 32, 48)
+# create ptb  (13, 10, 7)
 
 # use this to calculate the w en h of the network
-im = cv2.imread("C:\\Users\\oscar\\PycharmProjects\\Pokemon\\templates\\map\\viridian_forest_ptb_route2b.tmp")
+im = cv2.imread("C:\\Users\\oscar\\PycharmProjects\\Pokemon\\walk\\templates\\map\\viridian_forest.tmp")
 cv2.imshow('bla', im)
 cv2.waitKey()
 
@@ -49,4 +51,4 @@ cv2.waitKey()
 
 print(f"width: {im.shape[1]/16 - 9}\nheight: {im.shape[0]/16 - 8}") # so the number of pixels devided by 16x16 pixels per tile, minus 9 adn 8 for the edges of the image
 
-naive_creator(13, 10, 7)
+naive_creator(12, 32, 48)

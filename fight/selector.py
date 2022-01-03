@@ -348,6 +348,7 @@ class Selector:
         #from fundamentals import StateController
         # read the text
         print('click A to start')
+        time.sleep(0.5) # presses A to soon earlier, now fixed
         btnA()
         time.sleep(2.5) # time for the animation
         StateController.eval_state() # after every Selector function that could change the state we should evaluate the state

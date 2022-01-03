@@ -63,7 +63,6 @@ def load_templates():
 
     return temp_list
 
-
 f_temp_list = load_templates()
 
 pass
