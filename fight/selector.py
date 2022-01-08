@@ -1,6 +1,6 @@
 
 ''' This file describes how to push the buttons to execute moves, change pokemon, accept newly learned moves, ect.'''
-from .templates import f_temp_list
+from templates import f_temp_list
 from fundamentals import screen_grab, goleft, goup, godown, goright, btnB, btnA, state_check, FightState,StateController, btnStart
 
 import time
@@ -8,11 +8,70 @@ import cv2
 
 
 class Selector:
+    ''' The Selector class acts as an actuator. It contains functions that push the right buttons to accomplish
+    something. This class does not handle the administration. E.g. this class can push the buttons to catch pokemon
+    but it does not alter the OwnPokemon.all object/attribute to include the new Pokemon)
+
+    Many of the functions have as similar structure. In order to perform some button action we need to go to the last
+    screen of the action sequence. E.g. if we want to choose a move. We need to set the cursor, but first we need to go
+    to the move menu, but first we need to set the cursor in the fight menu, but first we need to go to the fight menu.
+
+     the following struture:
+     if not at state 3:
+        go to this state 3 (from the state2) --> if not at state 2:
+                                                    go to state2 (from state1) --> if not ar state1:
+                                                                                        go to state1
+                                                                                    else:
+                                                                                        set cursor to position
+                                                                                        btnA
+                                                  else:
+                                                      set cursor in position
+                                                      btnA
+    else:
+        set cursor in position
+        bntA
+
+    I call this chaining.
+     '''
 
     state = 'menu'
 
     @classmethod
-    def eval_pokemon_stats_by_idx(cls, idx):
+    def put_pokemon_idx_in_front(cls, original_idx):
+        ''' this function takes the pokemon with party index idx and switches it to index 0. This is the Selector class
+        so it only manages the doing it. Not the administration in the Party class.
+
+        idx is the index of the party of the pokemon that needs to be in front
+        '''
+        cls.state = cls.eval_fight_states()
+        if cls.state != 'move_pokemon_where':
+            cls._in_switch_or_stats_choose(original_idx, option='switch')
+            cls.state = cls.eval_fight_states()
+        cls._in_move_pokemon_where_menu_choose(0)
+
+    @classmethod
+    def _in_move_pokemon_where_menu_choose(cls, to):
+        cursor = cls._get_cursor_position('move_pokemon_where')
+        cursor_int = [int(s) for s in cursor.split() if s.isdigit()][0]  # find the one and only digit
+        if cursor == None:
+            return
+        tries = 0
+        while cursor_int != to and tries < 10:
+            tries += 1
+            if cursor_int < to:
+                godown()
+                cursor = cls._get_cursor_position('move_pokemon_where')
+                cursor_int = [int(s) for s in cursor.split() if s.isdigit()][0]  # find the one and only digit
+            else:
+                goup()
+                cursor = cls._get_cursor_position('move_pokemon_where')
+                cursor_int = [int(s) for s in cursor.split() if s.isdigit()][0]  # find the one and only digit
+        btnA()
+        time.sleep(2)
+        btnB(3)
+
+    @classmethod
+    def go_to_pokemon_stats_page_by_idx(cls, idx):
         # from .fight_rec import FightRec
         cls.state = cls.eval_fight_states()
         if cls.state != 'stats_page_stats':
@@ -23,7 +82,7 @@ class Selector:
         # return stats, hp_current
 
     @classmethod
-    def eval_pokemon_moves_by_idx(cls, idx):
+    def go_to_pokemon_moves_page_by_idx(cls, idx):
         # I do not feel like making this network for the cursor since there is only one direction and 1 edge
         # only clicking A (or B) from the stats page brings you here and you cannot go back.
         cls.state = cls.eval_fight_states()
@@ -50,18 +109,23 @@ class Selector:
 
     @classmethod
     def _set_stats_switch_cursor(cls, to):
-        cursor = cls._get_cursor_position('party_menu') # out of the templates in party menu where is the cursor
+        group = 'party_menu'
+        cursor = cls._get_cursor_position(group) # out of the templates in party menu where is the cursor
         if cursor == None:
             return
         tries = 0
+        print(f" to: {to}, cursor: {cursor}")
         while cursor != to and tries < 5: # if the cursor is not in the desired position move it
             tries += 1
             if to == 'stats':
-                godown()
-                cursor = cls._get_cursor_position('game_menu')
-            elif to == 'switch':
                 goup()
-                cursor = cls._get_cursor_position('game_menu')
+                cursor = cls._get_cursor_position(group)
+                print(f" to: {to}, cursor: {cursor}")
+            elif to == 'switch':
+                print("btn Up")
+                godown()
+                cursor = cls._get_cursor_position(group)
+                print(f" to: {to}, cursor: {cursor}")
 
     @classmethod
     def _in_party_menu_choose_pokemon_by_idx(cls, idx, option= 'stats'):
@@ -357,4 +421,4 @@ class Selector:
 
 if __name__ == '__main__':
     time.sleep(1)
-    Selector.eval_fight_states()
+    Selector.put_pokemon_idx_in_front(3)

@@ -6,6 +6,7 @@ from stepper import WrongStep
 from position import LocationNotFound
 from gameplay.gameplay import Gameplay
 import time
+import numpy as np
 
 def go_to(goal):
     while not (Walker.map_name == goal[0] and Walker.cor_id == goal[1]):
@@ -62,20 +63,31 @@ def train(to_level, which_pokemon, start, turn):
     from fight.pokemon import OwnPokemon
 
     if which_pokemon == 'all':
-        min_level = min([p.level for p in OwnPokemon.party])
+        levels = [p.level for p in OwnPokemon.party]
+        min_level, arg_min = min(levels), np.argmin(levels)
+        Fighter.put_pokemon_by_idx_in_front_of_party(arg_min)
+
         hp_fractions = sum([p.current_hp / p.stats['hp'] for p in OwnPokemon.party]) / len(OwnPokemon.party)
         while min_level < to_level:
             # train
             while (hp_fractions > 0.3) and (min_level < to_level):
                 go_to(start)
                 go_to(turn)
-                min_level = min([p.level for p in OwnPokemon.party])
+
+                levels = [p.level for p in OwnPokemon.party]
+                min_level, arg_min = min(levels), np.argmin(levels)
+                Fighter.put_pokemon_by_idx_in_front_of_party(arg_min)
+
                 hp_fractions = sum([p.current_hp / p.stats['hp'] for p in OwnPokemon.party]) / len(OwnPokemon.party)
-                print(f"MIN level: {min_level}")
+
             while hp_fractions <= 0.3:
                 talk(('pc', 4, 'up'))
                 OwnPokemon.party.heal()
-                min_level = min([p.level for p in OwnPokemon.party])
+
+                levels = [p.level for p in OwnPokemon.party]
+                min_level, arg_min = min(levels), np.argmin(levels)
+                Fighter.put_pokemon_by_idx_in_front_of_party(arg_min)
+
                 hp_fractions = sum([p.current_hp / p.stats['hp'] for p in OwnPokemon.party]) / len(OwnPokemon.party)
 
 

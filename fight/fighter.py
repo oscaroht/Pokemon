@@ -335,7 +335,7 @@ class Fighter:
         if idx == None:
             raise Exception("eval_pokemon_stats needed says SC but no pokemon was found which need evaluation")
         print(f"Go to stats page of game menu for pokemon {idx}")
-        Selector.eval_pokemon_stats_by_idx(idx)  # bring us to the stats page in the game menu
+        Selector.go_to_pokemon_stats_page_by_idx(idx)  # bring us to the stats page in the game menu
         # read the values
         stats = FightRec.read_stat_gm_lookup()
         hp_current, hp_max = FightRec.read_stat_gm_hp()
@@ -346,11 +346,22 @@ class Fighter:
 
         #evaluate moves
         if OwnPokemon.party[idx].moves == []:
-            Selector.eval_pokemon_moves_by_idx(idx)
+            Selector.go_to_pokemon_moves_page_by_idx(idx)
             moves = FightRec.read_moves_gm()
             for m in moves:
                 new_own_m = OwnMove.create_own_move_by_name(m) # also a name that is similar, reading mistakes allowed
                 OwnPokemon.party[idx].add_move(new_own_m)
+
+    @classmethod
+    def put_pokemon_by_idx_in_front_of_party(cls, idx):
+        from fight.selector import Selector
+        if idx == 0:
+            print(f"Pokemon on idx 0 already in front of party")
+            return
+        elif idx > 6:
+            raise Exception(f"Invalid argument {idx}. Party only has length 6. Unable to put pokemon from position 7")
+        Selector.put_pokemon_idx_in_front(idx)
+        OwnPokemon.party.switch_position( OwnPokemon.party[idx], position=0 ) # pokemon object, new position
 
     @classmethod
     def choose_new_pokemon(cls, which):
@@ -562,7 +573,8 @@ class Fighter:
 
 
 if __name__ == '__main__':
-    Fighter.handle_fight()
+    time.sleep(1)
+    Fighter.put_pokemon_by_idx_in_front_of_party(0)
 
     # Fighter.eval_pokemon_stats()
     # test=1

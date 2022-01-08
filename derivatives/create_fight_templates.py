@@ -914,23 +914,56 @@ def walk_player():
     cv2.imwrite('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\walk\\templates\\map\\mask_create_m.png',
                 mask)
 
+def move_pokemon_where_cursor():
+    img = cv2.imread(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\move_pokemon_where\\0\\move_pokemon_where0.png')
+
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
+    cv2.waitKey()
+
+    mask = 254 * np.ones(img.shape[:2], dtype="uint8")  # choose a white (254* ones) or black (zeros) mask to start with
+
+    # cv2.rectangle(mask, (8, 0), (160, 95), 0, -1)
+    cv2.rectangle(mask, (8, 0), (160, 95), 0, -1)
+    # cv2.rectangle(mask, (87, 60), (150, 74), 0, -1)
+    # cv2.rectangle(mask, (87, 10), (93, 120), 0, -1)
+    # cv2.rectangle(mask, (0, 127), (160, 144), 0, -1)
+    # cv2.rectangle(mask, (0, 55), (60, 63), 0, -1)
+    # cv2.rectangle(mask, (7, 72), (150, 135), 0, -1)
+    # cv2.rectangle(mask, (80, 72), (150, 135), 0, -1)
+
+    mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
+
+    masked = cv2.bitwise_and(img, img, mask=mask)
+    masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
+
+    cv2.imshow('mask', masked)
+    cv2.waitKey()
+    cv2.imwrite(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\move_pokemon_where\\move_pokemon_where_preview.png',
+        masked)
+
+    ''' afterwards change the name and extension to fight_menu.msk'''
+    cv2.imwrite(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\move_pokemon_where\\move_pokemon_where_m.png',
+        mask)
+
+
+
 
 
 
 img = cv2.imread(
-    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\walk\\templates\\map\\mask_create.png')
+    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\move_pokemon_where\\move_pokemon_where.tmp')
 
 img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
 cv2.waitKey()
 
-mask = np.ones(img.shape[:2], dtype="uint8")
+mask = 254 * np.ones(img.shape[:2], dtype="uint8")  # choose a white (254* ones) or black (zeros) mask to start with
 
-
-
-# cv2.rectangle(mask, (40, 25), (150, 70), 0, -1)
-cv2.rectangle(mask, (64, 56), (81, 75), 0, -1)
-
+cv2.rectangle(mask, (0, 0), (160, 95), 0, -1)
 
 mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
 
@@ -940,10 +973,11 @@ masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
 cv2.imshow('mask', masked)
 cv2.waitKey()
 cv2.imwrite(
-    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\walk\\templates\\map\\mask_create_preview.png',
+    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\move_pokemon_where\\move_pokemon_where_preview.png',
     masked)
 
 ''' afterwards change the name and extension to fight_menu.msk'''
-cv2.imwrite('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\walk\\templates\\map\\mask_create_m.png',
-            mask)
+cv2.imwrite(
+    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\move_pokemon_where\\move_pokemon_where_m.png',
+    mask)
 
