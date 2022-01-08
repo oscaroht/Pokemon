@@ -51,6 +51,7 @@ class Gameplay:
         print(f"Eval fightstates: State is {state}")
         return state
 
+    ''' for the start of the game '''
     @classmethod
     def in_start_menu_choose(cls, input):
         if input not in ['continue' ,'new_game', 'option']:
@@ -60,7 +61,6 @@ class Gameplay:
         btnA()
         time.sleep(0.5)
         StateController.eval_state()
-
     @classmethod
     def _set_start_menu_cursor(cls, to):
         cursor = GT.which_template_in_group('start_menu')
@@ -84,10 +84,8 @@ class Gameplay:
                 elif cursor == 'continue_pre_summary':
                     btnA()
             cursor = GT.which_template_in_group('start_menu')
-
     @classmethod
     def in_name_menu_choose(cls, to, who):
-
         sn = StateController.state_name()
         while sn == f'gameplay_choose_{who}_name_menu':
             if to not in ['new_name', 'blue', 'red'] or who not in ['player', 'rival']:
@@ -98,7 +96,6 @@ class Gameplay:
             btnA()
             time.sleep(0.5)
             sn = StateController.eval_state()
-
     @classmethod
     def _set_name_cursor(cls, to, who):
         print(f'Set cursor to {to} for player/rival: {who}')
@@ -118,6 +115,8 @@ class Gameplay:
             print(f'cursor is {cursor}. please exit this function')
             tries += 1
 
+
+    ''' in the market to buy or sell stuff '''
     @classmethod
     def buy_item(cls, item_name, amount):
         from gamestats import OwnItems
@@ -134,7 +133,6 @@ class Gameplay:
             print(sn)
         OwnItems.add_item_by_name(item_name, amount)
         btnB(5)
-
     @classmethod
     def in_confirm_choose_yes(cls, item_idx, amount):
         sn = StateController.state_name()
@@ -144,7 +142,6 @@ class Gameplay:
             sn = StateController.state_name()
         time.sleep(0.5)
         btnA()
-
     @classmethod
     def go_to_buy_confirm(cls, to, amount):
         sn = StateController.state_name()
@@ -157,7 +154,6 @@ class Gameplay:
                 btnA(2)
             StateController.eval_state()
             sn = StateController.state_name()
-
     @classmethod
     def go_to_buy_amount(cls,to): # to is the item number
         sn = StateController.state_name()
@@ -169,6 +165,9 @@ class Gameplay:
                 btnB()
             StateController.eval_state()
             sn = StateController.state_name()
+
+
+
 
     @classmethod
     def _set_up_down_cursor(cls, to):
