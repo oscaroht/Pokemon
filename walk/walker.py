@@ -76,9 +76,9 @@ class Walker(Stepper):
 
                 set_orientation()
                 ori = get_orientation()
-                print(f'ori {ori}, goal_ore = {goal_cor[2]}')
-                print(
-                    F"{not (Stepper.position[:2] == goal_cor[:2] and ori == goal_cor[2])}, {sn in ['walk', 'none_state']}")
+                # print(f'ori {ori}, goal_ore = {goal_cor[-1]}')
+                # print(
+                #     F"{not (Stepper.position[:2] == goal_cor[:2] and ori == goal_cor[2])}, {sn in ['walk', 'none_state']}")
 
             except (WrongStep, LocationNotFound):
                 print('walk: WRONG STEP or LOCATION NOT FOUND. recalculate route')
