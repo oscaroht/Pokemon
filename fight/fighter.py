@@ -351,6 +351,10 @@ class Fighter:
             for m in moves:
                 new_own_m = OwnMove.create_own_move_by_name(m) # also a name that is similar, reading mistakes allowed
                 OwnPokemon.party[idx].add_move(new_own_m)
+        else:
+            btnB() # go to move page but do not do anything
+
+        btnB(3) # exit move page, party menu, game menu
 
     @classmethod
     def put_pokemon_by_idx_in_front_of_party(cls, idx):
