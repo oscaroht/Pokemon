@@ -27,7 +27,7 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
     state = 'menu'
     #next_pokemon_name = None
 
-    def __init__(self):
+    def __init__(self, my_pokemon=OwnPokemon.party[0] ):
         ''' construct the foe'''
         self.foe_def = False
         self.next_foe_name = None
@@ -54,7 +54,7 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
 
         self.foe_hp_fraction = FightRec.foe_hp()
         print(f'set my pokemon to {OwnPokemon.party[0].name}')
-        self.my_pokemon = OwnPokemon.party[0]
+        self.my_pokemon = my_pokemon
 
         Fight.state = 'menu'
 
@@ -356,6 +356,7 @@ class Fighter:
 
         btnB(3) # exit move page, party menu, game menu
 
+    # NOT USED
     @classmethod
     def put_pokemon_by_idx_in_front_of_party(cls, idx):
         from fight.selector import Selector
@@ -368,16 +369,28 @@ class Fighter:
         OwnPokemon.party.switch_position( OwnPokemon.party[idx], position=0 ) # pokemon object, new position
 
     @classmethod
-    def choose_new_pokemon(cls, which):
-        if which == 'current_pokemon':
-            time.sleep(0.5)
-            print("press B to keep current pokemon")
-            btnB()
-            time.sleep(0.5)
+    def put_pokemon_in_front_of_party(cls, pokemon):
+        from fight.selector import Selector
+        if pokemon == OwnPokemon.party[0]:
+            return
+        elif pokemon not in OwnPokemon.party:
+            raise Exception(f"Pokemon {pokemon} not in party")
+        idx = OwnPokemon.party.index(pokemon)
+        Selector.put_pokemon_idx_in_front(idx)
+        OwnPokemon.party.switch_position( pokemon, position=0 ) # pokemon object, new position
 
 
     @classmethod
-    def handle_foe(cls, wild = False, mode = 'max_damage'):
+    def choose_new_pokemon(cls, which):
+        if which == 'current_pokemon':
+            # time.sleep(0.5)
+            print("press B to keep current pokemon")
+            btnB()
+            # time.sleep(0.5)
+
+
+    @classmethod
+    def handle_foe(cls, my_pokemon, wild = False, mode = 'max_damage'):
         from fundamentals import StateController
         from fight.selector import Selector
         from game_plan import Gameplan
@@ -393,12 +406,12 @@ class Fighter:
             sn = StateController.state_name()
 
         StateController.in_fight = True
-        f = Fight()
+        f = Fight(my_pokemon)
 
-        print(f.foe.name in Gameplan.catch_pokemon)
-        print(OwnItems.do_i_have("Poke Ball"))
-        print(wild)
-        print(not OwnPokemon.do_i_have_pokemon_by_name(f.foe.name))
+        # print(f.foe.name in Gameplan.catch_pokemon)
+        # print(OwnItems.do_i_have("Poke Ball"))
+        # print(wild)
+        # print(not OwnPokemon.do_i_have_pokemon_by_name(f.foe.name))
         if (f.foe.name in Gameplan.catch_pokemon) and OwnItems.do_i_have("Poke Ball") and wild and (not OwnPokemon.do_i_have_pokemon_by_name(f.foe.name)):
             mode = 'catch'
         print(mode)
@@ -422,7 +435,7 @@ class Fighter:
 
                 # f.foe.caught() # add foe to own pokemon
 
-                for i in range(3):
+                for i in range(2):
                     print("Bash B")
                     btnB()
                     time.sleep(1)
@@ -448,14 +461,21 @@ class Fighter:
 
             elif sn == 'fight_change_pokemon':
                 return f.next_foe_name # this pokemon fight has ended and we have all the after fight information (exp, lvl up, new stats, new moves)
+
+            elif sn == 'fight_use_next_pokemon':
+                # our pokemon was defeated
+                # put hp to zero of current pokemon
+                f.my_pokemon.current_hp = 0
+                # yes we want to choose a new pokemon
+
+                return # return without return arg so we are not choosing a new pokemon
             elif sn in ['fight_menu', 'fight_item', 'fight_pokemon', 'fight_move']:
                 # we are in the main fight
                 if f.foe_def: # if the foe was defeated we do not continue because there is a new foe
                     print("Foe is already eliminated so we exit and drop the f object")
                     return f.next_foe_name # this code flow is needed for when the pplayer only has 1 pokemon
                 f.execute_best_move(mode=mode)
-            StateController.eval_state()
-            sn = StateController.state_name()
+            sn = StateController.eval_state()
             print(f'State name {sn}')
             print(f"loop handle foe/ loop move")
         return f.next_foe_name
@@ -476,15 +496,21 @@ class Fighter:
             Selector.init_fight()
             StateController.eval_state()
             sn = StateController.state_name()
+        my_pokemon = [p for p in OwnPokemon.party if p.current_hp>0][0] # first pokemon with hp
         StateController.in_fight = True
         print(f'State name {StateController.state_name()}')
         while 'fight' in sn or 'none' in sn:  # loop over foe's
-            next_foe_name = cls.handle_foe(wild=wild, mode=mode)
+            next_foe_name = cls.handle_foe(my_pokemon, wild=wild, mode=mode)
             if next_foe_name is not None: # if there is a next pokemon chose options
                 print("there is a next foe")
                 cls.choose_new_pokemon('current_pokemon')
                 print(f"Wait 1.5 sec for the new foe to appear")
-                time.sleep(1.5)
+            elif sn == 'fight_use_next_pokemon':
+                btnA()
+                next_pokemon_idx = np.argmax([p.current_hp/p.stats['hp'] for p in OwnPokemon.party])
+                print(f"Next pokemon idx {next_pokemon_idx} with name {OwnPokemon.party[next_pokemon_idx]}")
+                Selector.bring_out_next_pokemon(next_pokemon_idx)
+                my_pokemon = OwnPokemon.party[next_pokemon_idx]
 
             # else the battle has ended
 

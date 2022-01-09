@@ -204,6 +204,9 @@ class Pokemon:
         if adding:
             self._add_to_dict()
 
+    def __str__(self):
+        return self.name
+
     def _add_to_dict(self):
         print(Pokemon._pokemon_dict)
         Pokemon._pokemon_dict['id'][self.pokemon_id] = self
@@ -288,7 +291,7 @@ class Party(list):
 
     def heal(self):
         ''' Heal all pokemon in the party '''
-        for pokemon in range(self):
+        for pokemon in self:
             pokemon.heal()
 
     def stats_need_evaluation(self,return_party_idx = False):

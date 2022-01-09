@@ -149,7 +149,7 @@ class Gameplay:
             if sn == 'gameplay_buy_menu':
                 cls.go_to_buy_amount(to)
             elif sn == 'gameplay_buy_amount':
-                cls._set_up_down_cursor(amount)
+                cls._set_up_down_cursor(amount, 'market')
                 time.sleep(0.5)
                 btnA(2)
             StateController.eval_state()
@@ -159,7 +159,7 @@ class Gameplay:
         sn = StateController.state_name()
         while sn != 'gameplay_buy_amount':
             if sn == 'gameplay_buy_menu':
-                cls._set_up_down_cursor(to)
+                cls._set_up_down_cursor(to, 'market')
                 btnA()
             elif sn == 'gameplay_buy_confirm':
                 btnB()
@@ -170,19 +170,19 @@ class Gameplay:
 
 
     @classmethod
-    def _set_up_down_cursor(cls, to):
+    def _set_up_down_cursor(cls, to, group):
         import re
-        cursor = GT.which_template_in_group('market')
-        current_amount = int(re.search('\d+', cursor)[0])
-        while to != current_amount:
-            if to > current_amount:
-                goup()
-                cursor = GT.which_template_in_group('market')
-                current_amount = int(re.search('\d+', cursor)[0])
-            elif to < current_amount:
-                godown()
-                cursor = GT.which_template_in_group('market')
-                current_amount = int(re.search('\d+', cursor)[0])
+        cursor = GT.which_template_in_group(group)
+        cursor_idx = int(re.search('\d+', cursor)[0])
+        while to != cursor_idx:
+            if to > cursor_idx:
+                goup(cursor_idx - to)
+                cursor = GT.which_template_in_group(group)
+                cursor_idx = int(re.search('\d+', cursor)[0])
+            elif to < cursor_idx:
+                godown(cursor_idx - to)
+                cursor = GT.which_template_in_group(group)
+                cursor_idx = int(re.search('\d+', cursor)[0])
 
 
 if __name__ == '__main__':

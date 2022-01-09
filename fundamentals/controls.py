@@ -4,8 +4,8 @@ from pynput.keyboard import Key, Controller
 keyboard = Controller()
 
 # control settings. Can be tuned using the function below
-wait = 0.35
-turnRatio = 0.03
+wait = 0.4
+turnRatio = 0.028
 goRatio = 0.068
 
 def btnA(*argv):
@@ -153,7 +153,7 @@ def test2():
         turnup()
         goup()
 
-def test3():
+def test_turn():
     for i in range(4):
         turnright()
         turndown()
@@ -162,7 +162,11 @@ def test3():
 
 
 if __name__ == '__main__':
-
-    time.sleep(3)
-    test1()
+    print(f"Test starts in.. 3 sec")
+    time.sleep(1)
+    print(f"Test starts in.. 2 sec")
+    time.sleep(1)
+    print(f"Test starts in.. 1 sec")
+    time.sleep(1)
+    test_turn()
     test = 1

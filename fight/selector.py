@@ -1,6 +1,6 @@
 
 ''' This file describes how to push the buttons to execute moves, change pokemon, accept newly learned moves, ect.'''
-from templates import f_temp_list
+from .templates import f_temp_list
 from fundamentals import screen_grab, goleft, goup, godown, goright, btnB, btnA, state_check, FightState,StateController, btnStart
 
 import time
@@ -47,28 +47,35 @@ class Selector:
         if cls.state != 'move_pokemon_where':
             cls._in_switch_or_stats_choose(original_idx, option='switch')
             cls.state = cls.eval_fight_states()
-        cls._in_move_pokemon_where_menu_choose(0)
+        cls._set_party_menu_cursor(0)
+        btnA()
+        btnB(3)
 
     @classmethod
-    def _in_move_pokemon_where_menu_choose(cls, to):
-        cursor = cls._get_cursor_position('move_pokemon_where')
-        cursor_int = [int(s) for s in cursor.split() if s.isdigit()][0]  # find the one and only digit
-        if cursor == None:
-            return
-        tries = 0
-        while cursor_int != to and tries < 10:
-            tries += 1
-            if cursor_int < to:
-                godown()
-                cursor = cls._get_cursor_position('move_pokemon_where')
-                cursor_int = [int(s) for s in cursor.split() if s.isdigit()][0]  # find the one and only digit
-            else:
-                goup()
-                cursor = cls._get_cursor_position('move_pokemon_where')
-                cursor_int = [int(s) for s in cursor.split() if s.isdigit()][0]  # find the one and only digit
+    def bring_out_next_pokemon(cls, idx):
+        cls._set_party_menu_cursor(idx)
         btnA()
-        time.sleep(2)
-        btnB(3)
+
+    # @classmethod
+    # def _in_move_pokemon_where_menu_choose(cls, to):
+    #     cursor = cls._get_cursor_position('move_pokemon_where')
+    #     cursor_int = [int(s) for s in cursor.split() if s.isdigit()][0]  # find the one and only digit
+    #     if cursor == None:
+    #         return
+    #     tries = 0
+    #     while cursor_int != to and tries < 10:
+    #         tries += 1
+    #         if cursor_int < to:
+    #             godown()
+    #             cursor = cls._get_cursor_position('move_pokemon_where')
+    #             cursor_int = [int(s) for s in cursor.split() if s.isdigit()][0]  # find the one and only digit
+    #         else:
+    #             goup()
+    #             cursor = cls._get_cursor_position('move_pokemon_where')
+    #             cursor_int = [int(s) for s in cursor.split() if s.isdigit()][0]  # find the one and only digit
+    #     btnA()
+    #     time.sleep(2)
+    #     btnB(3)
 
     @classmethod
     def go_to_pokemon_stats_page_by_idx(cls, idx):
@@ -88,9 +95,9 @@ class Selector:
         cls.state = cls.eval_fight_states()
         if cls.state != 'stats_page_stats':
             cls._in_switch_or_stats_choose(idx, option= 'stats')
-        time.sleep(0.3)
+        time.sleep(0.1)
         btnB()
-        time.sleep(0.3)
+        time.sleep(0.1)
         # assume we are there
 
     @classmethod
@@ -104,7 +111,7 @@ class Selector:
 
         cls._set_stats_switch_cursor(option)
         btnA()
-        time.sleep(0.5)
+        time.sleep(0.1)
         cls.state = cls.eval_fight_states()
 
     @classmethod
@@ -137,7 +144,7 @@ class Selector:
         if cls.state == 'pkmn':
             cls._set_party_menu_cursor(idx)
             btnA()
-            time.sleep(0.5)
+            time.sleep(0.1)
             cls.state = cls.eval_fight_states()
         elif cls.state == 'stats_or_switch':
             cls._in_switch_or_stats_choose(option)
@@ -343,6 +350,20 @@ class Selector:
                 cursor = int(cls._get_cursor_position('move'))
 
     @classmethod
+    def _set_up_down_cursor(cls, to, group):
+        cursor = cls._get_cursor_position(group)
+        cursor_idx = [int(s) for s in cursor if s.isdigit()][0]  # find the one and only digit
+        while to != cursor_idx:
+            if to > cursor_idx:
+                goup(cursor_idx - to)
+                cursor = cls._get_cursor_position(group)
+                cursor_idx = [int(s) for s in cursor if s.isdigit()][0]  # find the one and only digit
+            elif to < cursor_idx:
+                godown(cursor_idx - to)
+                cursor = cls._get_cursor_position(group)
+                cursor_idx = [int(s) for s in cursor if s.isdigit()][0]  # find the one and only digit
+
+    @classmethod
     def _in_fight_menu_choose(cls, menu_name):
         #from fundamentals import StateController
         ''' in the menu chose 'move', 'item', 'pkmn', 'run' '''
@@ -352,7 +373,7 @@ class Selector:
             return
         cls._set_menu_cursor(menu_name)
         btnA()
-        time.sleep(0.5)
+        time.sleep(0.1)
         cls.eval_fight_states()
         StateController.eval_state()
 
@@ -401,7 +422,7 @@ class Selector:
         import time
         if cls.state != 'item':
             cls._in_fight_menu_choose('item')
-            time.sleep(0.3)
+            time.sleep(0.1)
         # if all is correct it is now menu
         if cls.state == 'item':
             btnA()
@@ -421,4 +442,4 @@ class Selector:
 
 if __name__ == '__main__':
     time.sleep(1)
-    Selector.put_pokemon_idx_in_front(3)
+    Selector.eval_fight_states()

@@ -10,7 +10,7 @@ from fundamentals.config import config
 password = config('../users.ini','postgres','password')
 engine = create_engine(f'postgresql+psycopg2://postgres:{password}@localhost/pokemon')
 
-node1_id = 12
+node1_id = 6
 
 G_current_lvl0 = nx.Graph() # create empty graph
 

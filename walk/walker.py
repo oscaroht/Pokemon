@@ -59,7 +59,6 @@ class Walker(Stepper):
         # if Stepper.position[:len(goal_cor)] == goal_cor:
         #     cls.goal_not_reached = False
         print(f"walker go state {sn}")
-        print(F"{not (Stepper.position[:2] == goal_cor[:2] and ori == goal_cor[2])}, {sn in ['walk','none_state']}")
 
         while not reached_goal() and sn in ['walk','none_state']:
             print(f'Stepper.position: {Stepper.position[:len(goal_cor)]} != {goal_cor}' )

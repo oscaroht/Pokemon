@@ -59,47 +59,63 @@ def buy(goal, item_name, amount):
     Gameplay.buy_item(item_name, amount)
 
 
-def train(to_level, which_pokemon, start, turn):
+def train(to_level, which_pokemon, start, turn, heal_point, hp_limit = 0.3):
+    '''' this function trains pokemon to a certain level
+
+     to_level: int                              to which level to train
+     which_pokemon: str                         the name of the pokemon, or maybe index
+     start: (map, cor_id)                       the coordinate of the start
+     trun: (map, cor_id)                        the coordinate of the turn
+     heal_point: (map, cor_id, orientation)     the point to heal so a talk can be started
+     heal_limit: float                          the average percentage of health of all being trained pokemon
+     '''
+
     from fight.pokemon import OwnPokemon
 
     if which_pokemon == 'all':
-        levels = [p.level for p in OwnPokemon.party]
-        min_level, arg_min = min(levels), np.argmin(levels)
-        Fighter.put_pokemon_by_idx_in_front_of_party(arg_min)
-
+        '''' first make a list of all pokemon in party that need training
+         then make a list of all pokemon that have hp>0 and need training
+         while both are true we fight. if no pokemon ready to fight we go 
+         to pc.'''
+        pokemon_to_train = [p for p in OwnPokemon.party if p.level < to_level]
+        pokemon_to_train_ready_to_fight = [p for p in pokemon_to_train if p.current_hp>0]
         hp_fractions = sum([p.current_hp / p.stats['hp'] for p in OwnPokemon.party]) / len(OwnPokemon.party)
-        while min_level < to_level:
+
+        while pokemon_to_train: # empty list is False
             # train
-            while (hp_fractions > 0.3) and (min_level < to_level):
+            while pokemon_to_train and (pokemon_to_train_ready_to_fight and hp_fractions >= hp_limit):
+                Fighter.put_pokemon_in_front_of_party(pokemon_to_train_ready_to_fight[0])
+
                 go_to(start)
                 go_to(turn)
 
-                levels = [p.level for p in OwnPokemon.party]
-                min_level, arg_min = min(levels), np.argmin(levels)
-                Fighter.put_pokemon_by_idx_in_front_of_party(arg_min)
-
+                pokemon_to_train = [p for p in OwnPokemon.party if p.level < to_level]
+                pokemon_to_train_ready_to_fight = [p for p in pokemon_to_train if p.current_hp > 0] # could be [] so we put [0] at the first row of thies loop
                 hp_fractions = sum([p.current_hp / p.stats['hp'] for p in OwnPokemon.party]) / len(OwnPokemon.party)
 
-            while hp_fractions <= 0.3:
-                talk(('pc', 4, 'up'))
+            while pokemon_to_train and (not pokemon_to_train_ready_to_fight or hp_fractions <= hp_limit):
+                talk(heal_point)
                 OwnPokemon.party.heal()
 
-                levels = [p.level for p in OwnPokemon.party]
-                min_level, arg_min = min(levels), np.argmin(levels)
-                Fighter.put_pokemon_by_idx_in_front_of_party(arg_min)
-
+                pokemon_to_train = [p for p in OwnPokemon.party if p.level < to_level]
+                pokemon_to_train_ready_to_fight = [p for p in pokemon_to_train if p.current_hp > 0]
                 hp_fractions = sum([p.current_hp / p.stats['hp'] for p in OwnPokemon.party]) / len(OwnPokemon.party)
+
+
 
 
 
 if __name__ == '__main__':
+
+    # go_to(('viridian_city_pc', 4, 'up'))
+
+    # talk(('viridian_city_pc', 4, 'up'))
+
+    train(9,'all', ('route1', 161), ('route1', 168), ('viridian_city_pc', 4, 'up'))
+
     #talk(('route2a_ptb_viridian_forest', 38, 'right'))
 
-
-
     # open_vba()
-
-
 
     # go_to('viridian_forest', 1)
     # go_to('mom_lvl1', 3)
@@ -108,17 +124,17 @@ if __name__ == '__main__':
     # train(9, 'all', ('route1', 161), ('route1', 168))
 
 
-    from game_plan import Gameplan
-
-    for step in Gameplan.plan:
-        if step['function'] == 'go':
-            go_to(step['args'])
-        elif step['function'] == 'talk':
-            talk(step['args'])
-        elif step['function'] == 'train':
-            train(*step['args'])
-        elif step['function'] == 'buy':
-            buy(*step['args'])
+    # from game_plan import Gameplan
+    #
+    # for step in Gameplan.plan:
+    #     if step['function'] == 'go':
+    #         go_to(step['args'])
+    #     elif step['function'] == 'talk':
+    #         talk(step['args'])
+    #     elif step['function'] == 'train':
+    #         train(*step['args'])
+    #     elif step['function'] == 'buy':
+    #         buy(*step['args'])
 
 
 

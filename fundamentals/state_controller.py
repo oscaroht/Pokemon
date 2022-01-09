@@ -152,6 +152,13 @@ class FightWaitArrowState(State):
     def __str__(self):
         return 'fight_wait_arrow'
 
+class FightUseNextPokemonState(State):
+    def __init__(self):
+        self.name = 'fight_use_next_pokemon'
+    def __str__(self):
+        return 'fight_use_next_pokemon'
+
+
 class StoryState(State):
     pass
 
@@ -220,6 +227,8 @@ class StateController:
                 return
             elif state_name == 'change_pokemon':
                 StateController.state.switch(FightChangePokemonState)
+            elif state_name == 'use_next_pokemon':
+                StateController.state.switch(FightUseNextPokemonState)
                 return
             # else:
             #     StateController.state.switch(FightState) #TODO remove so we can get into a walk state
