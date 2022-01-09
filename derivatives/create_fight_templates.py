@@ -94,7 +94,7 @@ def wait_arrow():
     cv2.waitKey()
 
     mask = np.zeros(img.shape[:2], dtype="uint8")
-    cv2.rectangle(mask, (142, 127), (152, 136), 255, -1)
+    cv2.rectangle(mask, (143, 127), (151, 136), 255, -1)
 
     mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
 
@@ -950,12 +950,40 @@ def move_pokemon_where_cursor():
         mask)
 
 
+def party_menu_without_bar():
+    img = cv2.imread(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\party_menu\\0\\party_menu_0.png')
 
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
+    cv2.waitKey()
+
+    mask = 254 * np.ones(img.shape[:2], dtype="uint8")  # choose a white (254* ones) or black (zeros) mask to start with
+
+    # cv2.rectangle(mask, (8, 0), (160, 95), 0, -1)
+    cv2.rectangle(mask, (8, 0), (160, 95), 0, -1)
+    cv2.rectangle(mask, (8, 103), (150, 135), 0, -1)  # hides the bar
+
+    mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
+
+    masked = cv2.bitwise_and(img, img, mask=mask)
+    masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
+
+    cv2.imshow('mask', masked)
+    cv2.waitKey()
+    cv2.imwrite(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\party_menu\\0\\party_menu_0_preview.png',
+        masked)
+
+    ''' afterwards change the name and extension to fight_menu.msk'''
+    cv2.imwrite(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\party_menu\\0\\party_menu_0_m.png',
+        mask)
 
 
 
 img = cv2.imread(
-    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\move_pokemon_where\\move_pokemon_where.tmp')
+    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\party_menu\\0\\party_menu_0.png')
 
 img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
@@ -963,7 +991,9 @@ cv2.waitKey()
 
 mask = 254 * np.ones(img.shape[:2], dtype="uint8")  # choose a white (254* ones) or black (zeros) mask to start with
 
-cv2.rectangle(mask, (0, 0), (160, 95), 0, -1)
+# cv2.rectangle(mask, (8, 0), (160, 95), 0, -1)
+cv2.rectangle(mask, (8, 0), (160, 95), 0, -1)
+cv2.rectangle(mask, (8, 103), (150, 135), 0, -1)  # hides the bar
 
 mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
 
@@ -973,11 +1003,11 @@ masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
 cv2.imshow('mask', masked)
 cv2.waitKey()
 cv2.imwrite(
-    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\move_pokemon_where\\move_pokemon_where_preview.png',
+    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\party_menu\\0\\party_menu_0_preview.png',
     masked)
 
 ''' afterwards change the name and extension to fight_menu.msk'''
 cv2.imwrite(
-    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\move_pokemon_where\\move_pokemon_where_m.png',
+    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\party_menu\\0\\party_menu_0_m.png',
     mask)
 
