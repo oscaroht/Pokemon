@@ -97,7 +97,7 @@ class Position(G,T):
         return mapping  # a dict with img, x, y as keys
 
     @classmethod
-    def _get_position_in_map(cls,mapping, screen, threshold = 0.1):
+    def _get_position_in_map(cls,mapping, screen, threshold = 0.07): # 0.1 is too high
         ''''This function returns the node0_id where the player is at this very moment.'''
 
         # screen_cpo = cls._cpo(screen, 16 * 4)
