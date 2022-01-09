@@ -61,10 +61,11 @@ class FightRec(OCR):
 
     # this one is used when a stat is looked up through the game_menu
     roi_stat_gm_lookup = {
-                'attack': [int(80*scale_factor),int(88*scale_factor),int(43*scale_factor),int(72*scale_factor)],
-                'defense': [int(95*scale_factor),int(104*scale_factor),int(43*scale_factor),int(72*scale_factor)],
-                'speed': [int(111*scale_factor),int(120*scale_factor),int(43*scale_factor),int(72*scale_factor)],
-                'special': [int(127*scale_factor),int(136*scale_factor),int(43*scale_factor),int(72*scale_factor)]
+                'atk': [int(80*scale_factor),int(88*scale_factor),int(43*scale_factor),int(72*scale_factor)],
+                'def': [int(95*scale_factor),int(104*scale_factor),int(43*scale_factor),int(72*scale_factor)],
+                'spe': [int(111*scale_factor),int(120*scale_factor),int(43*scale_factor),int(72*scale_factor)],
+                'spa': [int(127*scale_factor),int(136*scale_factor),int(43*scale_factor),int(72*scale_factor)],
+                'spd': [int(127 * scale_factor), int(136 * scale_factor), int(43 * scale_factor), int(72 * scale_factor)] # same as above because psa and spd are the same in gen1
                         }
     roi_stat_gm_hp = [int(32*scale_factor),int(40*scale_factor),int(80*scale_factor),int(153*scale_factor)]
     roi_moves_gm = {
@@ -167,7 +168,9 @@ class FightRec(OCR):
         txt = cls._core_ocr(cls.roi_stat_gm_hp)
         if '/' in txt:
             hp_current, hp_max = txt.split('/')
-        return hp_current, hp_max
+            return int(hp_current), int(hp_max)
+        else:
+            print("Unable to read hp_current and hp_max because / is not found in raw text")
 
     @classmethod
     def read_moves_gm(cls):
