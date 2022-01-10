@@ -1010,12 +1010,71 @@ def use_next_pokemon():
         'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\use_next_pokemon\\use_next_pokemon_m.png',
         mask)
 
+def bring_out_which_pokemon():
+    img = cv2.imread(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\bring_out_which_pokemon\\bring_out.png')
+
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
+    cv2.waitKey()
+
+    mask = 254 * np.ones(img.shape[:2], dtype="uint8")  # choose a white (254* ones) or black (zeros) mask to start with
+
+    # cv2.rectangle(mask, (8, 0), (160, 95), 0, -1)
+    cv2.rectangle(mask, (0, 0), (160, 95), 0, -1)
+    # cv2.rectangle(mask, (8, 103), (150, 135), 0, -1)  # hides the bar
+
+    mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
+
+    masked = cv2.bitwise_and(img, img, mask=mask)
+    masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
+
+    cv2.imshow('mask', masked)
+    cv2.waitKey()
+    cv2.imwrite(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\bring_out_which_pokemon\\bring_out_preview.png',
+        masked)
+
+    ''' afterwards change the name and extension to fight_menu.msk'''
+    cv2.imwrite(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\bring_out_which_pokemon\\bring_out_m.png',
+        mask)
+
+def no_will_to_fight():
+    img = cv2.imread(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\no_will_to_fight\\no_will_to_fight.png')
+
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
+    cv2.waitKey()
+
+    mask = 254 * np.ones(img.shape[:2], dtype="uint8")  # choose a white (254* ones) or black (zeros) mask to start with
+
+    # cv2.rectangle(mask, (8, 0), (160, 95), 0, -1)
+    cv2.rectangle(mask, (0, 0), (160, 95), 0, -1)
+    # cv2.rectangle(mask, (8, 103), (150, 135), 0, -1)  # hides the bar
+
+    mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
+
+    masked = cv2.bitwise_and(img, img, mask=mask)
+    masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
+
+    cv2.imshow('mask', masked)
+    cv2.waitKey()
+    cv2.imwrite(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\no_will_to_fight\\no_will_to_fight_preview.png',
+        masked)
+
+    ''' afterwards change the name and extension to fight_menu.msk'''
+    cv2.imwrite(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\no_will_to_fight\\no_will_to_fight_m.png',
+        mask)
 
 
 
 
 img = cv2.imread(
-    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\use_next_pokemon\\use_next_pokemon.tmp')
+    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\stats_or_switch\\stats_or_switch.tmp')
 
 img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
@@ -1023,9 +1082,9 @@ cv2.waitKey()
 
 mask = 254 * np.ones(img.shape[:2], dtype="uint8")  # choose a white (254* ones) or black (zeros) mask to start with
 
-# cv2.rectangle(mask, (8, 0), (160, 95), 0, -1)
-cv2.rectangle(mask, (0, 0), (160, 70), 0, -1)
-# cv2.rectangle(mask, (8, 103), (150, 135), 0, -1)  # hides the bar
+cv2.rectangle(mask, (0, 0), (160, 87), 0, -1)
+cv2.rectangle(mask, (0, 87), (85, 95), 0, -1)
+cv2.rectangle(mask, (95, 95), (101, 136), 0, -1)
 
 mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
 
@@ -1035,11 +1094,11 @@ masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
 cv2.imshow('mask', masked)
 cv2.waitKey()
 cv2.imwrite(
-    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\use_next_pokemon\\use_next_pokemon_preview.png',
+    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\stats_or_switch\\stats_or_switch_preview.png',
     masked)
 
 ''' afterwards change the name and extension to fight_menu.msk'''
 cv2.imwrite(
-    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\use_next_pokemon\\use_next_pokemon_m.png',
+    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\stats_or_switch\\stats_or_switch_m.png',
     mask)
 

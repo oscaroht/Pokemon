@@ -1,6 +1,6 @@
 
 ''' This file describes how to push the buttons to execute moves, change pokemon, accept newly learned moves, ect.'''
-from .templates import f_temp_list
+from templates import f_temp_list
 from fundamentals import screen_grab, goleft, goup, godown, goright, btnB, btnA, state_check, FightState,StateController, btnStart
 
 import time
@@ -52,9 +52,39 @@ class Selector:
         btnB(3)
 
     @classmethod
-    def bring_out_next_pokemon(cls, idx):
-        cls._set_party_menu_cursor(idx)
-        btnA()
+    def bring_out_or_choose_next_pokemon(cls, idx):
+        sn = StateController.eval_state()
+        while sn in ['fight_no_will_to_fight', 'fight_bring_out_which_pokemon', 'fight_use_next_pokemon', 'fight_choose_a_pokemon', 'fight_switch_or_stats', 'fight_already_out']:
+            if sn in ['fight_bring_out_which_pokemon', 'fight_choose_a_pokemon']: # bring out next if after a my_pok is defeated
+                                                                # pkmn is when you decide the change pokemon
+                cls._set_party_menu_cursor(idx)
+                time.sleep(0.1)
+                btnA()
+                time.sleep(2) # go *pokemon_name* field
+                sn = StateController.eval_state()
+            elif sn == 'fight_no_will_to_fight':
+                btnB()
+                time.sleep(1)
+                sn = StateController.eval_state()
+            elif sn == 'fight_use_next_pokemon':
+                btnA()
+                time.sleep(0.1)
+                sn = StateController.eval_state()
+            elif sn == 'fight_switch_or_stats':
+                cls._set_up_down_cursor(0,'switch_or_stats')
+                time.sleep(0.1)
+                btnA()
+                time.sleep(0.1)
+                sn = StateController.eval_state()
+            elif sn == 'fight_already_out':
+                print("Apparently this pokemon is already out. Double B to continue fight")
+                btnB(2)
+                time.sleep(0.1)
+                sn = StateController.eval_state()
+        else:
+            print("NOT IN CHOOSE NEXT POKEMON STATE")
+            return
+
 
     # @classmethod
     # def _in_move_pokemon_where_menu_choose(cls, to):
@@ -138,10 +168,10 @@ class Selector:
     def _in_party_menu_choose_pokemon_by_idx(cls, idx, option= 'stats'):
         print(f"In party menu choose idx {idx}")
         #cls.state = cls.eval_fight_states()
-        if cls.state not in ['stats_or_switch','pkmn']:
+        if cls.state not in ['stats_or_switch','choose_a_pokemon']:
             cls._in_game_menu_choose('gm_pokemon')
 
-        if cls.state == 'pkmn':
+        if cls.state == 'choose_a_pokemon':
             cls._set_party_menu_cursor(idx)
             btnA()
             time.sleep(0.1)
@@ -151,7 +181,7 @@ class Selector:
 
     @classmethod
     def _go_to_party_menu(cls):
-        if cls.state != 'pkmn':
+        if cls.state != 'choose_a_pokemon':
             cls._in_game_menu_choose('gm_pokemon')
 
     @classmethod
@@ -401,8 +431,10 @@ class Selector:
         pass
 
     @classmethod
-    def change_pokemon(cls, new_pkmn):
+    def change_pokemon(cls, new_pkmn_idx):
         cls._in_fight_menu_choose('pkmn')
+        time.sleep(0.5) # takes some time to appear
+        cls.bring_out_or_choose_next_pokemon(new_pkmn_idx)
         ''' in the pkmn section chose a new pokemon'''
 
     @classmethod
@@ -442,4 +474,5 @@ class Selector:
 
 if __name__ == '__main__':
     time.sleep(1)
-    Selector.eval_fight_states()
+    Selector.bring_out_or_choose_next_pokemon(0)
+    # Selector.eval_fight_states()

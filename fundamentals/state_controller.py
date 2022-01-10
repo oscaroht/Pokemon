@@ -157,7 +157,36 @@ class FightUseNextPokemonState(State):
         self.name = 'fight_use_next_pokemon'
     def __str__(self):
         return 'fight_use_next_pokemon'
-
+class FightBringOutWhichPokemonState(State):
+    def __init__(self):
+        self.name = 'fight_bring_out_which_pokemon'
+    def __str__(self):
+        return 'fight_bring_out_which_pokemon'
+class FightNoWillToFightState(State):
+    def __init__(self):
+        self.name = 'fight_no_will_to_fight'
+    def __str__(self):
+        return 'fight_no_will_to_fight'
+class FightChooseAPokemonState(State):
+    def __init__(self):
+        self.name = 'fight_choose_a_pokemon'
+    def __str__(self):
+        return 'fight_choose_a_pokemon'
+class FightStatsOrSwitchState(State):
+    def __init__(self):
+        self.name = 'fight_stats_or_switch'
+    def __str__(self):
+        return 'fight_stats_or_switch'
+class FightSwitchOrStatsState(State):
+    def __init__(self):
+        self.name = 'fight_switch_or_stats'
+    def __str__(self):
+        return 'fight_switch_or_stats'
+class FightAlreadyOutState(State):
+    def __init__(self):
+        self.name = 'fight_already_out'
+    def __str__(self):
+        return 'fight_already_out'
 
 class StoryState(State):
     pass
@@ -229,6 +258,24 @@ class StateController:
                 StateController.state.switch(FightChangePokemonState)
             elif state_name == 'use_next_pokemon':
                 StateController.state.switch(FightUseNextPokemonState)
+                return
+            elif state_name == 'bring_out_which_pokemon':
+                StateController.state.switch(FightBringOutWhichPokemonState)
+                return
+            elif state_name == 'no_will_to_fight':
+                StateController.state.switch(FightNoWillToFightState)
+                return
+            elif state_name == 'choose_a_pokemon':
+                StateController.state.switch(FightChooseAPokemonState)
+                return
+            elif state_name == 'stats_or_switch':
+                StateController.state.switch(FightStatsOrSwitchState)
+                return
+            elif state_name == 'switch_or_stats':
+                StateController.state.switch(FightSwitchOrStatsState)
+                return
+            elif state_name == 'already_out':
+                StateController.state.switch(FightAlreadyOutState)
                 return
             # else:
             #     StateController.state.switch(FightState) #TODO remove so we can get into a walk state

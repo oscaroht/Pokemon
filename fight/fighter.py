@@ -509,7 +509,7 @@ class Fighter:
                 btnA()
                 next_pokemon_idx = np.argmax([p.current_hp/p.stats['hp'] for p in OwnPokemon.party])
                 print(f"Next pokemon idx {next_pokemon_idx} with name {OwnPokemon.party[next_pokemon_idx]}")
-                Selector.bring_out_next_pokemon(next_pokemon_idx)
+                Selector.bring_out_or_choose_next_pokemon(next_pokemon_idx)
                 my_pokemon = OwnPokemon.party[next_pokemon_idx]
 
             # else the battle has ended
