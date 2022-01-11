@@ -1,4 +1,5 @@
-from fundamentals import FightState, state_check, screen_grab, goleft,goup,godown,goright,btnA,btnB
+from fundamentals.state_controller import FightState
+from fundamentals.controls import   goleft,goup,godown,goright,btnA,btnB
 from fight.fight_rec import FightRec
 #import fight_rec
 from fight.pokemon import pokemon_dict, WildPokemon, df_strength_weakness, OwnPokemon, Move, OwnMove
@@ -53,7 +54,8 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
                       int(foe_level) )
 
         self.foe_hp_fraction = FightRec.foe_hp()
-        print(f'set my pokemon to {OwnPokemon.party[0].name}')
+        print(f'Foe.name: {foe_name}\nfoe.level: {foe_level}')
+        print(f'My_pokemon.name: {OwnPokemon.party[0].name}')
         self.my_pokemon = my_pokemon
 
         Fight.state = 'menu'
@@ -366,7 +368,7 @@ class Fighter:
         elif idx > 6:
             raise Exception(f"Invalid argument {idx}. Party only has length 6. Unable to put pokemon from position 7")
         Selector.put_pokemon_idx_in_front(idx)
-        OwnPokemon.party.switch_position( OwnPokemon.party[idx], position=0 ) # pokemon object, new position
+        OwnPokemon.party.switch_position(OwnPokemon.party[idx], new_position=0) # pokemon object, new position
 
     @classmethod
     def put_pokemon_in_front_of_party(cls, pokemon):
@@ -375,9 +377,10 @@ class Fighter:
             return
         elif pokemon not in OwnPokemon.party:
             raise Exception(f"Pokemon {pokemon} not in party")
+        print(f"Put pokemon {pokemon.own_name} in front")
         idx = OwnPokemon.party.index(pokemon)
         Selector.put_pokemon_idx_in_front(idx)
-        OwnPokemon.party.switch_position( pokemon, position=0 ) # pokemon object, new position
+        OwnPokemon.party.switch_position(pokemon, new_position=0) # pokemon object, new position
 
 
     @classmethod
@@ -441,7 +444,7 @@ class Fighter:
                     time.sleep(1)
                     btnB()
                 StateController.eval_state()
-
+                return
             elif StateController.wait_arrow:
                 text = FightRec.read_bar()
                 # interpret text
@@ -505,8 +508,11 @@ class Fighter:
                 print("there is a next foe")
                 cls.choose_new_pokemon('current_pokemon')
                 print(f"Wait 1.5 sec for the new foe to appear")
-            elif sn == 'fight_use_next_pokemon':
-                btnA()
+            sn = StateController.state_name()
+            if sn in ['fight_use_next_pokemon', 'fight_bring_out_which_pokemon']:
+                print(f"My pokemon fainted but we use a next pokemon")
+                if sn == 'fight_use_next_pokemon':
+                    btnA()
                 next_pokemon_idx = np.argmax([p.current_hp/p.stats['hp'] for p in OwnPokemon.party])
                 print(f"Next pokemon idx {next_pokemon_idx} with name {OwnPokemon.party[next_pokemon_idx]}")
                 Selector.bring_out_or_choose_next_pokemon(next_pokemon_idx)
@@ -514,11 +520,10 @@ class Fighter:
 
             # else the battle has ended
 
-            StateController.eval_state()
-            sn = StateController.state_name()
+            sn = StateController.eval_state()
             print(f'State name {StateController.state_name()}')
 
-            print(f"New foe loop")
+            print(f"New foe/my_pokemon loop")
 
 
     @classmethod

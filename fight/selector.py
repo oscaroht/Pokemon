@@ -1,7 +1,7 @@
 
 ''' This file describes how to push the buttons to execute moves, change pokemon, accept newly learned moves, ect.'''
-from templates import f_temp_list
-from fundamentals import screen_grab, goleft, goup, godown, goright, btnB, btnA, state_check, FightState,StateController, btnStart
+from fight.templates import f_temp_list
+from fundamentals import screen_grab, goleft, goup, godown, goright, btnB, btnA, FightState,StateController, btnStart
 
 import time
 import cv2
@@ -43,13 +43,18 @@ class Selector:
 
         idx is the index of the party of the pokemon that needs to be in front
         '''
-        cls.state = cls.eval_fight_states()
-        if cls.state != 'move_pokemon_where':
-            cls._in_switch_or_stats_choose(original_idx, option='switch')
-            cls.state = cls.eval_fight_states()
-        cls._set_party_menu_cursor(0)
-        btnA()
-        btnB(3)
+        sn = StateController.eval_state()
+        while sn in ['walk','walk_evalstats','walk_game_menu','fight_move_pokemon_where','fight_choose_a_pokemon','fight_stats_or_switch']:
+            while sn != 'fight_move_pokemon_where':
+                cls._in_stats_or_switch_choose(original_idx, option='switch')
+                sn = StateController.state_name()
+            print("Move to position 0")
+            cls._set_party_menu_cursor(0)
+            print("press A to confirm")
+            btnA()
+            btnB(3)
+            sn = StateController.eval_state()
+            return
 
     @classmethod
     def bring_out_or_choose_next_pokemon(cls, idx):
@@ -110,9 +115,17 @@ class Selector:
     @classmethod
     def go_to_pokemon_stats_page_by_idx(cls, idx):
         # from .fight_rec import FightRec
-        cls.state = cls.eval_fight_states()
-        if cls.state != 'stats_page_stats':
-            cls._in_switch_or_stats_choose(idx, option= 'stats')
+        # cls.state = cls.eval_fight_states()
+        sn = StateController.eval_state()
+        while sn in ['walk','walk_evalstats', 'walk_game_menu', 'fight_choose_a_pokemon', 'fight_stats_or_switch', 'fight_stats_page_stats', 'fight_stats_page_moves']:
+            while sn != 'fight_stats_page_stats':
+                cls._in_stats_or_switch_choose(idx, option='stats')
+                sn = StateController.state_name()
+            else:
+                return
+        # if cls.state != 'stats_page_stats':
+        #     cls._in_stats_or_switch_choose(idx, option='stats')
+
         # stats = FightRec.read_stat_gm_lookup()
         # hp_current, hp_max = FightRec.read_stat_gm_hp()
         # stats['hp'] = hp_max
@@ -122,31 +135,45 @@ class Selector:
     def go_to_pokemon_moves_page_by_idx(cls, idx):
         # I do not feel like making this network for the cursor since there is only one direction and 1 edge
         # only clicking A (or B) from the stats page brings you here and you cannot go back.
-        cls.state = cls.eval_fight_states()
-        if cls.state != 'stats_page_stats':
-            cls._in_switch_or_stats_choose(idx, option= 'stats')
-        time.sleep(0.1)
-        btnB()
-        time.sleep(0.1)
-        # assume we are there
+        sn = StateController.eval_state()
+
+        while sn in ['walk','walk_evalstats', 'walk_game_menu', 'fight_choose_a_pokemon', 'fight_stats_or_switch',
+                     'fight_stats_page_stats', 'fight_stats_page_moves']:
+            while sn != 'fight_stats_page_moves':
+                if sn != 'fight_stats_page_stats':
+                    cls.go_to_pokemon_stats_page_by_idx(idx)
+                    sn = StateController.state_name()
+                else:
+                    time.sleep(0.1)
+                    btnB()
+                    time.sleep(0.1)
+                    StateController.eval_state()
+                    return
+                sn = StateController.eval_state()
+
+            # assume we are there
 
     @classmethod
-    def _in_switch_or_stats_choose(cls,idx,option):
+    def _in_stats_or_switch_choose(cls, idx, option):
         if option not in ['switch', 'stats']:
             return Exception('Invalid input args')
 
-        cls.state = cls.eval_fight_states()
-        if cls.state != 'stats_or_switch':
+        sn = StateController.state_name()
+        # while sn in ['fight_stats_or_switch', 'fight_choose_a_pokemon','walk_evalstats', 'walk', 'walk_game_menu',
+        #              'fight_switch_or_stats', 'fight_stats_page_stats', 'fight_stats_page_moves']:
+        if sn != 'fight_stats_or_switch':
             cls._in_party_menu_choose_pokemon_by_idx(idx)
-
-        cls._set_stats_switch_cursor(option)
-        btnA()
-        time.sleep(0.1)
-        cls.state = cls.eval_fight_states()
+        else:
+            cls._set_stats_switch_cursor(option)
+            btnA()
+            time.sleep(0.1)
+            sn = StateController.eval_state()
+            return
+        # sn = StateController.state_name()
 
     @classmethod
     def _set_stats_switch_cursor(cls, to):
-        group = 'party_menu'
+        group = 'stats_or_switch'
         cursor = cls._get_cursor_position(group) # out of the templates in party menu where is the cursor
         if cursor == None:
             return
@@ -167,38 +194,50 @@ class Selector:
     @classmethod
     def _in_party_menu_choose_pokemon_by_idx(cls, idx, option= 'stats'):
         print(f"In party menu choose idx {idx}")
+        print(f"state is: {StateController.state_name()}")
         #cls.state = cls.eval_fight_states()
-        if cls.state not in ['stats_or_switch','choose_a_pokemon']:
+        sn = StateController.state_name()
+        if sn not in ['fight_stats_or_switch','fight_choose_a_pokemon']:
             cls._in_game_menu_choose('gm_pokemon')
-
-        if cls.state == 'choose_a_pokemon':
+        if sn == 'fight_choose_a_pokemon':
             cls._set_party_menu_cursor(idx)
+            print(f"Party menu cursor now set to {idx}")
+            time.sleep(0.1)
             btnA()
             time.sleep(0.1)
-            cls.state = cls.eval_fight_states()
-        elif cls.state == 'stats_or_switch':
-            cls._in_switch_or_stats_choose(option)
-
-    @classmethod
-    def _go_to_party_menu(cls):
-        if cls.state != 'choose_a_pokemon':
-            cls._in_game_menu_choose('gm_pokemon')
+            StateController.eval_state()
+        elif sn == 'fight_stats_or_switch':
+            cls._in_stats_or_switch_choose(option)
 
     @classmethod
     def _in_game_menu_choose(cls, option):
-        ''' in the game menu chose 'gm_pokedex','gm_pokoemon' 'gm_item',ect. '''
+        ''' in the game menu chose 'gm_pokedex','gm_pokemon' 'gm_item',ect. '''
         if option not in ['gm_pokedex', 'gm_pokemon', 'gm_item', 'gm_save', 'gm_player_name', 'gm_option']:
             raise Exception(f"Invalid input argument option {option}")
         print(f"In game menu choose {option}")
-        cls.state = cls.eval_fight_states()
-        if cls.state != 'game_menu':
-            cls._go_to_game_menu()
-        elif cls.state == None:
-            return
-        cls._set_game_menu_cursor(option)
-        btnA()
-        time.sleep(0.5)
-        cls.state = cls.eval_fight_states()
+        sn = StateController.state_name()
+        if sn in ['walk','walk_evalstats','walk_game_menu','fight_choose_a_pokemon', 'fight_stats_switch']:
+            if sn in ['walk', 'walk_evalstats']:
+                print("Open game menu")
+                btnStart()
+                time.sleep(0.5)
+                StateController.eval_state()
+            elif sn == 'fight_choose_a_pokemon':
+                btnB()
+                time.sleep(0.5)
+                StateController.eval_state()
+            elif sn == 'fight_stats_switch':
+                btnB(2)
+                time.sleep(0.5)
+                StateController.eval_state()
+            elif sn == 'walk_game_menu':
+                cls._set_game_menu_cursor(option)
+                btnA()
+                time.sleep(0.5)
+                StateController.eval_state()
+
+
+
 
     @classmethod
     def _go_to_game_menu(cls):
@@ -385,11 +424,11 @@ class Selector:
         cursor_idx = [int(s) for s in cursor if s.isdigit()][0]  # find the one and only digit
         while to != cursor_idx:
             if to > cursor_idx:
-                goup(cursor_idx - to)
+                godown(cursor_idx - to)
                 cursor = cls._get_cursor_position(group)
                 cursor_idx = [int(s) for s in cursor if s.isdigit()][0]  # find the one and only digit
             elif to < cursor_idx:
-                godown(cursor_idx - to)
+                goup(cursor_idx - to)
                 cursor = cls._get_cursor_position(group)
                 cursor_idx = [int(s) for s in cursor if s.isdigit()][0]  # find the one and only digit
 
@@ -446,12 +485,7 @@ class Selector:
         cls._in_fight_menu_choose('run') # in the _go_to we already check/set state to 'menu'
 
     @classmethod
-    def skip_text(cls):
-        btnA()
-
-    @classmethod
     def use_item(cls, item_name):
-        import time
         if cls.state != 'item':
             cls._in_fight_menu_choose('item')
             time.sleep(0.1)
@@ -461,7 +495,6 @@ class Selector:
 
     @classmethod
     def init_fight(cls):
-        import time
         #from fundamentals import StateController
         # read the text
         print('click A to start')
@@ -474,5 +507,5 @@ class Selector:
 
 if __name__ == '__main__':
     time.sleep(1)
-    Selector.bring_out_or_choose_next_pokemon(0)
+    Selector.go_to_pokemon_moves_page_by_idx(1)
     # Selector.eval_fight_states()

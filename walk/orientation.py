@@ -1,7 +1,7 @@
 import cv2
 
 from fundamentals import screen_grab
-from fundamentals import StateController, WalkState, state_check
+# from fundamentals import StateController, WalkState, state_check
 
 from walk.templates import T
 
