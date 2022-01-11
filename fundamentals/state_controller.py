@@ -1,6 +1,4 @@
 
-
-
 # idea for states
 # https://www.geeksforgeeks.org/state-method-python-design-patterns/
 # https://www.tutorialspoint.com/python_design_patterns/python_design_patterns_state.htm
@@ -29,6 +27,12 @@ class WalkTalkState(WalkState):
         self.name = 'walk_talk'
     def __str__(self):
         return 'walk_talk'
+class WalkGameMenuState(WalkState):
+    def __init__(self):
+        self.name = 'walk_game_menu'
+    def __str__(self):
+        return 'walk_game_menu'
+
 
 class WalkEvalStats(WalkState):
     def __init__(self):
@@ -172,6 +176,11 @@ class FightChooseAPokemonState(State):
         self.name = 'fight_choose_a_pokemon'
     def __str__(self):
         return 'fight_choose_a_pokemon'
+class FightMovePokemonWhereState(State):
+    def __init__(self):
+        self.name = 'fight_move_pokemon_where'
+    def __str__(self):
+        return 'fight_move_pokemon_where'
 class FightStatsOrSwitchState(State):
     def __init__(self):
         self.name = 'fight_stats_or_switch'
@@ -187,6 +196,21 @@ class FightAlreadyOutState(State):
         self.name = 'fight_already_out'
     def __str__(self):
         return 'fight_already_out'
+class FightGameMenuState(State):
+    def __init__(self):
+        self.name = 'fight_game_menu'
+    def __str__(self):
+        return 'fight_game_menu'
+class FightStatsPageStatsState(State):
+    def __init__(self):
+        self.name = 'fight_stats_page_stats'
+    def __str__(self):
+        return 'fight_stats_page_stats'
+class FightStatsPageMovesState(State):
+    def __init__(self):
+        self.name = 'fight_stats_page_moves'
+    def __str__(self):
+        return 'fight_stats_page_moves'
 
 class StoryState(State):
     pass
@@ -204,7 +228,7 @@ class StartUpState(State):
 class StateController:
 
 
-    state = FightState() #eval_state()  #StartUpState() # self.get_state() # we could check but we know we start with the
+    state = WalkEvalStats() #eval_state()  #StartUpState() # self.get_state() # we could check but we know we start with the
 
     wait_arrow = False
 
@@ -268,6 +292,9 @@ class StateController:
             elif state_name == 'choose_a_pokemon':
                 StateController.state.switch(FightChooseAPokemonState)
                 return
+            elif state_name == 'move_pokemon_where':
+                StateController.state.switch(FightMovePokemonWhereState)
+                return
             elif state_name == 'stats_or_switch':
                 StateController.state.switch(FightStatsOrSwitchState)
                 return
@@ -277,6 +304,12 @@ class StateController:
             elif state_name == 'already_out':
                 StateController.state.switch(FightAlreadyOutState)
                 return
+            elif state_name == 'stats_page_stats':
+                StateController.state.switch(FightStatsPageStatsState)
+                return
+            elif state_name == 'stats_page_moves':
+                StateController.state.switch(FightStatsPageMovesState)
+                return
             # else:
             #     StateController.state.switch(FightState) #TODO remove so we can get into a walk state
             # get orientation also has a @state_check so we do not have to set something. Just to make sure
@@ -284,16 +317,22 @@ class StateController:
             print("Check orientation")
             ori = get_orientation()
             if ori != None:
-                bar_is_present = WalkRec.bar_present()
-                print(f"Bar present: {bar_is_present}")
-                yn = WalkRec.yn_and_bar_present()
-                if yn:
+                walk_state = WalkRec.eval_states()
+                # bar_is_present = WalkRec.bar_present()
+                # print(f"Bar present: {bar_is_present}")
+                # yn = WalkRec.yn_and_bar_present()
+
+                if walk_state == 'talk':
+                    cls.state.switch(WalkTalkState)
+                    return
+                elif walk_state == 'yn_talk':
                     print("HANDLE YN IN BAR. PRESS A FOR NOW FIX LATER")
                     cls.state.switch(WalkTalkState)
                     return
-                elif bar_is_present:
-                    cls.state.switch(WalkTalkState)
+                elif walk_state == 'game_menu':
+                    cls.state.switch(WalkGameMenuState)
                     return
+
                 # player visible and free (not talk)
                 if OwnPokemon.party.stats_need_evaluation():
                     cls.state.switch(WalkEvalStats)
@@ -346,7 +385,7 @@ class StateController:
                     StateController.state.switch(GameplayBuyFinal)
                     return
             else:
-                # none state or senario state
+                # none state or scenario state
                 StateController.state.switch(NoneState)
                 # Position.get_position()     # position class gets forgotten in main after walking is done so we need to set the position again. Otherwise if we are at the end the main will not know
 
@@ -359,16 +398,7 @@ class StateController:
     # def change(self,new_state):
     #     self.state.switch(new_state)
 
-#use like @state_check(FightState)
-def state_check(state):
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            state_bool = func(*args, **kwargs)
-            if state_bool != None and StateController.state != state:
-                StateController.state.switch(state)
-            return state_bool
-        return wrapper
-    return decorator
+
 
 if __name__ == '__main__':
-    StateController.eval_state()
+    print(StateController.eval_state())
