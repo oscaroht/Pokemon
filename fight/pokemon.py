@@ -282,10 +282,10 @@ class Party(list):
         else:
             raise InvalidPartyError('Not enough pokemon in party to remove one.')
 
-    def switch_position(self, pokemon, position = 0):
+    def switch_position(self, pokemon, new_position = 0):
         if pokemon in self:
             old_position = self.index(pokemon)
-            self.insert(position,self.pop(old_position))
+            self[old_position], self[new_position] = self[new_position], self[old_position]
         else:
             raise InvalidPartyError('Pokemon not found in party.')
 
