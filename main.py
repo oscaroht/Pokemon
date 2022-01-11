@@ -91,6 +91,7 @@ def train(to_level, which_pokemon, start, turn, heal_point, hp_limit = 0.3):
 
                 pokemon_to_train = [p for p in OwnPokemon.party if p.level < to_level]
                 pokemon_to_train_ready_to_fight = [p for p in pokemon_to_train if p.current_hp > 0] # could be [] so we put [0] at the first row of thies loop
+                print(f'Pokemon to train: {[p.own_name for p in pokemon_to_train_ready_to_fight]}')
                 hp_fractions = sum([p.current_hp / p.stats['hp'] for p in OwnPokemon.party]) / len(OwnPokemon.party)
 
             while pokemon_to_train and (not pokemon_to_train_ready_to_fight or hp_fractions <= hp_limit):
@@ -99,6 +100,7 @@ def train(to_level, which_pokemon, start, turn, heal_point, hp_limit = 0.3):
 
                 pokemon_to_train = [p for p in OwnPokemon.party if p.level < to_level]
                 pokemon_to_train_ready_to_fight = [p for p in pokemon_to_train if p.current_hp > 0]
+                print(f'Pokemon to train: {[p.own_name for p in pokemon_to_train_ready_to_fight]}')
                 hp_fractions = sum([p.current_hp / p.stats['hp'] for p in OwnPokemon.party]) / len(OwnPokemon.party)
 
 
