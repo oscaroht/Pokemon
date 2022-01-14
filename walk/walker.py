@@ -64,20 +64,20 @@ class Walker(Stepper):
             print(f'Stepper.position: {Stepper.position[:len(goal_cor)]} != {goal_cor}' )
             try:
                 path = Stepper(goal_cor)
+                last_map = False
                 for key, value in path.cor_dict.items():
-
+                    if list(path.cor_dict)[-1] == int(key): # last item
+                        last_map = True
                     path.start_map = int(key)
 
-                    Stepper.path_interpreter(value, int(key))
-                    sleep(2) # wait to go to the next map
-                    Stepper.set_map_by_id(int(
-                        key))  # some maps are similar so we need to actively set the map instead of doing the loop in finding the map because then the first map in the list gets foound
+                    Stepper.path_interpreter(int(key), value, last_map= last_map)
+                    sleep(2.5) # wait to go to the next map
+                    if not last_map:
+                        next_map_id = list(path.cor_dict)[list(path.cor_dict).index(int(key))+1]
+                        Stepper.set_map_by_id(next_map_id)  # some maps are similar so we need to actively set the map instead of doing the loop in finding the map because then the first map in the list gets foound
 
                 set_orientation()
                 ori = get_orientation()
-                # print(f'ori {ori}, goal_ore = {goal_cor[-1]}')
-                # print(
-                #     F"{not (Stepper.position[:2] == goal_cor[:2] and ori == goal_cor[2])}, {sn in ['walk', 'none_state']}")
 
             except (WrongStep, LocationNotFound):
                 print('walk: WRONG STEP or LOCATION NOT FOUND. recalculate route')

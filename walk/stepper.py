@@ -13,7 +13,7 @@ class Stepper(Path):  # With Position inherenting G
         super(Stepper, self).__init__(*args)
 
     @classmethod
-    def path_interpreter(cls, cor_list, node1):
+    def path_interpreter(cls, node1, cor_list, last_map = True):
 
         """" Iterate over coordinates list. And check and step in parallel. Before every step the check function checks the
         previous step and throws and exception. The cor_list argument is used to do the steps, the node1_id argument is
@@ -61,10 +61,11 @@ class Stepper(Path):  # With Position inherenting G
             if status[0] == False:
                 raise WrongStep
 
-        # check for the last step
-        current = (node1_name, *cor_list[-1], ori[0])  # final element of cor_list
-        sleep(0.01)
-        cls.check(current, status)
+        if last_map: # if we change map we do not want to check the step because it wil certainly fail
+            # check for the last step
+            current = (node1_name, *cor_list[-1], ori[0])  # final element of cor_list
+            sleep(0.01)
+            cls.check(current, status)
 
     @classmethod
     def next_step(cls, current, next, ori):
@@ -114,4 +115,4 @@ class Stepper(Path):  # With Position inherenting G
         # actual check
         if (x, y) != (current[1], current[2]):
             status[0] = False
-            print(f"check not satisfied")
+            print(f"step check not satisfied")
