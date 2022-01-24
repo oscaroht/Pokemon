@@ -55,6 +55,10 @@ class Item:
             return cls.all['name'][name]
         return None
 
+    @classmethod
+    def get_item_price_by_name(cls, name):
+        item = cls.get_item_by_name(name)
+        return item.buy
 
 class OwnItems(Item):
 
@@ -72,11 +76,11 @@ class OwnItems(Item):
             return
         raise Exception(f"Unable to lower amount for amount {self.amount}")
 
-    def increase_amount(self, amount):
-        if self.amount > 0:
-            self.amount -= amount
-            return
-        raise Exception(f"Unable to lower amount for amount {self.amount}")
+    # def increase_amount(self, amount):
+    #     if self.amount > 0:
+    #         self.amount -= amount
+    #         return
+    #     raise Exception(f"Unable to increase amount for amount {self.amount}")
 
     @classmethod
     def add_item_by_name(cls, item_name, added_amount):
@@ -106,7 +110,9 @@ class OwnItems(Item):
                 return True
         return False
 
-
+    @classmethod
+    def new_game(cls):
+        cls.all = {'id':{}, 'name':{}}
 
 
 load_items()
