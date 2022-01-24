@@ -22,7 +22,7 @@ class WalkState(State):
     def __str__(self):
         return 'walk'
 
-class WalkTalkState(WalkState):
+class WalkTalkState(State):
     def __init__(self):
         self.name = 'walk_talk'
     def __str__(self):
@@ -107,6 +107,11 @@ class GameplayBuyFinal(Gameplay):
         self.name = 'gameplay_buy_final'
     def __str__(self):
         return 'gameplay_buy_final'
+class GameplayBuyNoMoney(Gameplay):
+    def __init__(self):
+        self.name = 'gameplay_buy_no_money'
+    def __str__(self):
+        return 'gameplay_buy_no_money'
 
 class FightPokedex(State):
     def __init__(self):
@@ -228,7 +233,7 @@ class StartUpState(State):
 class StateController:
 
 
-    state = WalkEvalStats() #eval_state()  #StartUpState() # self.get_state() # we could check but we know we start with the
+    state = WalkTalkState() #eval_state()  #StartUpState() # self.get_state() # we could check but we know we start with the
 
     wait_arrow = False
 
@@ -322,7 +327,7 @@ class StateController:
                 # print(f"Bar present: {bar_is_present}")
                 # yn = WalkRec.yn_and_bar_present()
 
-                if walk_state == 'talk':
+                if walk_state in ['talk', 'wait_arrow']:
                     cls.state.switch(WalkTalkState)
                     return
                 elif walk_state == 'yn_talk':
@@ -333,7 +338,7 @@ class StateController:
                     cls.state.switch(WalkGameMenuState)
                     return
 
-                # player visible and free (not talk)
+                # player visible and free (not talk, no yn, no game_menu)
                 if OwnPokemon.party.stats_need_evaluation():
                     cls.state.switch(WalkEvalStats)
                     return
@@ -384,6 +389,9 @@ class StateController:
                 elif gameplay_state == 'buy_final':
                     StateController.state.switch(GameplayBuyFinal)
                     return
+                elif gameplay_state == 'buy_no_money':
+                    StateController.state.switch(GameplayBuyNoMoney)
+                    return
             else:
                 # none state or scenario state
                 StateController.state.switch(NoneState)
@@ -401,4 +409,6 @@ class StateController:
 
 
 if __name__ == '__main__':
+    from walk_rec import WalkRec
+
     print(StateController.eval_state())

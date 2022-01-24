@@ -1071,20 +1071,88 @@ def no_will_to_fight():
         mask)
 
 
+def stats_or_switch():
+    img = cv2.imread(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\stats_or_switch\\stats_or_switch.tmp')
+
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
+    cv2.waitKey()
+
+    mask = 254 * np.ones(img.shape[:2], dtype="uint8")  # choose a white (254* ones) or black (zeros) mask to start with
+
+    cv2.rectangle(mask, (0, 0), (160, 87), 0, -1)
+    cv2.rectangle(mask, (0, 87), (85, 95), 0, -1)
+    cv2.rectangle(mask, (95, 95), (101, 136), 0, -1)
+
+    mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
+
+    masked = cv2.bitwise_and(img, img, mask=mask)
+    masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
+
+    cv2.imshow('mask', masked)
+    cv2.waitKey()
+    cv2.imwrite(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\stats_or_switch\\stats_or_switch_preview.png',
+        masked)
+
+    ''' afterwards change the name and extension to fight_menu.msk'''
+    cv2.imwrite(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\stats_or_switch\\stats_or_switch_m.png',
+        mask)
+
+
+
+
+
+def talk():
+    img = cv2.imread('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\walk\\templates\\walk_states\\yn_talk\\yn_talk.tmp')
+
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
+    cv2.waitKey()
+
+    mask = np.ones(img.shape[:2], dtype="uint8")
+    cv2.rectangle(mask, (0, 0), (70, 95), 0, -1)
+
+    cv2.rectangle(mask, (0, 0), (111, 95), 0, -1)  # hides screen
+    cv2.rectangle(mask, (0, 0), (160, 55), 0, -1)  # hides screen
+
+    cv2.rectangle(mask, (8, 103), (150, 135), 0, -1)  # hides the bar
+
+    mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
+
+    masked = cv2.bitwise_and(img, img, mask=mask)
+    masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
+
+    cv2.imshow('mask', masked)
+    cv2.waitKey()
+    cv2.imwrite('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\walk\\templates\\walk_states\\yn_talk\\yn_talk_preview.png', masked)
+
+    ''' afterwards change the name and extension to fight_menu.msk'''
+    cv2.imwrite('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\walk\\templates\\walk_states\\yn_talk\\yn_talk_m.png', mask)
+
+
+
+
 
 
 img = cv2.imread(
-    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\stats_or_switch\\stats_or_switch.tmp')
+    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\states\\buy_no_money\\buy_no_money.tmp')
 
 img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
 cv2.waitKey()
 
-mask = 254 * np.ones(img.shape[:2], dtype="uint8")  # choose a white (254* ones) or black (zeros) mask to start with
+mask = np.ones(img.shape[:2], dtype="uint8")
 
-cv2.rectangle(mask, (0, 0), (160, 87), 0, -1)
-cv2.rectangle(mask, (0, 87), (85, 95), 0, -1)
-cv2.rectangle(mask, (95, 95), (101, 136), 0, -1)
+# cv2.rectangle(mask, (8, 8), (13, 47), 0, -1)
+cv2.rectangle(mask, (95, 8), (150, 15), 0, -1)
+cv2.rectangle(mask, (40, 25), (150, 70), 0, -1)
+# cv2.rectangle(mask, (40, 25), (150, 70), 0, -1)
+cv2.rectangle(mask, (40, 25), (55, 95), 0, -1)
+
+cv2.rectangle(mask, (63, 80), (150, 88), 0, -1)  # price
 
 mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
 
@@ -1094,11 +1162,11 @@ masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
 cv2.imshow('mask', masked)
 cv2.waitKey()
 cv2.imwrite(
-    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\stats_or_switch\\stats_or_switch_preview.png',
+    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\states\\buy_no_money\\buy_no_money_preview.png',
     masked)
 
 ''' afterwards change the name and extension to fight_menu.msk'''
 cv2.imwrite(
-    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\fight\\templates\\states\\stats_or_switch\\stats_or_switch_m.png',
+    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\gameplay\\templates\\states\\buy_no_money\\buy_no_money_m.png',
     mask)
 
