@@ -16,6 +16,12 @@ class Gameplay:
                 return
             elif sn == 'gameplay_start_menu':
                 cls.in_start_menu_choose(Gameplan.continue_or_new_game)
+                if Gameplan.continue_or_new_game == 'new_game':
+                    # reset the own pokemon object holders
+                    from fight.pokemon import OwnPokemon
+                    from gameplay.gamestats import OwnItems
+                    OwnItems.new_game()
+                    OwnPokemon.new_game()
             elif sn == 'gameplay_intro':
                 btnA()
                 time.sleep(1)
@@ -119,54 +125,105 @@ class Gameplay:
     ''' in the market to buy or sell stuff '''
     @classmethod
     def buy_item(cls, item_name, amount):
-        from gamestats import OwnItems
+        from gameplay.gamestats import OwnItems
         if item_name != 'Poke Ball':
             raise Exception("Only item Poke Ball currently functional")
         else:
             item_idx = 1
         StateController.eval_state()
         sn = StateController.state_name()
-        while sn != 'gameplay_buy_final':
-            cls.in_confirm_choose_yes(item_idx, amount) # 1 for the first item in the shop
-            StateController.eval_state()
-            sn = StateController.state_name()
-            print(sn)
-        OwnItems.add_item_by_name(item_name, amount)
-        btnB(5)
+        while 'buy' in sn:
+            money = cls._read_money()
+            item_price = OwnItems.get_item_price_by_name(item_name)
+            max_amount = int(money/item_price) # how many items can I buy as a max
+            amount = min(amount, max_amount)
+            if amount < 0:
+                print(f"Not enough money to buy any of item {item_name}")
+                return
+            while sn != 'gameplay_buy_final':
+                money = cls._read_money()
+                item_price = OwnItems.get_item_price_by_name(item_name)
+                max_amount = int(money / item_price)  # how many items can I buy as a max
+                amount = min(amount, max_amount)
+                if amount < 0:
+                    print(f"Not enough money to buy any of item {item_name}")
+                    return
+                if sn == 'gameplay_buy_no_money':
+                    btnB(4)
+                    return
+                print(f"1buy_item state: {sn}")
+                cls.in_confirm_choose_yes(item_idx, amount) # 1 for the first item in the shop
+                StateController.eval_state()
+                sn = StateController.state_name()
+                print(f"2buy_item state: {sn}")
+            OwnItems.add_item_by_name(item_name, amount)
+            btnB(4) # exit the menu
+            return
     @classmethod
     def in_confirm_choose_yes(cls, item_idx, amount):
         sn = StateController.state_name()
-        while sn != 'gameplay_buy_confirm':
-            cls.go_to_buy_confirm(item_idx, amount)
-            StateController.eval_state()
-            sn = StateController.state_name()
-        time.sleep(0.5)
-        btnA()
+        while 'buy' in sn:
+            while sn != 'gameplay_buy_confirm': #, 'gameplay_buy_final']:
+                # if sn != 'gameplay_buy_confirm':
+                print(f"1in_confirm_choose_yes state: {sn}")
+                cls.go_to_buy_confirm(item_idx, amount)
+                StateController.eval_state()
+                sn = StateController.state_name()
+                print(f"2in_confirm_choose_yes state: {sn}")
+                # elif sn == 'gameplay_buy_final':
+                #     return
+            time.sleep(0.5)
+            btnA()
+            return
+
     @classmethod
     def go_to_buy_confirm(cls, to, amount):
         sn = StateController.state_name()
-        while sn != 'gameplay_buy_confirm':
-            if sn == 'gameplay_buy_menu':
-                cls.go_to_buy_amount(to)
-            elif sn == 'gameplay_buy_amount':
-                cls._set_up_down_cursor(amount, 'market')
-                time.sleep(0.5)
-                btnA(2)
-            StateController.eval_state()
-            sn = StateController.state_name()
+        while 'buy' in sn:
+            while sn != 'gameplay_buy_confirm':
+                if sn == 'gameplay_buy_menu':
+                    cls.go_to_buy_amount(to)
+                elif sn == 'gameplay_buy_amount':
+                    cls._set_up_down_cursor(amount, 'market')
+                    time.sleep(0.5)
+                    btnA()
+                    time.sleep(2.5)
+                    btnA() # "ITEM? That will be.."
+                sn = StateController.eval_state()
+                print(f"go_to_by_amount state: {sn}")
+            return
+
     @classmethod
     def go_to_buy_amount(cls,to): # to is the item number
         sn = StateController.state_name()
-        while sn != 'gameplay_buy_amount':
-            if sn == 'gameplay_buy_menu':
-                cls._set_up_down_cursor(to, 'market')
-                btnA()
-            elif sn == 'gameplay_buy_confirm':
-                btnB()
-            StateController.eval_state()
-            sn = StateController.state_name()
+        while 'buy' in sn:
+            while sn != 'gameplay_buy_amount':
+                if sn == 'gameplay_buy_menu':
+                    cls._set_up_down_cursor(to, 'market')
+                    btnA()
+                    time.sleep(0.1)
+                elif sn == 'gameplay_buy_confirm':
+                    btnB()
+                elif sn == 'gameplay_buy_final':
+                    btnB()
+                sn = StateController.eval_state()
+                print(f"go_to_by_amount state: {sn}")
+            return
+    @classmethod
+    def _read_money(cls):
+        from fundamentals.ocr import OCR
+        from settings import scale_factor
 
-
+        roi_money = [int(7*scale_factor), int(17*scale_factor), int(95*scale_factor), int(152*scale_factor)]# x0, x1, y0,y1
+        m_str = OCR.read_roi(roi_money)
+        if '$' in m_str:
+            m_str = m_str.replace('$', '')
+        if 'o' in m_str:
+            m_str = m_str.replace('o', '0')
+        if '!' in m_str:
+            m_str = m_str.replace('!', '1')
+        m_int = int(''.join([c for c in m_str if c.isdigit()]))
+        return m_int
 
 
     @classmethod
@@ -175,15 +232,18 @@ class Gameplay:
         cursor = GT.which_template_in_group(group)
         cursor_idx = int(re.search('\d+', cursor)[0])
         while to != cursor_idx:
+            # print("try setting the up down")
             if to > cursor_idx:
-                goup(cursor_idx - to)
+                # print(f"try to go up by {cursor_idx - to}")
+                goup(to - cursor_idx)
                 cursor = GT.which_template_in_group(group)
                 cursor_idx = int(re.search('\d+', cursor)[0])
             elif to < cursor_idx:
+                # print(f"try to go down")
                 godown(cursor_idx - to)
                 cursor = GT.which_template_in_group(group)
                 cursor_idx = int(re.search('\d+', cursor)[0])
 
 
 if __name__ == '__main__':
-    Gameplay.buy_item('Poke Ball', 5)
+    Gameplay.buy_item('Poke Ball',9)
