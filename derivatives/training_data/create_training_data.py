@@ -50,7 +50,7 @@ def MakeImg(t, font, fn, img_size):
 
 
 # The possible characters to use
-characters = list(string.digits) + list(string.ascii_letters) + ['é','!','.','!','!','/','/','?',"'"]
+characters = list(string.digits) + list(string.ascii_letters) + ['é','!','.','!','!','/','/','?',"'",'$', '$',':']
 
 # Image size
 img_size = (32, 32)

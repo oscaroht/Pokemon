@@ -7,3 +7,5 @@ native_w = 160
 native_h = 144
 
 scale_factor = 4
+
+characterlist = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzé.!?/'$:"

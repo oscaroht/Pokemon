@@ -6,10 +6,10 @@ import cv2
 import numpy as np
 from sklearn.utils import shuffle
 from tensorflow.keras import datasets, layers, models
-
+from settings import characterlist
 
 char = {}
-for i, ch in enumerate("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzé.!?/'"):
+for i, ch in enumerate(characterlist):
     char[i] = ch
     char[ch] = i
 
@@ -62,7 +62,7 @@ model = tf.keras.Sequential(
     tf.keras.layers.Flatten(),
     tf.keras.layers.Dense(128, activation="relu"),
     tf.keras.layers.Dropout(0.1),
-    tf.keras.layers.Dense(68, activation="softmax")
+    tf.keras.layers.Dense(len(characterlist), activation="softmax") # the number of output channels is equal to the number of answer options
 ]
 )
 

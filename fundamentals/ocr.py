@@ -1,7 +1,7 @@
 import tensorflow as tf
 import cv2
 import numpy as np
-
+from settings import characterlist
 
 
 class OCR:
@@ -24,11 +24,13 @@ class OCR:
                int(7 * scale_factor), #x0 left
                int(144 * scale_factor)] # x1 right. to include arrow: 152
 
-    roi_upper = [roi_bar[0], int((roi_bar[0]+roi_bar[1])/2), roi_bar[2], roi_bar[3] ]
-    roi_lower = [int((roi_bar[0]+roi_bar[1])/2), roi_bar[1], roi_bar[2], roi_bar[3] ]
+    y_separator = int((roi_bar[0]+roi_bar[1])/2)+1 # +1 , we do it a little lower because otherwise the ? symbol crashes
+
+    roi_upper = [roi_bar[0], y_separator, roi_bar[2], roi_bar[3] ]
+    roi_lower = [y_separator, roi_bar[1], roi_bar[2], roi_bar[3] ]
 
     char = {}
-    for i, ch in enumerate("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzé.!?/'"):
+    for i, ch in enumerate(characterlist):
         char[i] = ch
         char[ch] = i
 
@@ -44,7 +46,7 @@ class OCR:
         # threshold after blurring. Threshold is set quite high so blur does not fuse letters
         _, thresh = cv2.threshold(img, 185, 255, 0) # was 170
 
-        ## for testing
+        # ## for testing
         # cv2.imshow('contour', thresh)
         # cv2.waitKey()
 
@@ -84,6 +86,14 @@ class OCR:
         bbox.sort(key=box_sort)
         del bbox[0]             # first box encompasses the entire screen. We do not whant that
 
+        # TESTING
+        # img_cont = _processed_image[:90, :]
+        # for b in bbox:
+        #     img_cont = cv2.rectangle(img_cont, (b[0], b[1]), (b[2], b[3]), (0, 0, 255),
+        #                       2)
+        # cv2.imshow('a', img_cont)
+        # cv2.waitKey()
+
         ''''lets loop over all the boxes from left to right. If the next box is inside the current box (axis is x) then
         the two boxes are joined. A margin of 5 is taken so also when the next is almost inside this one'''
         bbox_copy = bbox.copy()
@@ -112,6 +122,14 @@ class OCR:
 
             bbox_out.append(b)
 
+        # TESTING
+        # img_cont = _processed_image[:90, :]
+        # for b in bbox:
+        #     img_cont = cv2.rectangle(img_cont, (b[0], b[1]), (b[2], b[3]), (0, 0, 255),
+        #                       2)
+        # cv2.imshow('a', img_cont)
+        # cv2.waitKey()
+
         ''''output is a list of boxes so [[x0,y0,x1,y1]]'''
         return bbox_out
 
@@ -135,7 +153,12 @@ class OCR:
             does not fit reshape it.'''
             img = np.zeros([32, 32], dtype=np.uint8)
             img.fill(255)
-            if char_img.shape > img.shape: #if char_img.shape[0] > img.shape[0] or char_img.shape[1] > img.shape[1]:
+
+            ## TESTING
+            # cv2.imshow('read image',char_img)
+            # cv2.waitKey()
+
+            if char_img.shape[0] > img.shape[0] or char_img.shape[1] > img.shape[1]:  ##if char_img.shape > img.shape: #
                 char_img = cv2.resize(char_img, img.shape)
             try:
                 img[0:char_img.shape[0], 0:char_img.shape[1]] = char_img
@@ -158,10 +181,52 @@ class OCR:
         characters = ''.join([cls.char[int(i)] for i in chr_codes])
         return characters
 
+
+    @classmethod
+    def read_roi(cls,roi):
+        from screen import screen_grab
+        screen = screen_grab()
+        roi_im = screen[roi[0]: roi[1], roi[2]:roi[3]]
+
+        # add a white part above and below the name. This makes it easier to find contours.
+        h1, w1 = roi_im.shape
+        white = 248 * np.ones((5, w1), dtype=np.uint8)
+        roi_im = cv2.vconcat([white, roi_im, white])
+        h1, w1 = roi_im.shape
+        white = 248 * np.ones((h1,5), dtype=np.uint8)
+        roi_im = cv2.hconcat([white, roi_im, white])
+
+        # # for testing
+        # cv2.imshow('a', roi_im)
+        # cv2.waitKey()
+
+        contours = cls._preprocess_for_contours(roi_im)   # find the rectangles around contours
+        bboxes = cls._get_bbox(contours)                # get a list of bounding boxes around character
+
+        # testing
+        # roi_im = cv2.cvtColor(roi_im, cv2.COLOR_GRAY2RGB)
+        # for box in bboxes:
+        #     cv2.rectangle(roi_im, (box[0], box[1]), (box[2], box[3]), (255,0,0))
+        # cv2.imshow('a', roi_im)
+        # cv2.waitKey()
+        # roi_im = cv2.cvtColor(roi_im, cv2.COLOR_RGB2GRAY)
+
+        ''''splits the roi in images defined by the bounding boxes'''
+        images_for_nn = cls._char_images(roi_im, bboxes)
+
+        try:
+            characters = cls._read_characters( images_for_nn )
+        except ValueError:
+            characters = "OCR ERROR unable to read characters"
+
+        return characters
+
+
     @classmethod
     def read_bar(cls):
         from screen import screen_grab
         screen = screen_grab(resize=False)
+
 
         bar_upper = screen[cls.roi_upper[0]:cls.roi_upper[1], cls.roi_upper[2]:cls.roi_upper[3]]
         bar_lower = screen[cls.roi_lower[0]:cls.roi_lower[1], cls.roi_lower[2]:cls.roi_lower[3]]
@@ -173,7 +238,10 @@ class OCR:
 
         imgs_for_nn = cls._char_images(bar_upper, bboxes1) + cls._char_images( bar_lower, bboxes2)
 
-        characters = cls._read_characters( imgs_for_nn )
+        try:
+            characters = cls._read_characters( imgs_for_nn )
+        except ValueError:
+            characters = "OCR ERROR unable to read characters"
 
         return characters
 
