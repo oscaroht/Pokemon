@@ -335,6 +335,7 @@ class OwnPokemon(Pokemon):
         self.current_hp = current_hp
         self.status = status
         self.level = level
+        self.needs_hp_max_check = False
 
         # self.move1 = own_moves[0]
         # self.move2 = own_moves[1]
@@ -371,6 +372,11 @@ class OwnPokemon(Pokemon):
         self.level += 1
         # update stats
         self.stats = {'hp':hp, 'atk':atk, 'def':defe, 'spa':spa, 'spd':spa, 'spe':spe }
+
+    @classmethod
+    def new_game(cls):
+        cls.all = []
+        cls.party = Party()
 
     def save(self):
         query =f"""insert into mart.own_pokemon values ({self.own_id}, {self.pokemon_id},'{self.own_name}',{self.level},'{self.status}',{self.current_hp},{self.stats['hp']},{self.stats['atk']},{self.stats['def']},{self.stats['spa']},{self.stats['spd']},{self.stats['spe']},{self.move1.id},{self.move2.id},{self.move3.id}, {self.move4.id}, {self.move1.max_pp}, {self.move2.max_pp}, {self.move3.max_pp}, {self.move4.max_pp})

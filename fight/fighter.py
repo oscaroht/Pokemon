@@ -196,6 +196,20 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
                 balls.lower_amount()
                 print(f"Number of balls is {balls.amount}")
 
+    def set_current_own_hp(self):
+        current_hp, _ = self.eval_hp()
+        self.my_pokemon.current_hp = current_hp
+
+    def eval_hp(self):
+        import re
+        hp_bar = FightRec.read_hp()
+        hps = re.split('/|z', hp_bar)  # sometimes / is mistaken by z
+        return int(hps[0]), int(hps[1])
+
+    def set_max_hp(self):
+        _, hp_max = self.eval_hp()
+        self.my_pokemon.stats['hp'] = hp_max
+
     def _perform_move(self, idx):
         from fight.selector import Selector
         # select the best move Selector
@@ -232,9 +246,11 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
         return
     def _bar_level_up(self, text):
         import re
-        hp_bar = FightRec.read_hp()
-        hp_max = re.split('/|z', '28z28')[1]  # sometimes / is mistaken by z
-        self.my_pokemon.stats['hp'] = int(hp_max)
+        # hp_bar = FightRec.read_hp()
+        # hp_max = re.split('/|z', hp_bar)[1]  # sometimes / is mistaken by z
+        # self.my_pokemon.stats['hp'] = int(hp_max)
+
+        self.my_pokemon.needs_hp_max_check = True
 
         new_level_str = re.sub('[^\d{1,3}]', '', text)         # I match with 3 because sometimes the ! is seen as a \d. I remove this later
         new_level_str_2 = new_level_str[0:2]
@@ -477,6 +493,12 @@ class Fighter:
                 if f.foe_def: # if the foe was defeated we do not continue because there is a new foe
                     print("Foe is already eliminated so we exit and drop the f object")
                     return f.next_foe_name # this code flow is needed for when the pplayer only has 1 pokemon
+                f.set_current_own_hp()
+                if f.my_pokemon.needs_hp_max_check: # after level up we need to check the new max hp
+                    f.set_max_hp()
+                    f.my_pokemon.needs_hp_max_check = False
+                if mode == 'catch' and not OwnItems.do_i_have("Poke Ball"):
+                    mode = 'max_damage'
                 f.execute_best_move(mode=mode)
             sn = StateController.eval_state()
             print(f'State name {sn}')
