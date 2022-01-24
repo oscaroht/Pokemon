@@ -1,7 +1,7 @@
 # from position import Position
 # from graphs import G
 from path import Path, LocationNotFound
-
+import time
 
 class WrongStep(Exception):
     pass
@@ -46,6 +46,7 @@ class Stepper(Path):  # With Position inherenting G
             sleep(0.001)
             t_check = threading.Thread(target=cls.check, args=(current, status))
             print(f'Check complete: {current} ')
+
             t_check.start()
             #sleep(0.01)
 
@@ -83,22 +84,30 @@ class Stepper(Path):  # With Position inherenting G
             if ori_current != 'right':
                 turnright()
                 ori_current = 'right'
+            start_time = time.time()
             goright()
+            print(f"Go right Step took: {time.time()-start_time}")
         elif x_current > x_next:
             if ori_current != 'left':
                 turnleft()
                 ori_current = 'left'
+            start_time = time.time()
             goleft()
+            print(f"Go left Step took: {time.time()-start_time}")
         elif y_current > y_next:
             if ori_current != 'up':
                 turnup()
                 ori_current = 'up'
+            start_time = time.time()
             goup()
+            print(f"Go up Step took: {time.time()-start_time}")
         elif y_current < y_next:
             if ori_current != 'down':
                 turndown()
                 ori_current = 'down'
+            start_time = time.time()
             godown()
+            print(f"Go down Step took: {time.time()-start_time}")
 
         # return ori
         ori[0] = ori_current
