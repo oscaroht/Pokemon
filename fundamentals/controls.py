@@ -4,9 +4,9 @@ from pynput.keyboard import Key, Controller
 keyboard = Controller()
 
 # control settings. Can be tuned using the function below
-wait = 0.4
-turnRatio = 0.028
-goRatio = 0.068
+wait = 0.400
+turnRatio = 0.0033 # 0.003500 # 0.028
+goRatio = 0.035 # 0.03500  # 0.068
 
 def btnA(*argv):
     print("A")
@@ -119,19 +119,27 @@ def godown(*args):
         n = int(args[0])
     btndown(n, goRatio)
 
-def test1():
+def test_circle():
     '''' Meant to test the control settings. In order to do so find an area in the game where you can walk in a circle,
     run this function and visually assess Also check 'Options' -> 'Video' -> Vsync '''
 
     for i in range(8):
         turnright()
+        start = time.time()
         goright()
+        print(time.time() - start)
         turndown()
+        start = time.time()
         godown()
+        print(time.time() - start)
         turnleft()
+        start = time.time()
         goleft()
+        print(time.time() - start)
         turnup()
+        start = time.time()
         goup()
+        print(time.time() - start)
 
 def test2():
 
@@ -155,9 +163,13 @@ def test2():
 
 def test_turn():
     for i in range(4):
+        print(f"Turn right")
         turnright()
+        print(f"Turn down")
         turndown()
+        print(f"Turn left")
         turnleft()
+        print(f"Turn up")
         turnup()
 
 
@@ -168,5 +180,5 @@ if __name__ == '__main__':
     time.sleep(1)
     print(f"Test starts in.. 1 sec")
     time.sleep(1)
-    test_turn()
+    test_circle()
     test = 1
