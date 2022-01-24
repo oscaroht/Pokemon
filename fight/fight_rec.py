@@ -201,31 +201,31 @@ class FightRec(OCR):
         foe_hp = (number_of_black_pixels - threshold) / (3136 - threshold)
         return foe_hp
 
-    @classmethod
-    def is_wait_arrow_present(cls, group = 'wait_arrow', threshold = 0.2):
-        from .selector import Selector
-        from .templates import f_temp_list
-        screen = screen_grab(resize=True)
-        # put the cursor on the right spot
-        best_score = 1
-        for t in f_temp_list:
-            #print(t.name)
-            if t.group == group:
-                #print('in menu group:' + t.name)
-                if t.mask is not None:
-                    res = cv2.matchTemplate(screen, t.img, cv2.TM_SQDIFF_NORMED, mask=t.mask)
-                else:
-                    res = cv2.matchTemplate(screen, t.img, cv2.TM_SQDIFF_NORMED)
-                min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-                if min_val < best_score:  # lowest score is the best for SQDIFF
-                    best_score = min_val
-                    t_best = t
-        if best_score > threshold:  # lowest score is the best for SQDIFF
-            return False
-        else:
-            print('wait arrow present')
-            Selector.state = 'wait_arrow'
-            return True
+    # @classmethod
+    # def is_wait_arrow_present(cls, group = 'wait_arrow', threshold = 0.2):
+    #     from .selector import Selector
+    #     from .templates import f_temp_list
+    #     screen = screen_grab(resize=True)
+    #     # put the cursor on the right spot
+    #     best_score = 1
+    #     for t in f_temp_list:
+    #         #print(t.name)
+    #         if t.group == group:
+    #             #print('in menu group:' + t.name)
+    #             if t.mask is not None:
+    #                 res = cv2.matchTemplate(screen, t.img, cv2.TM_SQDIFF_NORMED, mask=t.mask)
+    #             else:
+    #                 res = cv2.matchTemplate(screen, t.img, cv2.TM_SQDIFF_NORMED)
+    #             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+    #             if min_val < best_score:  # lowest score is the best for SQDIFF
+    #                 best_score = min_val
+    #                 t_best = t
+    #     if best_score > threshold:  # lowest score is the best for SQDIFF
+    #         return False
+    #     else:
+    #         print('wait arrow present')
+    #         Selector.state = 'wait_arrow'
+    #         return True
 
 
 
