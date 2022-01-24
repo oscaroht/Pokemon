@@ -4,15 +4,18 @@
 from stepper import Stepper, WrongStep, LocationNotFound
 from fundamentals.controls import turnright, turndown, turnleft,turnup, btnB, btnA
 from fundamentals import StateController
+# from fight.pokemon import OwnPokemon, OwnMove
+import time
 
 class Walker(Stepper):
-
     '''' this class combines the path with the stepper to execute the path. It loops over the
      get_shortest_path and the stepper while the goal is not reached (and the state is still "walk"). It breaks when the
      state is changed. It wont remember the goal. We fix that somewhere else because maybe we need to do other stuff
      after e.g. the battle '''
 
-    # goal_not_reached = True
+    class GameplayException(Exception):
+        '''' Sometimes we need to skip the current job in a game. Use this class to quietly escape from an task '''
+        pass
 
     @classmethod
     def go(cls, goal_cor):
@@ -98,16 +101,32 @@ class Walker(Stepper):
             text = OCR.read_bar()
             print(text)
             if text is not None:
-                if 'example' in text:
-                    print("do something")
+                if 'fire' in text and 'CHARMANDER?' in text:
+                    btnA()
+                    time.sleep(0.1)
+                    print("Starter CHARMANDER picked")
+                    from fight.pokemon import OwnPokemon, OwnMove
+                    moves = [OwnMove.create_own_move_by_name('scratch'), OwnMove.create_own_move_by_name('growl')]
+                    OwnPokemon(4,'blabla','fire','-', {'hp':20, 'atk': 11, 'def':10, 'spe':12, 'spd':10, 'spa':10},
+                               1,'charmander', 5, moves, current_hp=20, in_party=True)
                 elif 'nickname' in text:
-                    print("Nickname functionality not yet inplemented choose NO")
+                    print("Nickname functionality not yet implemented choose NO")
                     btnB()
+                elif 'OAK:Hey!Dontgoawayyet!' in text:
+                    btnB()
+                    raise cls.GameplayException("Skip current task and go the the next task.")
                 else:
                     btnA()
             sn = StateController.eval_state()
 
 
 if __name__ == '__main__':
+    from fundamentals.ocr import OCR
+    from fight.pokemon import OwnPokemon, OwnMove
+    print(OwnPokemon.party[0].level)
+    print(Walker.handle_talk())
+    print(OwnPokemon.party[1].level)
 
-    Walker.go(('mom_lvl1', 56))
+    print(OwnPokemon.all)
+
+    # Walker.go(('mom_lvl1', 56))
