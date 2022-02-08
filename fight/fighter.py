@@ -175,7 +175,7 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
             else:
                 print("No damaging move left")
         elif mode == 'catch':
-            from gameplay.gamestats import OwnItems
+            import gameplay.item as it
             hp_fraction = FightRec.foe_hp() # check the foe's current hp
             hp = hp_fraction * self.foe.stats['hp']
             print(f"Estimated hp: {hp}  with max hp: {self.foe.stats['hp']}")
@@ -190,9 +190,9 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
                 self._perform_move(max_idx)
             else:
                 print("try to throw ball")
-                balls = OwnItems.get_item_by_name('Poke Ball')
+                balls = it.Items.get_item_by_name('poke ball')
                 print(f"Number of balls is {balls.amount}")
-                Selector.use_item('Poke Ball')
+                Selector.use_item('poke ball')
                 balls.lower_amount()
                 print(f"Number of balls is {balls.amount}")
 
@@ -413,7 +413,7 @@ class Fighter:
         from fundamentals import StateController
         from fight.selector import Selector
         from game_plan import Gameplan
-        from gameplay.gamestats import OwnItems
+        import gameplay.item as it
 
         StateController.eval_state()
         sn = StateController.state_name()
@@ -431,7 +431,7 @@ class Fighter:
         # print(OwnItems.do_i_have("Poke Ball"))
         # print(wild)
         # print(not OwnPokemon.do_i_have_pokemon_by_name(f.foe.name))
-        if (f.foe.name in Gameplan.catch_pokemon) and OwnItems.do_i_have("Poke Ball") and wild and (not OwnPokemon.do_i_have_pokemon_by_name(f.foe.name)):
+        if (f.foe.name in Gameplan.catch_pokemon) and it.Items.do_i_have("poke ball") and wild and (not OwnPokemon.do_i_have_pokemon_by_name(f.foe.name)):
             mode = 'catch'
         print(mode)
 
@@ -497,7 +497,7 @@ class Fighter:
                 if f.my_pokemon.needs_hp_max_check: # after level up we need to check the new max hp
                     f.set_max_hp()
                     f.my_pokemon.needs_hp_max_check = False
-                if mode == 'catch' and not OwnItems.do_i_have("Poke Ball"):
+                if mode == 'catch' and not it.Items.do_i_have("Poke Ball"):
                     mode = 'max_damage'
                 f.execute_best_move(mode=mode)
             sn = StateController.eval_state()

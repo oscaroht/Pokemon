@@ -19,8 +19,8 @@ class Gameplay:
                 if Gameplan.continue_or_new_game == 'new_game':
                     # reset the own pokemon object holders
                     from fight.pokemon import OwnPokemon
-                    from gameplay.gamestats import OwnItems
-                    OwnItems.new_game()
+                    import gameplay.item as it
+                    it.Items.new_game()
                     OwnPokemon.new_game()
             elif sn == 'gameplay_intro':
                 btnA()
@@ -125,25 +125,26 @@ class Gameplay:
     ''' in the market to buy or sell stuff '''
     @classmethod
     def buy_item(cls, item_name, amount):
-        from gameplay.gamestats import OwnItems
-        if item_name != 'Poke Ball':
+        import gameplay.item as it
+        if item_name != 'poke ball':
             raise Exception("Only item Poke Ball currently functional")
         else:
             item_idx = 1
+
+        item = it.Items.get_item_by_name(item_name)
+
         StateController.eval_state()
         sn = StateController.state_name()
         while 'buy' in sn:
             money = cls._read_money()
-            item_price = OwnItems.get_item_price_by_name(item_name)
-            max_amount = int(money/item_price) # how many items can I buy as a max
+            max_amount = int(money / item.buy) # how many items can I buy as a max
             amount = min(amount, max_amount)
             if amount < 0:
                 print(f"Not enough money to buy any of item {item_name}")
                 return
             while sn != 'gameplay_buy_final':
                 money = cls._read_money()
-                item_price = OwnItems.get_item_price_by_name(item_name)
-                max_amount = int(money / item_price)  # how many items can I buy as a max
+                max_amount = int(money / item.buy)  # how many items can I buy as a max
                 amount = min(amount, max_amount)
                 if amount < 0:
                     print(f"Not enough money to buy any of item {item_name}")
@@ -156,7 +157,8 @@ class Gameplay:
                 StateController.eval_state()
                 sn = StateController.state_name()
                 print(f"2buy_item state: {sn}")
-            OwnItems.add_item_by_name(item_name, amount)
+            # the item was bought in the game. Lets us add it to our system
+            item.add_amount(amount)
             btnB(4) # exit the menu
             return
     @classmethod
