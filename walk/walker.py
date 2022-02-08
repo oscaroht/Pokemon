@@ -107,7 +107,7 @@ class Walker(Stepper):
                     print("Starter CHARMANDER picked")
                     from fight.pokemon import OwnPokemon, OwnMove
                     moves = [OwnMove.create_own_move_by_name('scratch'), OwnMove.create_own_move_by_name('growl')]
-                    OwnPokemon(4,'blabla','fire','-', {'hp':20, 'atk': 11, 'def':10, 'spe':12, 'spd':10, 'spa':10},
+                    OwnPokemon(4,'charmander','fire','-', {'hp':20, 'atk': 11, 'def':10, 'spe':12, 'spd':10, 'spa':10},
                                1,'charmander', 5, moves, current_hp=20, in_party=True)
                 elif 'nickname' in text:
                     print("Nickname functionality not yet implemented choose NO")
@@ -115,6 +115,16 @@ class Walker(Stepper):
                 elif 'OAK:Hey!Dontgoawayyet!' in text:
                     btnB()
                     raise cls.GameplayException("Skip current task and go the the next task.")
+                elif 'heal' in text and 'POKéMON' in text:
+                    # heal at a pokecenter
+                    from fight.pokemon import OwnPokemon
+                    OwnPokemon.party.heal_party()
+                    btnA()
+                elif 'quickrest' in text:
+                    # heal at mom
+                    from fight.pokemon import OwnPokemon
+                    OwnPokemon.party.heal_party()
+                    btnA()
                 else:
                     btnA()
             sn = StateController.eval_state()
