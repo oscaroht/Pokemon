@@ -3,9 +3,8 @@ from position import Position, LocationNotFound
 
 
 class Path(Position):
-    # not sure if this works. Well it does!
-    # from walk.graphs import load_graph
-    # G_lvl1, G_lvl0, df_edges_lvl1 = load_graph()
+
+    path = None
 
     def __init__(self, end_cor, start_cor=None, start_map_name=None):
         self.start_map_name = start_map_name
@@ -150,6 +149,7 @@ class Path(Position):
 
         print(f"path: {path}")
         self.id_path = path
+        Path.path = path
         return rt
 
         #

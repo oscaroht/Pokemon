@@ -6,14 +6,14 @@ Maybe we can even store the shrunk cpo versions. Maybe this improves performance
 import numpy as np
 import cv2
 
-from walk.templates import T
+from walk.templates import WalkTemplates
 from fundamentals.screen import screen_grab
 from graphs import G
 
 class LocationNotFound(Exception):
     pass
 
-class Position(G,T):
+class Position(G, WalkTemplates):
 
     map_name = None
     cor_id = -1
@@ -49,12 +49,12 @@ class Position(G,T):
 
         if isinstance(map,str):
             ''''Need better way to navigate the data structure. Maybe indexing.'''
-            for t in T.temp_list:
+            for t in WalkTemplates.temp_list:
                 if t.name == map: # 'pellet_town':
                     return t
             # maybe it is a group
             list=[]
-            for t in T.temp_list:
+            for t in WalkTemplates.temp_list:
                 if t.group == map:
                     list.append(t)
             if list != []:
@@ -62,7 +62,7 @@ class Position(G,T):
 
         elif isinstance(map,int):
             ''''Need better way to navigate the data structure. Maybe indexing.'''
-            for t in T.temp_list:
+            for t in WalkTemplates.temp_list:
                 if t.id == map: # 'pellet_town':
                     return t.id
 
@@ -135,6 +135,46 @@ class Position(G,T):
         map: int or str '''
         cor = (cls.map_name, cls.x, cls.y)
 
+        def map_name_to_id(map_name):
+            from path import Path
+            try:
+                return int(Path.df_edges_lvl1[Path.df_edges_lvl1['from_name'] == map_name].iloc[0]['from_id'])
+            except:
+                test=1
+
+        def template_order():
+            from path import Path
+            p = Path.path
+            if p is None:
+                return WalkTemplates.temp_list
+
+            new_list = []
+            map_templates = [t for t in WalkTemplates.temp_list if t.group == 'map']
+            '''' first add the maps in the path '''
+            for map_id in p:
+                for t in map_templates:
+                    if map_name_to_id(t.name) == map_id:
+                        # this is always found 1 time
+                        break # break from the inner loop
+                new_list.append(t)
+            '''' now add every map that is not in the path '''
+            for t in map_templates:
+                if t.group == 'map' and t not in new_list:
+                    new_list.append(t)
+
+            # new_list = []
+            # map_templates = [t for t in T.temp_list if t.group == 'map']
+            # for map_id in reversed(p):
+            #     new_list.insert(0,)
+            #
+            # for map_id in reversed(p): # iterate over keys in reversed order. So from last to beginning of path
+            #     for t in map_templates:
+            #         if map_name_to_id(t.name) == map_id:
+            #             new_list.insert(0, t) # if this map in in the path we add it in from
+            #         else:
+            #             new_list.append(t) # if it this map is not in the path we add it in the back
+            return new_list
+
         '''' if a map name or id is given than check if we find a coordinate. If not move on to all templates'''
         if cls.map_name != None:
             cor = cls._get_position_in_map(cls._map_to_cor(cls._get_current_map(cls.map_name)), screen_grab())
@@ -146,7 +186,10 @@ class Position(G,T):
          position  '''
         '''' if two maps are similar, like mom_lvl1 and mom_lvl2 this is problematic because the first one will be 
         found'''
-        for t in T.temp_list:
+        temp_order = template_order()
+        print(f"Template list: {[t.name for t in temp_order]}")
+
+        for t in temp_order:
             # iterate over all map templates
             if t.group == 'map':
                 print(f' trying {t.name}')
