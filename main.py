@@ -99,6 +99,8 @@ def train(to_level, which_pokemon, start, turn, heal_point, hp_limit = 0.3):
         while pokemon_to_train: # empty list is False
             # train
             while pokemon_to_train and (pokemon_to_train_ready_to_fight and hp_fractions >= hp_limit):
+                print(f"Party: {OwnPokemon.party}")
+                print(f"to train and ready to fight: {pokemon_to_train_ready_to_fight}")
                 Fighter.put_pokemon_in_front_of_party(pokemon_to_train_ready_to_fight[0])
 
                 go_to(start)
@@ -110,8 +112,10 @@ def train(to_level, which_pokemon, start, turn, heal_point, hp_limit = 0.3):
                 hp_fractions = sum([p.current_hp / p.stats['hp'] for p in OwnPokemon.party]) / len(OwnPokemon.party)
 
             while pokemon_to_train and (not pokemon_to_train_ready_to_fight or hp_fractions < hp_limit):
+                print(f"Party: {OwnPokemon.party}")
+                print(f"to train and ready to fight: {pokemon_to_train_ready_to_fight}")
                 talk(heal_point)
-                OwnPokemon.party.heal()
+                OwnPokemon.party.heal_party()
 
                 pokemon_to_train = [p for p in OwnPokemon.party if p.level < to_level]
                 pokemon_to_train_ready_to_fight = [p for p in pokemon_to_train if p.current_hp > 0]
@@ -120,12 +124,12 @@ def train(to_level, which_pokemon, start, turn, heal_point, hp_limit = 0.3):
 
 
 
-class Gameplan:
+class Gameplan2:
 
 
     starter_pokemon = 'charmander' # choose charmander/squirtle/bulbasor of zoiets
 
-    sku = {'item_name': 'Poke Ball', 'amount': 10}
+    sku = {'item_name': 'poke ball', 'amount': 10}
 
     # location aliases
     _mom = ('mom_lvl1', 38, 'up')
@@ -150,17 +154,25 @@ class Gameplan:
                        'turn': ('route2b', 68)}
 
     plan = [
-            (go_to,     [('route1', 595)]),
-            (talk,      [_starter_pokemon_location[starter_pokemon]]),
-            (talk,      [_mom]),
-            (talk,      [viridian_city_pc]),
-            (talk,      [viridian_city_market]), # get parcel
-            (talk,      [_oak]), # deliver parcel to oak
-            (talk,      [_mom]),
-            (talk,      [viridian_city_pc]),
-            (buy,       [viridian_city_market, 'Poke Ball', 9]),
+            # (go_to,     [('route1', 595)]),
+            # (talk,      [_starter_pokemon_location[starter_pokemon]]),
+            # (talk,      [_mom]),
+            # (talk,      [viridian_city_pc]),
+            # (talk,      [viridian_city_market]), # get parcel
+            # (talk,      [_oak]), # deliver parcel to oak
+            # (talk,      [_mom]),
+            # (talk,      [viridian_city_pc]),
+            # (buy,       [viridian_city_market, 'poke ball', 9]),
+            (train,     [9, 'all', ('route1', 168), ('route1', 161), viridian_city_pc]),
             (talk,      [pewter_city_pc]),
-            (train,     [10, 'all', ('route2b', 68), ('route2b', 61), pewter_city_pc])
+            (talk,      [viridian_city_pc]),
+            (talk,      [pewter_city_pc]),
+            (train,     [10, 'all', ('route2b', 68), ('route2b', 61), pewter_city_pc]),
+            (go_to,     [('pewter_city_gym', 55)]),
+            (talk,      [pewter_city_pc]),
+            (talk,      [brock]), # fight brock
+            (talk,      [pewter_city_pc]),
+
             ]
 
 
@@ -169,11 +181,11 @@ class Gameplan:
         [f(*args) for f, args in cls.plan]
 
 if __name__ == '__main__':
-    Gameplan.exceute()
+    Gameplan2.exceute()
 
     # talk((Gameplan.viridian_city_market))
 
-    # buy(('viridian_city_market', 27, 'left'), 'Poke Ball', 9)
+    # buy(('viridian_city_market', 27, 'left'), 'poke ball', 2)
 
     # go_to(('pewter_city_pc', 42, 'up'))
     # Walker.map_name = 'viridian_city'

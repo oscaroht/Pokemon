@@ -497,7 +497,8 @@ class Fighter:
                 if f.my_pokemon.needs_hp_max_check: # after level up we need to check the new max hp
                     f.set_max_hp()
                     f.my_pokemon.needs_hp_max_check = False
-                if mode == 'catch' and not it.Items.do_i_have("Poke Ball"):
+                if mode == 'catch' and not it.Items.do_i_have("poke ball"):
+                    print("switch mode from catch to max damage")
                     mode = 'max_damage'
                 f.execute_best_move(mode=mode)
             sn = StateController.eval_state()

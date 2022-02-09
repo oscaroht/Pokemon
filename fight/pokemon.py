@@ -289,7 +289,7 @@ class Party(list):
         else:
             raise InvalidPartyError('Pokemon not found in party.')
 
-    def heal(self):
+    def heal_party(self):
         ''' Heal all pokemon in the party '''
         for pokemon in self:
             pokemon.heal()

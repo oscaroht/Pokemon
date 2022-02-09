@@ -18,6 +18,8 @@ class Template:
         self.img = img_gray  # array image of the template
         self.mask = mask
 
+    def __str__(self):
+        return f'Template: {self.name}'
 
 # class Map(Template):
 #
@@ -30,7 +32,6 @@ class Template:
 #     def __init__(self, orientation, *args, **kwargs):
 #         super(OrientationTemplate, self).__init__( *args, **kwargs)
 #         self.orientation = orientation
-
 
 def load_templates():
     path = os.path.dirname(os.path.abspath(__file__))
@@ -61,7 +62,7 @@ def load_templates():
 
     return temp_list
 
-class T:
+class WalkTemplates:
     temp_list = load_templates()
 
     @classmethod
@@ -71,7 +72,7 @@ class T:
 
         # pick the right template
         best_score = 1
-        for t in T.temp_list:
+        for t in WalkTemplates.temp_list:
             if t.group == group:
                 if t.mask is not None:
                     res = cv2.matchTemplate(screen, t.img, cv2.TM_SQDIFF_NORMED, mask=t.mask)
@@ -84,3 +85,7 @@ class T:
         if best_score > threshold:  # lowest score is the best for SQDIFF
             return None
         return t_best.option
+
+
+if __name__ == '__main__':
+    test=1
