@@ -18,25 +18,22 @@ class Walker(Stepper):
         pass
 
     @classmethod
+    def reached_goal(cls, goal_cor):
+        from walk.orientation import get_orientation
+        ori = get_orientation()
+        if len(goal_cor) > 2:
+            return Stepper.position[:2] == goal_cor[:2] and ori == goal_cor[2]
+        elif len(goal_cor) == 2:
+            return Stepper.position[:2] == goal_cor[:2]
+
+    @classmethod
     def go(cls, goal_cor):
         '''' goal_cor: tuple like ('mom_lvl1, 58) '''
-
         from walk.orientation import get_orientation
-        from path import Path
-        #from stepper import Stepper, WrongStep
-
         from time import sleep
-
-        def reached_goal():
-            if len(goal_cor) > 2:
-                return Stepper.position[:2] == goal_cor[:2] and ori == goal_cor[2]
-            elif len(goal_cor) == 2:
-                return Stepper.position[:2] == goal_cor[:2]
-
 
         def set_orientation():
             if len(goal_cor) > 2:
-
                 ori = get_orientation()
                 while ori != goal_cor[2]:
                     if goal_cor[2] == 'right':
@@ -53,7 +50,7 @@ class Walker(Stepper):
         #print('eval position')
         Stepper.eval_position() # call it so the position gets determined and stored in the Position attributes
                                 # we do not need to call it because the position is always stored. At initialization it
-        ori = get_orientation()
+
         # will take the default which is fine because it is not the goal. Later, in creating the path variable the
         # Position.position is set
         #print(f'position: {Stepper.position} from walker go')
@@ -63,8 +60,7 @@ class Walker(Stepper):
         #     cls.goal_not_reached = False
         print(f"walker go state {sn}")
 
-        while not reached_goal() and sn in ['walk','none_state']:
-            print(f'Stepper.position: {Stepper.position[:len(goal_cor)]} != {goal_cor}' )
+        while not cls.reached_goal(goal_cor) and sn in ['walk','none_state']:
             try:
                 path = Stepper(goal_cor)
                 last_map = False
@@ -73,7 +69,7 @@ class Walker(Stepper):
                         last_map = True
                     path.start_map = int(key)
 
-                    Stepper.path_interpreter(int(key), value, last_map= last_map)
+                    Stepper.path_interpreter(int(key), value, last_map=last_map)
                     sleep(2.5) # wait to go to the next map
                     if not last_map:
                         next_map_id = list(path.cor_dict)[list(path.cor_dict).index(int(key))+1]

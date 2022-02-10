@@ -13,9 +13,10 @@ import numpy as np
 
 
 
-def go_to(goal):
+def go_to(goal, fight_mode = 'max_damage'):
+
     try:
-        while not (Walker.map_name == goal[0] and Walker.cor_id == goal[1]):
+        while not Walker.reached_goal(goal):
             sn = StateController.eval_state()
             print(f"sn in mMain LOOP : {sn}")
             if sn == 'walk':
@@ -24,7 +25,7 @@ def go_to(goal):
                 except (WrongStep, LocationNotFound) as e:
                     print(F'ERROR: {e}')
             elif 'fight' in sn:  # or  'none' in sn:  ## removed this part
-                Fighter.handle_fight(mode='max_damage')  # catch or max_damage
+                Fighter.handle_fight(mode=fight_mode)  # catch or max_damage
             elif sn == 'walk_evalstats':
                 Fighter.eval_pokemon_stats()
             elif sn == 'walk_talk':
@@ -41,9 +42,9 @@ def go_to(goal):
 
 
 
-def talk(goal):
+def talk(goal, fight_mode = 'max_damage'):
     from fundamentals.controls import btnA
-    go_to(goal)
+    go_to(goal, fight_mode=fight_mode)
     # TAKE CASE OF ORIENTATION FIRST
     sn = StateController.eval_state()
     while sn != 'walk_talk':
@@ -74,7 +75,7 @@ def buy(goal, item_name, amount):
     Gameplay.buy_item(item_name, amount)
 
 
-def train(to_level, which_pokemon, start, turn, heal_point, hp_limit = 0.3):
+def train(to_level, which_pokemon, start, turn, heal_point, hp_limit=0.3):
     '''' this function trains pokemon to a certain level
 
      to_level: int                              to which level to train
@@ -103,8 +104,8 @@ def train(to_level, which_pokemon, start, turn, heal_point, hp_limit = 0.3):
                 print(f"to train and ready to fight: {pokemon_to_train_ready_to_fight}")
                 Fighter.put_pokemon_in_front_of_party(pokemon_to_train_ready_to_fight[0])
 
-                go_to(start)
-                go_to(turn)
+                go_to(start, fight_mode='train')
+                go_to(turn, fight_mode='train')
 
                 pokemon_to_train = [p for p in OwnPokemon.party if p.level < to_level]
                 pokemon_to_train_ready_to_fight = [p for p in pokemon_to_train if p.current_hp > 0] # could be [] so we put [0] at the first row of thies loop
@@ -114,7 +115,7 @@ def train(to_level, which_pokemon, start, turn, heal_point, hp_limit = 0.3):
             while pokemon_to_train and (not pokemon_to_train_ready_to_fight or hp_fractions < hp_limit):
                 print(f"Party: {OwnPokemon.party}")
                 print(f"to train and ready to fight: {pokemon_to_train_ready_to_fight}")
-                talk(heal_point)
+                talk(heal_point, fight_mode='train')
                 OwnPokemon.party.heal_party()
 
                 pokemon_to_train = [p for p in OwnPokemon.party if p.level < to_level]
@@ -163,11 +164,14 @@ class Gameplan2:
             # (talk,      [_mom]),
             # (talk,      [viridian_city_pc]),
             # (buy,       [viridian_city_market, 'poke ball', 9]),
-            (train,     [9, 'all', ('route1', 168), ('route1', 161), viridian_city_pc]),
+
+            (go_to,     [('route1', 168)]),
+
+            (train,     [5, 'all', ('route1', 168), ('route1', 161), viridian_city_pc]),
             (talk,      [pewter_city_pc]),
             (talk,      [viridian_city_pc]),
             (talk,      [pewter_city_pc]),
-            (train,     [10, 'all', ('route2b', 68), ('route2b', 61), pewter_city_pc]),
+            (train,     [7, 'all', ('route2b', 68), ('route2b', 61), pewter_city_pc]),
             (go_to,     [('pewter_city_gym', 55)]),
             (talk,      [pewter_city_pc]),
             (talk,      [brock]), # fight brock

@@ -156,6 +156,8 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
     def execute_best_move(self, mode='max_damage'):
         ''' mode can be 'best', 'save_pp' '''
         from fight.selector import Selector
+        if mode not in ['catch', 'max_damage']:
+            raise Exception(f"Invalid input argument {mode}. Only allowed {['catch', 'max_damage']}")
 
         d = []
         print(f"Pokemon {self.my_pokemon.name}'s moves are {[x.name for x in self.my_pokemon.moves]}")
@@ -250,28 +252,34 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
         # hp_max = re.split('/|z', hp_bar)[1]  # sometimes / is mistaken by z
         # self.my_pokemon.stats['hp'] = int(hp_max)
 
-        self.my_pokemon.needs_hp_max_check = True
+        # check which pokemon went a level up
+        pokemon_name = difflib.get_close_matches(text.split('grew')[0].lower(),[p.own_name for p in OwnPokemon.party], n=1)[0]
+        pokemon = OwnPokemon.party.get_own_pokemon_by_own_name(pokemon_name)
+
+        pokemon.needs_hp_max_check = True
 
         new_level_str = re.sub('[^\d{1,3}]', '', text)         # I match with 3 because sometimes the ! is seen as a \d. I remove this later
         new_level_str_2 = new_level_str[0:2]
         new_level = int( new_level_str_2 )
 
-        current_level = self.my_pokemon.level
+        current_level = pokemon.level
         if new_level == current_level + 1:
             # this is expected
-            self.my_pokemon.level = new_level
+            pokemon.level = new_level
         elif new_level_str_2[0] == current_level+1:
             # the ! is probably replaced with a \d and because we are in single digit levels new_level[0:2] does not remove the errorous !
-            self.my_pokemon.level = new_level[0]
+            pokemon.level = new_level[0]
+        else:
+            print(f"level {new_level} does not seem right")
 
         time.sleep(1) # takes a little time before the stats update window appears
 
         new_stats = FightRec.read_stat_update()
-        self.my_pokemon.stats['atk'] = new_stats['attack']
-        self.my_pokemon.stats['def'] = new_stats['defense']
-        self.my_pokemon.stats['spe'] = new_stats['speed']
-        self.my_pokemon.stats['spd'] = new_stats['special']
-        self.my_pokemon.stats['spa'] = new_stats['special']
+        pokemon.stats['atk'] = new_stats['attack']
+        pokemon.stats['def'] = new_stats['defense']
+        pokemon.stats['spe'] = new_stats['speed']
+        pokemon.stats['spd'] = new_stats['special']
+        pokemon.stats['spa'] = new_stats['special']
 
     def _bar_new_move_learned(self,text):
         ''' this function used the difflib to figure out what move it is.'''
@@ -279,18 +287,28 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
         from .selector import Selector
         import re
 
-        t = text.replace(self.my_pokemon.name.upper(), '') # replace the pokemon name from the text
+        pokemon_name = \
+        difflib.get_close_matches(text.split('learn')[0].lower(), [p.own_name for p in OwnPokemon.party], n=1)[0]
+        pokemon = OwnPokemon.party.get_own_pokemon_by_own_name(pokemon_name)
+
+        t = text.replace(pokemon_name.upper(), '')  # replace the pokemon name from the text
         t = re.sub('[^A-Z]*', '', t)  # take the upper case characters from the string
 
-        new_move_name = difflib.get_close_matches(t, [str(x).upper() for x in list(Move.all['name'].keys())], n=1)[0]
-        if new_move_name.lower() in [m.name for m in self.my_pokemon.moves]:
-            print(f"Move {new_move_name} already in {self.my_pokemon.name.upper()}'s moves. Not allowed so we do not add it")
-            return # do not do anything if the pokemon already has the move
+        print(f"move name: {t}")
+        move_options = difflib.get_close_matches(t, [str(x).upper() for x in list(Move.all['name'].keys())], n=1)
+        if len(move_options) == 0:
+            raise Exception(f"No match found for move {t} for own pokemon {pokemon}")
+        new_move_name = move_options[0]
+        if new_move_name.lower() in [m.name for m in pokemon.moves]:
+            print(
+                f"Move {new_move_name} already in {pokemon.own_name.upper()}'s moves. Not allowed so we do not add it")
+            return  # do not do anything if the pokemon already has the move
         new_move = Move.get_move_by_name(new_move_name.lower())
-        new_own_move = OwnMove(new_move.id, new_move.name, new_move.type, new_move.power, new_move.accuracy, new_move.max_pp, new_move.max_pp)
+        new_own_move = OwnMove(new_move.id, new_move.name, new_move.type, new_move.power, new_move.accuracy,
+                               new_move.max_pp, new_move.max_pp)
         '''' if we have less than 4 moves we can just add it '''
-        if len(self.my_pokemon.moves) < 4:
-            self.my_pokemon.add_move(new_own_move)
+        if len(pokemon.moves) < 4:
+            pokemon.add_move(new_own_move)
         else:
             print('TO DO add handling of replacing a move')
 
@@ -409,20 +427,18 @@ class Fighter:
 
 
     @classmethod
-    def handle_foe(cls, my_pokemon, wild = False, mode = 'max_damage'):
+    def handle_foe(cls, my_pokemon, wild=False, mode='max_damage'):
         from fundamentals import StateController
         from fight.selector import Selector
         from game_plan import Gameplan
         import gameplay.item as it
 
-        StateController.eval_state()
-        sn = StateController.state_name()
+        sn = StateController.eval_state()
         print(f'State name {StateController.state_name()}')
 
         while sn in ['fight_init', 'fright_init_trainer','fight_wait_arrow']:   # if we keep hanging in the init state than keep initting
             Selector.init_fight()
-            StateController.eval_state()
-            sn = StateController.state_name()
+            sn = StateController.eval_state()
 
         StateController.in_fight = True
         f = Fight(my_pokemon)
@@ -433,10 +449,10 @@ class Fighter:
         # print(not OwnPokemon.do_i_have_pokemon_by_name(f.foe.name))
         if (f.foe.name in Gameplan.catch_pokemon) and it.Items.do_i_have("poke ball") and wild and (not OwnPokemon.do_i_have_pokemon_by_name(f.foe.name)):
             mode = 'catch'
-        print(mode)
+        print(f'mode: {mode}')
 
-        sn = 'fight'
-        while ('fight' in sn or 'none' in sn):
+        # sn = 'fight'
+        while 'fight' in sn or 'none' in sn:
             if sn == 'fight_pokedex':
                 '''' A new pokemon was recently caught. Besides skipping the pokedex window we should add it to our 
                 party'''
@@ -500,11 +516,25 @@ class Fighter:
                 if mode == 'catch' and not it.Items.do_i_have("poke ball"):
                     print("switch mode from catch to max damage")
                     mode = 'max_damage'
+                elif mode == 'train':
+                    # switch pokemon if it is to strong
+                    if f.my_pokemon.level <= f.foe.level < max([p.level for p in OwnPokemon.party]):
+                        # switch to other pokemon
+                        new_pk_index = OwnPokemon.party.get_index_of_best_pokemon()
+                        Selector.change_pokemon(new_pk_index) # perform the actual button clicks
+                        f.my_pokemon = OwnPokemon.party[new_pk_index] # update the fight object
+                    mode = 'max_damage' # now max damage the * out of this foe
+
                 f.execute_best_move(mode=mode)
+            elif sn == 'none_state':
+                pass
+            else:
+                print(f"in a state I do not expect. Lets return")
+                return
             sn = StateController.eval_state()
             print(f'State name {sn}')
             print(f"loop handle foe/ loop move")
-        return f.next_foe_name
+        return f.next_foe_name # returns None if it has none
 
 
     @classmethod
@@ -562,11 +592,11 @@ class Fighter:
         while 'fight' in sn or 'none' in sn:
             print(f'State name {StateController.state_name()}')
             if StateController.state_name() == 'fight_init_trainer':
-                cls.handle_wild_and_trainer_fight()
+                cls.handle_wild_and_trainer_fight(mode=mode)
             elif StateController.state_name() == 'fight_init':
-                cls.handle_wild_and_trainer_fight(wild=True)
+                cls.handle_wild_and_trainer_fight(wild=True, mode=mode)
             else:
-                cls.handle_wild_and_trainer_fight() # this is default
+                cls.handle_wild_and_trainer_fight(mode=mode) # this is default
             print(f"new battle loop")
             StateController.eval_state()
             sn = StateController.state_name()

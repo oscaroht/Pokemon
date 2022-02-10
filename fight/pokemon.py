@@ -294,6 +294,16 @@ class Party(list):
         for pokemon in self:
             pokemon.heal()
 
+    def get_own_pokemon_by_own_name(self, name):
+        for p in self:
+            if p.own_name == name:
+                return p
+        print(f"Own name {name} not found in party")
+
+    def get_index_of_best_pokemon(self):
+        import numpy as np
+        return int(np.argmax([p.level for p in self]))
+
     def stats_need_evaluation(self,return_party_idx = False):
         for i, pokemon in enumerate(self):
             if pokemon.moves==[]:
