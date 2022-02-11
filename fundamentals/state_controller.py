@@ -285,6 +285,7 @@ class StateController:
                 return
             elif state_name == 'change_pokemon':
                 StateController.state.switch(FightChangePokemonState)
+                return
             elif state_name == 'use_next_pokemon':
                 StateController.state.switch(FightUseNextPokemonState)
                 return
