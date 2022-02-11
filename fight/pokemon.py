@@ -300,9 +300,11 @@ class Party(list):
                 return p
         print(f"Own name {name} not found in party")
 
-    def get_index_of_best_pokemon(self):
+    def get_index_of_best_pokemon_ready_to_fight(self):
+        '''' gets the party index of the pokemon with the highest level. If pokemon have an equal level the lowest
+        index is choosen. If no pokemon are ready to fight the first pokemon is choosen. '''
         import numpy as np
-        return int(np.argmax([p.level for p in self]))
+        return int(np.argmax([p.level if p.is_ready_to_fight else -1 for p in self]))
 
     def stats_need_evaluation(self,return_party_idx = False):
         for i, pokemon in enumerate(self):
@@ -366,6 +368,18 @@ class OwnPokemon(Pokemon):
             return True
         else:
             return False
+
+    def is_highest_level_in_party_ready_to_fight(self):
+        for p in self.party:
+            if p.is_ready_to_fight() and self.level < p.level:
+                return False
+        return True
+
+    def is_ready_to_fight(self):
+        '''' if hp is larger than 0 and there is at least 1 move with a pp larger than zero and that does damage '''
+        if self.current_hp > 0 and len([m for m in self.moves if m.pp>0 and m.power > 0]) > 0:
+            return True
+        return False
 
     def heal(self):
         # self.move1.pp = self.move1.max_pp
@@ -455,6 +469,5 @@ class OwnPokemon(Pokemon):
 df_pokemon, df_moves, df_strength_weakness, pokemon_dict = load_pokemon()
 
 if __name__=='__main__':
-    test=1
-# else:
-#     df_pokemon, df_moves, df_strength_weakness, pokemon_dict = load_pokemon()
+    OwnPokemon.party[0].moves[1].pp = 0
+    print(OwnPokemon.party[0].is_ready_to_fight())

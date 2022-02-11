@@ -517,10 +517,10 @@ class Fighter:
                     print("switch mode from catch to max damage")
                     mode = 'max_damage'
                 elif mode == 'train':
-                    # switch pokemon if it is to strong
-                    if f.my_pokemon.level <= f.foe.level < max([p.level for p in OwnPokemon.party]):
+                    # switch pokemon if foe is to strong. We choose the max level pokemon that is ready to fight
+                    if f.my_pokemon.level <= f.foe.level and not f.my_pokemon.is_highest_level_in_party_ready_to_fight():
                         # switch to other pokemon
-                        new_pk_index = OwnPokemon.party.get_index_of_best_pokemon()
+                        new_pk_index = OwnPokemon.party.get_index_of_best_pokemon_ready_to_fight()
                         Selector.change_pokemon(new_pk_index) # perform the actual button clicks
                         f.my_pokemon = OwnPokemon.party[new_pk_index] # update the fight object
                     mode = 'max_damage' # now max damage the * out of this foe
