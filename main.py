@@ -10,9 +10,6 @@ from fundamentals.controls import *
 import numpy as np
 
 
-
-
-
 def go_to(goal, fight_mode = 'max_damage'):
 
     try:
@@ -40,8 +37,6 @@ def go_to(goal, fight_mode = 'max_damage'):
     except Walker.GameplayException as e:
         print(e)
 
-
-
 def talk(goal, fight_mode = 'max_damage'):
     from fundamentals.controls import btnA
     go_to(goal, fight_mode=fight_mode)
@@ -53,7 +48,6 @@ def talk(goal, fight_mode = 'max_damage'):
         sn = StateController.eval_state()
         print(f"In talk main function sn: {sn}")
     Walker.handle_talk()
-
 
 def buy(goal, item_name, amount):
     from fundamentals.controls import btnA
@@ -74,6 +68,30 @@ def buy(goal, item_name, amount):
     #     sn = StateController.state_name()
     Gameplay.buy_item(item_name, amount)
 
+def catch(pokemon_name, start, turn, heal_point, hp_limit=0.3):
+    from fight.pokemon import OwnPokemon
+    from game_plan import Gameplan
+
+    if pokemon_name not in Gameplan.catch_pokemon:
+        raise Exception(f"Pokemon {pokemon_name} not in the catch list of Gameplan.catch_pokemon")
+
+    hp_fractions = sum([p.current_hp / p.stats['hp'] for p in OwnPokemon.party]) / len(OwnPokemon.party)
+    while pokemon_name not in [p.name for p in OwnPokemon.party]:  # empty list is False
+        # train
+        while pokemon_name not in [p.name for p in OwnPokemon.party] and hp_fractions >= hp_limit:
+            print(f"Party: {OwnPokemon.party}")
+
+            go_to(start, fight_mode='train')
+            go_to(turn, fight_mode='train')
+
+            hp_fractions = sum([p.current_hp / p.stats['hp'] for p in OwnPokemon.party]) / len(OwnPokemon.party)
+
+        while pokemon_name not in [p.name for p in OwnPokemon.party] and hp_fractions < hp_limit:
+            print(f"Party: {OwnPokemon.party}")
+            talk(heal_point, fight_mode='train')
+            OwnPokemon.party.heal_party()
+
+            hp_fractions = sum([p.current_hp / p.stats['hp'] for p in OwnPokemon.party]) / len(OwnPokemon.party)
 
 def train(to_level, which_pokemon, start, turn, heal_point, hp_limit=0.3):
     '''' this function trains pokemon to a certain level
@@ -128,7 +146,7 @@ def train(to_level, which_pokemon, start, turn, heal_point, hp_limit=0.3):
 class Gameplan2:
 
 
-    starter_pokemon = 'charmander' # choose charmander/squirtle/bulbasor of zoiets
+    starter_pokemon = 'squirtle' # choose charmander/squirtle/bulbasor of zoiets
 
     sku = {'item_name': 'poke ball', 'amount': 10}
 
@@ -155,24 +173,22 @@ class Gameplan2:
                        'turn': ('route2b', 68)}
 
     plan = [
-            # (go_to,     [('route1', 595)]),
-            # (talk,      [_starter_pokemon_location[starter_pokemon]]),
-            # (talk,      [_mom]),
-            # (talk,      [viridian_city_pc]),
-            # (talk,      [viridian_city_market]), # get parcel
-            # (talk,      [_oak]), # deliver parcel to oak
-            # (talk,      [_mom]),
-            # (talk,      [viridian_city_pc]),
-            # (buy,       [viridian_city_market, 'poke ball', 9]),
+            (go_to,     [('route1', 595)]),
+            (talk,      [_starter_pokemon_location[starter_pokemon]]),
+            (talk,      [_mom]),
+            (talk,      [viridian_city_pc]),
+            (talk,      [viridian_city_market]), # get parcel
+            (talk,      [_oak]), # deliver parcel to oak
+            (talk,      [_mom]),
+            (talk,      [viridian_city_pc]),
+            (buy,       [viridian_city_market, 'poke ball', 9]),
 
-            (go_to,     [('route1', 168)]),
-
+            (catch,     ['pidgey', ('route1', 168), ('route1', 161), viridian_city_pc]),
             (train,     [5, 'all', ('route1', 168), ('route1', 161), viridian_city_pc]),
             (talk,      [pewter_city_pc]),
-            (talk,      [viridian_city_pc]),
+            (train,     [6, 'all', ('route2b', 68), ('route2b', 61), pewter_city_pc]),
             (talk,      [pewter_city_pc]),
-            (train,     [7, 'all', ('route2b', 68), ('route2b', 61), pewter_city_pc]),
-            (go_to,     [('pewter_city_gym', 55)]),
+            (go_to,     [('pewter_city_gym', 55)]), # challenge the only trainer it brock's gym
             (talk,      [pewter_city_pc]),
             (talk,      [brock]), # fight brock
             (talk,      [pewter_city_pc]),
@@ -185,6 +201,9 @@ class Gameplan2:
         [f(*args) for f, args in cls.plan]
 
 if __name__ == '__main__':
+
+
+
     Gameplan2.exceute()
 
     # talk((Gameplan.viridian_city_market))
