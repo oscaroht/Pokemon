@@ -300,7 +300,7 @@ class Party(list):
                 return p
         print(f"Own name {name} not found in party")
 
-    def get_index_of_best_pokemon_ready_to_fight(self):
+    def get_index_of_highest_level_pokemon_ready_to_fight(self):
         '''' gets the party index of the pokemon with the highest level. If pokemon have an equal level the lowest
         index is choosen. If no pokemon are ready to fight the first pokemon is choosen. '''
         import numpy as np
@@ -339,6 +339,10 @@ class OwnPokemon(Pokemon):
 
     def __init__(self,pokemon_id, pokemon_name, type1, type2, stats, own_id,own_name,level, own_moves, current_hp = 0, status = 'normal', in_party=False): # add some kind of move id or move object
         super(OwnPokemon, self).__init__(pokemon_id, pokemon_name, type1, type2, stats, adding= False)
+
+        if own_id is None:
+            max_own_id = max([pok.own_id for pok in OwnPokemon.all])  # create new own_id by incrementing the max by 1
+            own_id = max_own_id + 1
 
         self.own_id = own_id
         self.own_name =own_name
