@@ -105,6 +105,22 @@ class Walker(Stepper):
                     moves = [OwnMove.create_own_move_by_name('scratch'), OwnMove.create_own_move_by_name('growl')]
                     OwnPokemon(4,'charmander','fire','-', {'hp':20, 'atk': 11, 'def':10, 'spe':12, 'spd':10, 'spa':10},
                                1,'charmander', 5, moves, current_hp=20, in_party=True)
+                elif 'water' in text and 'SQUIRTLE?' in text:
+                    btnA()
+                    time.sleep(0.1)
+                    print("Starter SQUIRTLE picked")
+                    from fight.pokemon import OwnPokemon, OwnMove
+                    moves = [OwnMove.create_own_move_by_name('tackle'), OwnMove.create_own_move_by_name('tail whip')]
+                    OwnPokemon(4,'squirtle','water','-', {'hp':19, 'atk': 10, 'def':11, 'spe':10, 'spd':11, 'spa':11},
+                               1,'squirtle', 5, moves, current_hp=19, in_party=True)
+                elif 'plant' in text and 'BULBASAUR?' in text:
+                    btnA()
+                    time.sleep(0.1)
+                    print("Starter BULBASAUR picked")
+                    from fight.pokemon import OwnPokemon, OwnMove
+                    moves = [OwnMove.create_own_move_by_name('tackle'), OwnMove.create_own_move_by_name('growl')]
+                    OwnPokemon(4,'bulbasaur','grass','poison', {'hp':21, 'atk': 10, 'def':10, 'spe':10, 'spd':12, 'spa':12},
+                               1,'bulbasaur', 5, moves, current_hp=21, in_party=True)
                 elif 'nickname' in text:
                     print("Nickname functionality not yet implemented choose NO")
                     btnB()
