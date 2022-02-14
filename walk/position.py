@@ -197,7 +197,7 @@ class Position(G, WalkTemplates):
             if t.group == 'map':
                 print(f' trying {t.name}')
                 cor = cls._get_position_in_map(cls._map_to_cor(t), screen_grab())
-                if cor != None:
+                if cor is not None:
                     print('found')
                     cls._set_position(t.name, *cor)
                     return t.name, *cor

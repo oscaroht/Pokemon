@@ -1,12 +1,13 @@
-from fundamentals.state_controller import FightState
-from fundamentals.controls import   goleft,goup,godown,goright,btnA,btnB
-from fight.fight_rec import FightRec
-#import fight_rec
-from fight.pokemon import pokemon_dict, WildPokemon, df_strength_weakness, OwnPokemon, Move, OwnMove
-
 import difflib
 import numpy as np
 import time
+
+from fundamentals.state_controller import FightState
+from fundamentals.controls import goleft,goup,godown,goright,btnA,btnB
+from fight.fight_rec import FightRec
+#import fight_rec
+from fight.pokemon import *
+    #Pokemon, WildPokemon, OwnPokemon, OwnMove
 
 class FightMenuState(FightState):
     pass
@@ -25,65 +26,25 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
     we can have several modes: 'max_damage', 'save_pp', 'catch', 'save_hp'
       these modes determine how we play.'''
 
-    state = 'menu'
-    #next_pokemon_name = None
-
-    def __init__(self, my_pokemon=OwnPokemon.party[0] ):
+    def __init__(self, my_pokemon=OwnPokemon.party[0]):
         ''' construct the foe'''
         self.foe_def = False
         self.next_foe_name = None
-        foe_level = FightRec.read_foe_level()
 
-        foe_name_text = FightRec.read_foe_name().lower()
-        foe_name = difflib.get_close_matches(foe_name_text, [str(x) for x in list(pokemon_dict.keys())] , n=1)
-        if len(foe_name)==0:
-            raise FoePokemonNotFound
-        foe_name =foe_name[0] # extract the best match
-
-        s = pokemon_dict[foe_name]
-        self.foe = WildPokemon(s['pokemon_id'],
-                      s['pokemon_name'],
-                      s['type1'],
-                      s['type2'],
-                      {'hp':s['base_hp'],
-                            'atk':s['base_atk'],
-                            'def':s['base_def'],
-                            'spa':s['base_spa'],
-                            'spd':s['base_spa'],
-                            'spe':s['base_spe'] } ,
-                      int(foe_level) )
-
-        self.foe_hp_fraction = FightRec.foe_hp()
-        print(f'Foe.name: {foe_name}\nfoe.level: {foe_level}')
-        print(f'My_pokemon.name: {OwnPokemon.party[0].name}')
         self.my_pokemon = my_pokemon
 
-        Fight.state = 'menu'
+        foe_level: str = FightRec.read_foe_level()
+        if foe_level.isdigit():
+            foe_level = int(foe_level)
+        else:
+            foe_level = 99  # if unknown assume it is very high
 
-    # @classmethod
-    # @state_check(FightState)
-    # def set_state(cls, threshold = 0.5):
-    #     screen = screen_grab(resize=True)
-    #     # evaluate all templates
-    #     best_score = 1
-    #     for t in f_temp_list:
-    #         if t.group == 'states':
-    #             if t.mask is not None:
-    #                 res = cv2.matchTemplate(screen, t.img, cv2.TM_SQDIFF_NORMED, mask=t.mask)
-    #             else:
-    #                 res = cv2.matchTemplate(screen, t.img, cv2.TM_SQDIFF_NORMED)
-    #             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-    #             if min_val < best_score:  # lowest score is the best for SQDIFF
-    #                 best_score = min_val
-    #                 t_best = t
-    #     if best_score > threshold:  # lowest score is the best for SQDIFF
-    #         print('No orientation found.')
-    #         return None
-    #     print(f'{t_best.name} with a score of {best_score}')
-    #     cls.state = t_best.option
-    #     return t_best.option
-
-
+        foe_name: str = Pokemon.get_closest_match_by_name(FightRec.read_foe_name().lower())
+        pokemon_obj: Pokemon = Pokemon.get_pokemon_by_name(foe_name)
+        self.foe = WildPokemon.build_from_pokemon_object(pokemon_obj, foe_level)
+        self.foe_hp_fraction: int = FightRec.foe_hp()
+        print(f'Foe.name: {foe_name}\nfoe.level: {foe_level}')
+        print(f'My_pokemon.name: {my_pokemon}')
 
     def _calculate_damage(self, move):
         if move.id == -1:
@@ -97,12 +58,12 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
         else:
             stab = 1
 
-        multiplier = df_strength_weakness[
-            (df_strength_weakness['atk'] == move.type) & (df_strength_weakness['def'] == self.foe.type1)].iloc[0][
+        multiplier = Pokemon.df_strength_weakness[
+            (Pokemon.df_strength_weakness['atk'] == move.type) & (Pokemon.df_strength_weakness['def'] == self.foe.type1)].iloc[0][
             'multiplier']  # has to be iloc instead of loc because we are not using the indexes
         if self.foe.type2 != '-':
-            multiplier_2 = df_strength_weakness[
-                (df_strength_weakness['atk'] == move.type) & (df_strength_weakness['def'] == self.foe.type2)].iloc[0][
+            multiplier_2 = Pokemon.df_strength_weakness[
+                (Pokemon.df_strength_weakness['atk'] == move.type) & (Pokemon.df_strength_weakness['def'] == self.foe.type2)].iloc[0][
                 'multiplier']  # has to be iloc instead of loc because we are not using the indexes
             multiplier *= multiplier_2
         random = 235.5 / 254  # this is a normally distributed range between 217 and 254 divided by 254. So on average
@@ -110,7 +71,7 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
 
         modifier = random * multiplier * stab
 
-        critical = 1  # if it is a critical hit this should be 2
+        critical = 1  # if it is a critical hit this value is 2. but there is now way to know beforehand
 
         """" from https://bulbapedia.bulbagarden.net/wiki/Damage#Damage_calculation
          the 100/50 gives special moves such as growl also damage. Which should not be the case."""
@@ -224,7 +185,7 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
 
     def _bar_next_pokemon(self,text):
         foe_name = text.split('use')[1][0:-1]
-        foe_name = difflib.get_close_matches(foe_name.lower(), [str(x) for x in list(pokemon_dict.keys())] , n=1)
+        foe_name = difflib.get_close_matches(foe_name.lower(), Pokemon.get_list_of_all_pokemon_names() , n=1)
         if len(foe_name)==0:
             return
             #raise FoePokemonNotFoundInBar
@@ -283,8 +244,8 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
 
     def _bar_new_move_learned(self,text):
         ''' this function used the difflib to figure out what move it is.'''
-        from .pokemon import Move, OwnMove
-        from .selector import Selector
+        # from .pokemon import Move, OwnMove
+        # from .selector import Selector
         import re
 
         pokemon_name = \
@@ -652,7 +613,7 @@ class Fighter:
     #             text = FightRec.read_bar()
     #             # interpret text
     #             print(text)
-    #             f.interpret_bar(text)
+    #             f.interpret_bar(tezxt)
     #             btnA()
     #             time.sleep(0.3)
     #         elif StateController.state_name() in ['fight_menu', 'fight_item', 'fight_pokemon','fight_move']:
@@ -663,7 +624,7 @@ class Fighter:
 
 if __name__ == '__main__':
     time.sleep(1)
-    Fighter.put_pokemon_by_idx_in_front_of_party(0)
+    Fighter.handle_wild_and_trainer_fight()
 
     # Fighter.eval_pokemon_stats()
     # test=1

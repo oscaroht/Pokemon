@@ -1,6 +1,6 @@
 
 ''' This file describes how to push the buttons to execute moves, change pokemon, accept newly learned moves, ect.'''
-from fight.templates import f_temp_list
+from fundamentals import Templates
 from fundamentals import screen_grab, goleft, goup, godown, goright, btnB, btnA, FightState,StateController, btnStart
 
 import time
@@ -319,7 +319,7 @@ class Selector:
 
         # put the cursor on the right spot
         best_score = 1
-        for t in f_temp_list:
+        for t in Templates:
             #print(t.name)x
             if t.group == group:
                 #print('in menu group:' + t.name)

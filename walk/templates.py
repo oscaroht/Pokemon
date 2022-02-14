@@ -1,25 +1,25 @@
 import os
 import cv2
 
-from fundamentals import config
+from fundamentals import Template, Templates
 
 
-class Template:
-    extension = 'tmp'
-    tile_size = 16
-
-    def __init__(self, filename, path, group, option, version, img_gray, mask):
-        self.name = filename.replace('.' + self.extension, '')  # filename without extension
-        self.filename = filename  # filename without extension
-        self.path = path  # path from the templates folder
-        self.group = group  # use group or folder on the filesystem
-        self.option = option  # option of the group
-        self.version = version  # if there are more templates
-        self.img = img_gray  # array image of the template
-        self.mask = mask
-
-    def __str__(self):
-        return f'Template: {self.name}'
+# class Template:
+#     extension = 'tmp'
+#     tile_size = 16
+#
+#     def __init__(self, filename, path, group, option, version, img_gray, mask):
+#         self.name = filename.replace('.' + self.extension, '')  # filename without extension
+#         self.filename = filename  # filename without extension
+#         self.path = path  # path from the templates folder
+#         self.group = group  # use group or folder on the filesystem
+#         self.option = option  # option of the group
+#         self.version = version  # if there are more templates
+#         self.img = img_gray  # array image of the template
+#         self.mask = mask
+#
+#     def __str__(self):
+#         return f'Template: {self.name}'
 
 # class Map(Template):
 #

@@ -2,19 +2,12 @@
 ''''This file contains classes and functions used to start the playing sessions'''
 
 import os
-import time
-
 import logging
-#!/usr/bin/python
+
 from fundamentals.config import config
-from fundamentals.load_templates import load_templates
 from fundamentals.open_vba import open_vba
 
 
-from io import StringIO
-
-from glob import glob
-import cv2
 
 
 
@@ -67,33 +60,6 @@ def initialize_logger(logging_directory='default', console_level='INFO', include
         formatter = logging.Formatter("%(levelname)s - %(message)s")
         handler.setFormatter(formatter)
         logger.addHandler(handler)
-
-def copy_to_db(conn, df, table):
-    """
-    Using copy to insert a dataframe to the database
-    """
-
-    cursor = conn.cursor()
-
-    buffer = StringIO()
-    df.to_csv(buffer, index=False, header=False, sep='|')
-    buffer.seek(0)
-
-    try:
-        #https://stackoverflow.com/questions/51522105/copy-dataframe-to-postgres-table-with-column-that-has-defalut-value
-        cursor.copy_from(buffer, table, null='', sep='|')
-        conn.commit()
-    except (Exception, psycopg2.DatabaseError) as error:
-        conn.rollback()
-        cursor.close()
-        raise
-    cursor.close()
-
-
-
-
-
-
 
 def start_bot(console_level='INFO'):
     open_vba()

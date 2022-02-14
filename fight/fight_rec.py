@@ -1,11 +1,9 @@
-import tensorflow as tf
+
 import cv2
 import numpy as np
 
 from fundamentals.ocr import OCR
 from fundamentals.screen import screen_grab
-
-
 
 class FightRec(OCR):
 

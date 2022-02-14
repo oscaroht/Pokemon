@@ -5,7 +5,7 @@ import difflib
 import os
 from fundamentals.config import config
 from fundamentals.screen import screen_grab
-from fundamentals.load_templates import load_templates
+from fundamentals.template import load_templates
 import numpy as np
 import cv2
 from fight.pokemon import df_pokemon, df_strength_weakness, OwnPokemon
@@ -13,7 +13,7 @@ from fight.pokemon import WildPokemon
 
 def create_foe():
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
-    path = config('../settings.ini', 'tesseract','path')
+    path = config('../settings.ini', 'tesseract', 'path')
     w = int(config('../settings.ini', 'window_size', 'native_w'))
     h = int(config('../settings.ini', 'window_size', 'native_h'))
     pytesseract.pytesseract.tesseract_cmd = path

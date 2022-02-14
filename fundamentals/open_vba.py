@@ -12,10 +12,9 @@ def open_vba():
     160x144.'''
 
     try:
-        os.chdir(os.path.dirname(os.path.realpath(__file__)))
-        base_dir = config('../settings.ini','dirs','base_dir')
 
-        os.startfile( base_dir + 'Pokemon Blue.gb') # make sure to associate .gb with the vba.exe. Now the startfile command opens
+        base_dir = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..')) # 1 folder up
+        os.startfile(os.path.join(base_dir, 'Pokemon Blue.gb')) # make sure to associate .gb with the vba.exe. Now the startfile command opens
                                                     # with assosiated program
         sleep(2)
         vb = getWindowsWithTitle('VisualBoyAdvance')[0]

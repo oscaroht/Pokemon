@@ -14,7 +14,7 @@ class Gameplan:
     rival_name = 'red'
 
     starter_pokemon = 'charmander' # choose charmander/squirtle/bulbasor of zoiets
-    catch_pokemon = ['pidgey', 'pikachu', 'geodude','nidoran_f','rattata']
+    catch_pokemon = ['pidgey', 'pikachu', 'geodude','nidoran_f']
 
     sku = {'item_name': 'Poke Ball', 'amount': 10}
 

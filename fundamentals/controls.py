@@ -1,5 +1,5 @@
 import time
-from pynput.keyboard import Key, Controller
+from pynput.keyboard import Controller
 
 keyboard = Controller()
 
@@ -21,7 +21,6 @@ def btnA(*argv):
         keyboard.release('z')
         time.sleep(1)
 
-
 def btnB(*args):
     print("B")
     if len(args) == 0:
@@ -35,14 +34,12 @@ def btnB(*args):
         keyboard.release('x')
         time.sleep(1)
 
-
 def btnup(n, m):
     for i in range(n):
         keyboard.press('w')
         time.sleep(m)
         keyboard.release('w')
         time.sleep(wait)
-
 
 def btndown(n, m):
     for i in range(n):
@@ -51,14 +48,12 @@ def btndown(n, m):
         keyboard.release('s')
         time.sleep(wait)
 
-
 def btnright(n, m):
     for i in range(n):
         keyboard.press('d')
         time.sleep(m)
         keyboard.release('d')
         time.sleep(wait)
-
 
 def btnleft(n, m):
     for i in range(n):
@@ -67,16 +62,11 @@ def btnleft(n, m):
         keyboard.release('a')
         time.sleep(wait)
 
-
 def btnStart():
     keyboard.press('f')
     time.sleep(0.3)
     keyboard.release('f')
     time.sleep(0.3)
-
-
-
-
 
 def turnright():
     btnright(1, turnRatio)
@@ -181,4 +171,3 @@ if __name__ == '__main__':
     print(f"Test starts in.. 1 sec")
     time.sleep(1)
     test_circle()
-    test = 1
