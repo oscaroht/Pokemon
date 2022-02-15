@@ -1,5 +1,18 @@
-from pokebot import train, talk, buy, go_to, catch, open_vba
+from pokebot import Gameplan, train, talk, buy, go_to, catch, open_vba
 import pokebot.short_cuts as sc
+
+# open_vba()
+
+Gameplan.continue_or_new_game = 'new_game'
+Gameplan.catch_pokemon = ['pidgey', 'pikachu', 'geodude','nidoran_f']
+
+go_to(('route1', 595))
+talk(sc.starter_pokemon_location['charmander'])
+
+
+
+
+
 
 # class Legacy:
 #     starter_pokemon = 'squirtle'  # choose charmander/squirtle/bulbasor of zoiets
@@ -54,17 +67,4 @@ import pokebot.short_cuts as sc
 #     @classmethod
 #     def exceute(cls):
 #         [f(*args) for f, args in cls.plan]
-
-
-if __name__ == '__main__':
-    from pokebot import Gameplan
-    # open_vba()
-
-    Gameplan.continue_or_new_game = 'new_game'
-
-    go_to(('route1', 595))
-    talk(sc.starter_pokemon_location['charmander'])
-
-
-
 

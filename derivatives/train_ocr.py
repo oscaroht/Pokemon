@@ -5,8 +5,7 @@ import os
 import cv2
 import numpy as np
 from sklearn.utils import shuffle
-from tensorflow.keras import datasets, layers, models
-from settings import characterlist
+from pokebot.settings import characterlist
 
 char = {}
 for i, ch in enumerate(characterlist):

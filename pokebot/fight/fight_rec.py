@@ -7,7 +7,7 @@ from ..fundamentals import screen_grab
 
 class FightRec(OCR):
 
-    from settings import scale_factor
+    from pokebot.settings import scale_factor
 
     roi_foe_name = [0, int(8 * scale_factor), 0, int(100 * scale_factor)]  # roi screen shot size roi = screen[0:9, 0:100]
 
