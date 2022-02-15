@@ -1,7 +1,7 @@
 
 ''' This file describes how to push the buttons to execute moves, change pokemon, accept newly learned moves, ect.'''
-from fundamentals import Templates
-from fundamentals import screen_grab, goleft, goup, godown, goright, btnB, btnA,StateController, btnStart
+from ..fundamentals import Templates
+from ..fundamentals import screen_grab, goleft, goup, godown, goright, btnB, btnA,StateController, btnStart
 
 import time
 import cv2

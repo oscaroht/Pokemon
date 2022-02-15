@@ -1,6 +1,6 @@
 
 from sqlalchemy import create_engine
-from fundamentals.config import config
+from ...fundamentals import config
 import os
 import pandas as pd
 import difflib
@@ -215,7 +215,7 @@ class Party(list):
         query += 'commit;'
 
         os.chdir(os.path.dirname(os.path.realpath(__file__)))
-        engine = create_engine(f"postgresql+psycopg2://postgres:{config('../../users.ini', 'postgres', 'password')}@localhost/pokemon")
+        engine = create_engine(f"postgresql+psycopg2://postgres:{config('../../../users.ini', 'postgres', 'password')}@localhost/pokemon")
         with engine.connect() as con:
             con.execute(query)
 
@@ -318,7 +318,7 @@ class OwnPokemon(Pokemon):
         ;"""
 
         os.chdir(os.path.dirname(os.path.realpath(__file__)))
-        engine = create_engine(f"postgresql+psycopg2://postgres:{config('../../users.ini', 'postgres', 'password')}@localhost/pokemon")
+        engine = create_engine(f"postgresql+psycopg2://postgres:{config('../../../users.ini', 'postgres', 'password')}@localhost/pokemon")
 
         with engine.connect() as con:
             con.execute(query)
@@ -402,7 +402,7 @@ def load_pokemon():
 
 
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
-    engine = create_engine(f"postgresql+psycopg2://postgres:{config('../../users.ini', 'postgres', 'password')}@localhost/pokemon")
+    engine = create_engine(f"postgresql+psycopg2://postgres:{config('../../../users.ini', 'postgres', 'password')}@localhost/pokemon")
 
     with engine.connect() as con:
         pokemon_dict ={}

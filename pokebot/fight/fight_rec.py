@@ -2,8 +2,8 @@
 import cv2
 import numpy as np
 
-from fundamentals.ocr import OCR
-from fundamentals.screen import screen_grab
+from ..fundamentals import OCR
+from ..fundamentals import screen_grab
 
 class FightRec(OCR):
 

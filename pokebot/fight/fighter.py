@@ -2,11 +2,11 @@ import difflib
 import numpy as np
 import time
 
-from fundamentals.state_controller import FightState
-from fundamentals.controls import btnA,btnB
-from fight.fight_rec import FightRec
-from fight.pokemon import OwnPokemon, WildPokemon, Pokemon, OwnMove, Move
-from fight.selector import Selector
+from ..fundamentals import FightState
+from ..fundamentals import btnA,btnB
+from .fight_rec import FightRec
+from .pokemon import OwnPokemon, WildPokemon, Pokemon, OwnMove, Move
+from .selector import Selector
 
 class FightMenuState(FightState):
     pass
@@ -137,7 +137,7 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
             else:
                 print("No damaging move left")
         elif mode == 'catch':
-            from gameplay.item import Items
+            from ..gameplay import Items
             hp_fraction = FightRec.foe_hp() # check the foe's current hp
             hp = hp_fraction * self.foe.stats['hp']
             print(f"Estimated hp: {hp}  with max hp: {self.foe.stats['hp']}")
@@ -388,10 +388,10 @@ class Fighter:
 
     @classmethod
     def handle_foe(cls, my_pokemon, wild=False, mode='max_damage'):
-        from fundamentals import StateController
+        from ..fundamentals import StateController
         # from fight.selector import Selector
-        from game_plan import Gameplan
-        from gameplay.item import Items
+        from pokebot.game_plan import Gameplan
+        from ..gameplay import Items
 
         sn = StateController.eval_state()
         print(f'State name {StateController.state_name()}')
@@ -499,9 +499,9 @@ class Fighter:
 
     @classmethod
     def handle_wild_and_trainer_fight(cls, wild=False,mode='max_damage'):
-        from fundamentals import StateController
+        from ..fundamentals import StateController
         # from fight.selector import Selector
-        from fundamentals import btnA
+        from ..fundamentals import btnA
 
         Selector.init_fight()
 
@@ -542,7 +542,7 @@ class Fighter:
 
     @classmethod
     def handle_fight(cls, mode='max_damage'):
-        from fundamentals import StateController
+        from ..fundamentals import StateController
 
         # first lets check again
         # StateController.eval_state()

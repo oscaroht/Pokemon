@@ -4,7 +4,7 @@
 
 class Gameplan:
 
-    continue_or_new_game = 'new_game'
+    continue_or_new_game = 'continue'
 
     # game setup
     # player_name = 'automation'
