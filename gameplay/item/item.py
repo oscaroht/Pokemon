@@ -5,7 +5,7 @@ from fundamentals.config import config
 def load_items():
     # loads all items from database
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
-    engine = create_engine(f"postgresql+psycopg2://postgres:{config('../users.ini','postgres','password')}@localhost/pokemon")
+    engine = create_engine(f"postgresql+psycopg2://postgres:{config('../../users.ini', 'postgres', 'password')}@localhost/pokemon")
 
     with engine.connect() as con:
         for row in con.execute(f"select * from vault.all_items;"):

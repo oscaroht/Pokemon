@@ -1,8 +1,4 @@
-import cv2
-from fundamentals.screen import screen_grab
-from fundamentals.controls import goleft, goup, godown, goright, btnB, btnA, btnStart
-from fundamentals.state_controller import FightState,StateController
-from walk.templates import WalkTemplates
+from fundamentals import goup, godown, Templates
 
 class WalkRec:
 
@@ -38,7 +34,7 @@ class WalkRec:
 
     @classmethod
     def eval_states(cls):
-        return WalkTemplates.which_template_in_group('walk_states')
+        return Templates.which_template_in_group('walk_states')
 
     @classmethod
     def _set_up_down_cursor(cls, to, group):

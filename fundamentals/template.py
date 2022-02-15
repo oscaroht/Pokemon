@@ -8,6 +8,10 @@ class Templates(metaclass=IterTemplates):
     all = []
 
     @classmethod
+    def group(cls, group):
+        return [t for t in cls.all if t.group == group]
+
+    @classmethod
     def which_template_in_group(cls, group, threshold=0.01):
         from fundamentals.screen import screen_grab
         import cv2

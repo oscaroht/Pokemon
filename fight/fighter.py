@@ -3,11 +3,10 @@ import numpy as np
 import time
 
 from fundamentals.state_controller import FightState
-from fundamentals.controls import goleft,goup,godown,goright,btnA,btnB
+from fundamentals.controls import btnA,btnB
 from fight.fight_rec import FightRec
-#import fight_rec
-from fight.pokemon import *
-    #Pokemon, WildPokemon, OwnPokemon, OwnMove
+from fight.pokemon import OwnPokemon, WildPokemon, Pokemon, OwnMove, Move
+from fight.selector import Selector
 
 class FightMenuState(FightState):
     pass
@@ -116,7 +115,7 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
 
     def execute_best_move(self, mode='max_damage'):
         ''' mode can be 'best', 'save_pp' '''
-        from fight.selector import Selector
+        # from fight.selector import Selector
         if mode not in ['catch', 'max_damage']:
             raise Exception(f"Invalid input argument {mode}. Only allowed {['catch', 'max_damage']}")
 
@@ -138,7 +137,7 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
             else:
                 print("No damaging move left")
         elif mode == 'catch':
-            import gameplay.item as it
+            from gameplay.item import Items
             hp_fraction = FightRec.foe_hp() # check the foe's current hp
             hp = hp_fraction * self.foe.stats['hp']
             print(f"Estimated hp: {hp}  with max hp: {self.foe.stats['hp']}")
@@ -153,7 +152,7 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
                 self._perform_move(max_idx)
             else:
                 print("try to throw ball")
-                balls = it.Items.get_item_by_name('poke ball')
+                balls = Items.get_item_by_name('poke ball')
                 print(f"Number of balls is {balls.amount}")
                 Selector.use_item('poke ball')
                 balls.lower_amount()
@@ -174,7 +173,7 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
         self.my_pokemon.stats['hp'] = hp_max
 
     def _perform_move(self, idx):
-        from fight.selector import Selector
+        # from fight.selector import Selector
         # select the best move Selector
         Selector.select_move_by_idx(idx)
 
@@ -326,7 +325,7 @@ class Fighter:
     def eval_pokemon_stats(cls):
         '''' When a new pokemon is caught the stats are unknown. Therefore we need to get the stats via the menu '''
 
-        from fight.selector import Selector
+        # from fight.selector import Selector
         idx = OwnPokemon.party.stats_need_evaluation(return_party_idx = True)
         print(f"Doing the evaluation in fighter for idx {idx}")
         if idx == None:
@@ -356,7 +355,7 @@ class Fighter:
     # NOT USED
     @classmethod
     def put_pokemon_by_idx_in_front_of_party(cls, idx):
-        from fight.selector import Selector
+        # from fight.selector import Selector
         if idx == 0:
             print(f"Pokemon on idx 0 already in front of party")
             return
@@ -367,7 +366,7 @@ class Fighter:
 
     @classmethod
     def put_pokemon_in_front_of_party(cls, pokemon):
-        from fight.selector import Selector
+        # from fight.selector import Selector
         if pokemon == OwnPokemon.party[0]:
             return
         elif pokemon not in OwnPokemon.party:
@@ -390,9 +389,9 @@ class Fighter:
     @classmethod
     def handle_foe(cls, my_pokemon, wild=False, mode='max_damage'):
         from fundamentals import StateController
-        from fight.selector import Selector
+        # from fight.selector import Selector
         from game_plan import Gameplan
-        import gameplay.item as it
+        from gameplay.item import Items
 
         sn = StateController.eval_state()
         print(f'State name {StateController.state_name()}')
@@ -408,7 +407,7 @@ class Fighter:
         # print(OwnItems.do_i_have("Poke Ball"))
         # print(wild)
         # print(not OwnPokemon.do_i_have_pokemon_by_name(f.foe.name))
-        if (f.foe.name in Gameplan.catch_pokemon) and it.Items.do_i_have("poke ball") and wild and (not OwnPokemon.do_i_have_pokemon_by_name(f.foe.name)):
+        if (f.foe.name in Gameplan.catch_pokemon) and Items.do_i_have("poke ball") and wild and (not OwnPokemon.do_i_have_pokemon_by_name(f.foe.name)):
             mode = 'catch'
         print(f'mode: {mode}')
 
@@ -474,7 +473,7 @@ class Fighter:
                 if f.my_pokemon.needs_hp_max_check: # after level up we need to check the new max hp
                     f.set_max_hp()
                     f.my_pokemon.needs_hp_max_check = False
-                if mode == 'catch' and not it.Items.do_i_have("poke ball"):
+                if mode == 'catch' and not Items.do_i_have("poke ball"):
                     print("switch mode from catch to max damage")
                     mode = 'max_damage'
                 elif mode == 'train':
@@ -501,7 +500,7 @@ class Fighter:
     @classmethod
     def handle_wild_and_trainer_fight(cls, wild=False,mode='max_damage'):
         from fundamentals import StateController
-        from fight.selector import Selector
+        # from fight.selector import Selector
         from fundamentals import btnA
 
         Selector.init_fight()
@@ -544,8 +543,6 @@ class Fighter:
     @classmethod
     def handle_fight(cls, mode='max_damage'):
         from fundamentals import StateController
-        from fight.selector import Selector
-        from fundamentals import btnA
 
         # first lets check again
         # StateController.eval_state()

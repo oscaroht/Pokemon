@@ -1,8 +1,7 @@
 from graphs import G
 from position import Position, LocationNotFound
 
-
-class Path(Position):
+class Path():
 
     path = None
 
@@ -62,10 +61,10 @@ class Path(Position):
                     pass
             return G, new_node_id
 
-        def get_cor_list(G, path):
+        def get_cor_list(gi, path):
             cor_list = []
             for p in path:
-                cor_list.append( (G.nodes[p]['x'], G.nodes[p]['y']) )
+                cor_list.append((gi.nodes[p]['x'], gi.nodes[p]['y']))
             return cor_list
 
         # def add_exit_node(G, end_node0_id, x, y):
@@ -81,15 +80,15 @@ class Path(Position):
         #             a = 1
         #     return G
 
-        (start_map_name, from_id, x, y) = Path.eval_position()
+        (start_map_name, from_id, x, y) = Position.eval_position()
         print(f"Path: position is {(start_map_name, from_id, x, y)}")
 
         # get start map id using the name
-        start_map_id = Path.df_edges_lvl1[Path.df_edges_lvl1['from_name'] == start_map_name].iloc[0]['from_id']
+        start_map_id = G.df_edges_lvl1[G.df_edges_lvl1['from_name'] == start_map_name].iloc[0]['from_id']
         # get the id of the end map using the name
-        end_map_id = int(Path.df_edges_lvl1[Path.df_edges_lvl1['from_name'] == end_cor[0]].iloc[0]['from_id'])
+        end_map_id = int(G.df_edges_lvl1[G.df_edges_lvl1['from_name'] == end_cor[0]].iloc[0]['from_id'])
         # find shortest path is global coordinates
-        path_lvl1 = nx.dijkstra_path(Path.G_lvl1, start_map_id, end_map_id )
+        path_lvl1 = nx.dijkstra_path(G.G_lvl1, start_map_id, end_map_id )
 
 
         '''' Algo: 
@@ -110,41 +109,41 @@ class Path(Position):
         path = {}
         rt = {}
         if len(path_lvl1) == 1:
-            G = Path.G_lvl0[start_map_id]
-            if from_id not in G:  # if the start is not in the 1st map
+            g = G.G_lvl0[start_map_id]
+            if from_id not in g:  # if the start is not in the 1st map
                 print(f"start coordinate not in start Graph")
-                G, start = add_exit_entry_node(G, x, y)  # add entry node
-            path[start_map_id] = nx.dijkstra_path(G, from_id, end_cor[1])
-            rt[start_map_id] = get_cor_list(G, path[start_map_id])
+                g, start = add_exit_entry_node(g, x, y)  # add entry node
+            path[start_map_id] = nx.dijkstra_path(g, from_id, end_cor[1])
+            rt[start_map_id] = get_cor_list(g, path[start_map_id])
         else:
             start = from_id
             goal = end_cor[1]
             eeps = [(a,b) for a, b in zip(path_lvl1, path_lvl1[1:])] # exit entry pair
             for idx, eep in enumerate(eeps+[(eeps[-1][1],eeps[-1][0])]):
                 from_map_id = eep[0] # entry map, map from where we came
-                G = Path.G_lvl0[from_map_id].copy() # we want to copy because se do not want to add the nodes permanently
+                g = G.G_lvl0[from_map_id].copy() # we want to copy because se do not want to add the nodes permanently
 
                 if idx != 0:        # exclude the first pair (entry/exit)
-                    G, start = add_exit_entry_node(G,series['enter_x'], series['enter_y']) # add entry node
+                    g, start = add_exit_entry_node(g,series['enter_x'], series['enter_y']) # add entry node
                 else:
-                    if start not in G: # if the start is not in the 1st map
+                    if start not in g: # if the start is not in the 1st map
                         print(f"start coordinate not in start Graph")
-                        G, start = add_exit_entry_node(G, x, y)  # add entry node
-                series = Path.edges_lvl1[eep]
+                        g, start = add_exit_entry_node(g, x, y)  # add entry node
+                series = G.edges_lvl1[eep]
                 if idx == len(eeps + [eeps[-1]])-1: # last one
                     end = goal
                 else:
-                    G, end = add_exit_entry_node(G, series['exit_x'], series['exit_y'])
+                    g, end = add_exit_entry_node(g, series['exit_x'], series['exit_y'])
 
                 # if idx != len(eeps)-1: # exclude the last pair (entry/exit)
                 #     G, end = add_exit_entry_node(G, series['exit_x'], series['exit_y'])
                 # else:
                 #     end = goal # the last map we are not going to the exit, we are going to the goal coordinate
 
-                current_path = nx.dijkstra_path(G, start, end)
+                current_path = nx.dijkstra_path(g, start, end)
                 print(f"current_path: {current_path}")
                 path[from_map_id] = current_path
-                rt[from_map_id] = get_cor_list(G, current_path)
+                rt[from_map_id] = get_cor_list(g, current_path)
 
 
         print(f"path: {path}")

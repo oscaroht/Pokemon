@@ -6,7 +6,9 @@ from pygetwindow import getWindowsWithTitle, PyGetWindowException
 from fundamentals.config import config
 
 def open_vba():
-    '''' Set class variable for width and height. Ideally this is not changed for the entire project
+    '''' Calls the Pokemon Blue.gb file and opens with default application.
+
+    Set class variable for width and height. Ideally this is not changed for the entire project
     The game used tiles of which there are 10 in the width and 9 in the height. Ash is centered 5,5 .
     In addition the native pixel size is 16x16 per tile. So ideally we set the size to multiples of
     160x144.'''

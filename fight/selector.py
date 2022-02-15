@@ -1,7 +1,7 @@
 
 ''' This file describes how to push the buttons to execute moves, change pokemon, accept newly learned moves, ect.'''
 from fundamentals import Templates
-from fundamentals import screen_grab, goleft, goup, godown, goright, btnB, btnA, FightState,StateController, btnStart
+from fundamentals import screen_grab, goleft, goup, godown, goright, btnB, btnA,StateController, btnStart
 
 import time
 import cv2
@@ -53,6 +53,7 @@ class Selector:
             print("press A to confirm")
             btnA()
             btnB(3)
+            # after pressing a button we refresh the state
             sn = StateController.eval_state()
             return
 
@@ -114,8 +115,6 @@ class Selector:
 
     @classmethod
     def go_to_pokemon_stats_page_by_idx(cls, idx):
-        # from .fight_rec import FightRec
-        # cls.state = cls.eval_fight_states()
         sn = StateController.eval_state()
         while sn in ['walk','walk_evalstats', 'walk_game_menu', 'fight_choose_a_pokemon', 'fight_stats_or_switch', 'fight_stats_page_stats', 'fight_stats_page_moves']:
             while sn != 'fight_stats_page_stats':
@@ -434,7 +433,6 @@ class Selector:
 
     @classmethod
     def _in_fight_menu_choose(cls, menu_name):
-        #from fundamentals import StateController
         ''' in the menu chose 'move', 'item', 'pkmn', 'run' '''
         if cls.state != 'menu':
             cls._go_to_fight_menu()
@@ -450,7 +448,6 @@ class Selector:
     @classmethod
     def _go_to_fight_menu(cls):
         ''' from any fight state we can get to the menu by pressing btnB'''
-        #from fundamentals import StateController
         print("press B to go to fight menu")
         btnB()
         time.sleep(0.5)
@@ -459,7 +456,6 @@ class Selector:
     @classmethod
     def select_move_by_idx(cls, move_idx):
         cls.state = cls.eval_fight_states()
-        #from fundamentals import StateController
         # if not in move menu go to menu first
         if cls.state != 'move':
             cls._in_fight_menu_choose('move')
@@ -495,7 +491,6 @@ class Selector:
 
     @classmethod
     def init_fight(cls):
-        #from fundamentals import StateController
         # read the text
         print('click A to start')
         time.sleep(0.5) # presses A to soon earlier, now fixed

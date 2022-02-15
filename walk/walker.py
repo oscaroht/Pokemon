@@ -2,12 +2,14 @@
 
 #from position import Position
 from stepper import Stepper, WrongStep, LocationNotFound
+from path import Path
+from position import Position
 from fundamentals.controls import turnright, turndown, turnleft,turnup, btnB, btnA
 from fundamentals import StateController
 # from fight.pokemon import OwnPokemon, OwnMove
 import time
 
-class Walker(Stepper):
+class Walker():
     '''' this class combines the path with the stepper to execute the path. It loops over the
      get_shortest_path and the stepper while the goal is not reached (and the state is still "walk"). It breaks when the
      state is changed. It wont remember the goal. We fix that somewhere else because maybe we need to do other stuff
@@ -22,9 +24,9 @@ class Walker(Stepper):
         from walk.orientation import get_orientation
         ori = get_orientation()
         if len(goal_cor) > 2:
-            return Stepper.position[:2] == goal_cor[:2] and ori == goal_cor[2]
+            return Position.position[:2] == goal_cor[:2] and ori == goal_cor[2]
         elif len(goal_cor) == 2:
-            return Stepper.position[:2] == goal_cor[:2]
+            return Position.position[:2] == goal_cor[:2]
 
     @classmethod
     def go(cls, goal_cor):
@@ -48,7 +50,7 @@ class Walker(Stepper):
 
 
         #print('eval position')
-        Stepper.eval_position() # call it so the position gets determined and stored in the Position attributes
+        Position.eval_position() # call it so the position gets determined and stored in the Position attributes
                                 # we do not need to call it because the position is always stored. At initialization it
 
         # will take the default which is fine because it is not the goal. Later, in creating the path variable the
@@ -62,7 +64,7 @@ class Walker(Stepper):
 
         while not cls.reached_goal(goal_cor) and sn in ['walk','none_state']:
             try:
-                path = Stepper(goal_cor)
+                path = Path(goal_cor)
                 last_map = False
                 for key, value in path.cor_dict.items():
                     if list(path.cor_dict)[-1] == int(key): # last item
@@ -73,19 +75,16 @@ class Walker(Stepper):
                     sleep(2.5) # wait to go to the next map
                     if not last_map:
                         next_map_id = list(path.cor_dict)[list(path.cor_dict).index(int(key))+1]
-                        Stepper.set_map_by_id(next_map_id)  # some maps are similar so we need to actively set the map instead of doing the loop in finding the map because then the first map in the list gets foound
+                        Position.set_map_by_id(next_map_id)  # some maps are similar so we need to actively set the map instead of doing the loop in finding the map because then the first map in the list gets foound
 
                 set_orientation()
-                ori = get_orientation()
+                # ori = get_orientation()
 
             except (WrongStep, LocationNotFound):
                 print('walk: WRONG STEP or LOCATION NOT FOUND. recalculate route')
             StateController.eval_state()
             sn = StateController.state_name()
 
-    # @classmethod
-    # def get_position(cls):
-    #     return Stepper.get_position()
 
     @classmethod
     def handle_talk(cls):

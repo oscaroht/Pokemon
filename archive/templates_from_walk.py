@@ -72,7 +72,7 @@ class WalkTemplates:
 
         # pick the right template
         best_score = 1
-        for t in WalkTemplates.temp_list:
+        for t in cls.temp_list:
             if t.group == group:
                 if t.mask is not None:
                     res = cv2.matchTemplate(screen, t.img, cv2.TM_SQDIFF_NORMED, mask=t.mask)
