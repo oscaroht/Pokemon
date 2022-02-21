@@ -8,9 +8,6 @@ from ..fundamentals import config
 from ..fundamentals import open_vba
 
 
-
-
-
 def initialize_logger(logging_directory='default', console_level='INFO', include_lowest_level=True):
     if logging_directory == 'default':
         param = config('../settings.ini', 'dirs')

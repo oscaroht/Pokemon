@@ -621,7 +621,7 @@ class Fighter:
 
 if __name__ == '__main__':
     time.sleep(1)
-    Fighter.handle_wild_and_trainer_fight()
+    Selector.go_to_pokemon_stats_page_by_idx(1)
 
     # Fighter.eval_pokemon_stats()
     # test=1

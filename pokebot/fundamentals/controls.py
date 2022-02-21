@@ -6,7 +6,7 @@ keyboard = Controller()
 # control settings. Can be tuned using the function below
 wait = 0.400
 turnRatio = 0.0033 # 0.003500 # 0.028
-goRatio = 0.035 # 0.03500  # 0.068
+goRatio = 0.036 # 0.03500  # 0.068
 
 def btnA(*argv):
     print("A")
@@ -86,6 +86,8 @@ def goright(*args):
         n=1
     else:
         n = int(args[0])
+    if n<0:
+        raise Exception(f"Negative number of steps as input arg. This is not possible")
     btnright(n, goRatio)
 
 def goleft(*args):
@@ -93,6 +95,8 @@ def goleft(*args):
         n=1
     else:
         n = int(args[0])
+    if n<0:
+        raise Exception(f"Negative number of steps as input arg. This is not possible")
     btnleft(n, goRatio)
 
 def goup(*args):
@@ -100,6 +104,8 @@ def goup(*args):
         n=1
     else:
         n = int(args[0])
+    if n<0:
+        raise Exception(f"Negative number of steps as input arg. This is not possible")
     btnup(n, goRatio)
 
 def godown(*args):
@@ -107,6 +113,8 @@ def godown(*args):
         n=1
     else:
         n = int(args[0])
+    if n<0:
+        raise Exception(f"Negative number of steps as input arg. This is not possible")
     btndown(n, goRatio)
 
 def test_circle():

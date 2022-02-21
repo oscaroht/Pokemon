@@ -197,7 +197,7 @@ class Selector:
         #cls.state = cls.eval_fight_states()
         sn = StateController.state_name()
         if sn not in ['fight_stats_or_switch','fight_choose_a_pokemon']:
-            cls._in_game_menu_choose('gm_pokemon')
+            cls._in_game_menu_choose(1) # 1 is pokemon
         if sn == 'fight_choose_a_pokemon':
             cls._set_party_menu_cursor(idx)
             print(f"Party menu cursor now set to {idx}")
@@ -211,7 +211,7 @@ class Selector:
     @classmethod
     def _in_game_menu_choose(cls, option):
         ''' in the game menu chose 'gm_pokedex','gm_pokemon' 'gm_item',ect. '''
-        if option not in ['gm_pokedex', 'gm_pokemon', 'gm_item', 'gm_save', 'gm_player_name', 'gm_option']:
+        if option not in [0,1,2,3,4,5]:
             raise Exception(f"Invalid input argument option {option}")
         print(f"In game menu choose {option}")
         sn = StateController.state_name()
@@ -230,7 +230,7 @@ class Selector:
                 time.sleep(0.5)
                 StateController.eval_state()
             elif sn == 'walk_game_menu':
-                cls._set_game_menu_cursor(option)
+                cls._set_up_down_cursor(option, 'game_menu')
                 btnA()
                 time.sleep(0.5)
                 StateController.eval_state()
@@ -268,47 +268,49 @@ class Selector:
                 cursor = cls._get_cursor_position('party_menu')
                 cursor_int = [int(s) for s in cursor.split() if s.isdigit()][0]  # find the one and only digit
 
-    @classmethod
-    def _set_game_menu_cursor(cls, to):
-        cursor = cls._get_cursor_position('game_menu')
-        if cursor == None:
-            return
-        tries = 0
-        while cursor != to and tries < 10:
-            tries += 1
-            if to == 'gm_pokedex':
-                goup()
-                cursor = cls._get_cursor_position('game_menu')
-            elif to == 'gm_pokemon':
-                if cursor == 'gm_pokedex':
-                    godown()
-                else:
-                    goup()
-                cursor = cls._get_cursor_position('game_menu')
-            elif to == 'gm_item':
-                if cursor in ['gm_pokedex', 'gm_pokemon']:
-                    godown()
-                else:
-                    goup()
-                cursor = cls._get_cursor_position('game_menu')
-            elif to == 'gm_player_name':
-                if cursor in ['gm_pokedex', 'gm_pokemon', 'gm_item']:
-                    godown()
-                else:
-                    goup()
-                cursor = cls._get_cursor_position('game_menu')
-            elif to == 'gm_save':
-                if cursor in ['gm_pokedex', 'gm_pokemon', 'gm_item', 'gm_player_name']:
-                    godown()
-                else:
-                    goup()
-                cursor = cls._get_cursor_position('game_menu')
-            elif to == 'gm_option':
-                if cursor in ['gm_pokedex', 'gm_pokemon', 'gm_item', 'gm_player_name', 'gm_save']:
-                    godown()
-                else:
-                    goup()
-                cursor = cls._get_cursor_position('game_menu')
+    # @classmethod
+    # def _set_game_menu_cursor(cls, to):
+    #     print(f"setting cursor to {to}")
+    #     cursor = cls._get_cursor_position('game_menu')
+    #     if cursor == None:
+    #         return
+    #     # tries = 0
+    #     while cursor != to:  # and tries < 10:
+    #         # tries += 1
+    #         if to == 'gm_pokedex':
+    #             goup()
+    #             cursor = cls._get_cursor_position('game_menu')
+    #         elif to == 'gm_pokemon':
+    #             if cursor == 'gm_pokedex':
+    #                 godown()
+    #             else:
+    #                 goup()
+    #             cursor = cls._get_cursor_position('game_menu')
+    #         elif to == 'gm_item':
+    #             if cursor in ['gm_pokedex', 'gm_pokemon']:
+    #                 godown()
+    #             else:
+    #                 goup()
+    #             cursor = cls._get_cursor_position('game_menu')
+    #         elif to == 'gm_player_name':
+    #             if cursor in ['gm_pokedex', 'gm_pokemon', 'gm_item']:
+    #                 godown()
+    #             else:
+    #                 goup()
+    #             cursor = cls._get_cursor_position('game_menu')
+    #         elif to == 'gm_save':
+    #             if cursor in ['gm_pokedex', 'gm_pokemon', 'gm_item', 'gm_player_name']:
+    #                 godown()
+    #             else:
+    #                 goup()
+    #             cursor = cls._get_cursor_position('game_menu')
+    #         elif to == 'gm_option':
+    #             if cursor in ['gm_pokedex', 'gm_pokemon', 'gm_item', 'gm_player_name', 'gm_save']:
+    #                 godown()
+    #             else:
+    #                 goup()
+    #             cursor = cls._get_cursor_position('game_menu')
+    #         print(f"cursor at {cursor}")
 
 
 
@@ -403,7 +405,7 @@ class Selector:
         print(f"Cursor is now on {cursor}")
 
     @classmethod
-    def _set_move_cursor(cls,move_idx):
+    def _set_move_cursor(cls,move_idx: int):
         move_num = move_idx + 1
         cursor = cls._get_cursor_position('move')
         if cursor == None:
@@ -418,12 +420,12 @@ class Selector:
                 cursor = int(cls._get_cursor_position('move'))
 
     @classmethod
-    def _set_up_down_cursor(cls, to, group):
+    def _set_up_down_cursor(cls, to: int, group: str):
         cursor = cls._get_cursor_position(group)
         cursor_idx = [int(s) for s in cursor if s.isdigit()][0]  # find the one and only digit
         while to != cursor_idx:
             if to > cursor_idx:
-                godown(cursor_idx - to)
+                godown(to - cursor_idx)
                 cursor = cls._get_cursor_position(group)
                 cursor_idx = [int(s) for s in cursor if s.isdigit()][0]  # find the one and only digit
             elif to < cursor_idx:

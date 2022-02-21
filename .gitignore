@@ -148,7 +148,7 @@ cython_debug/
 to_do.txt
 to_do
 *.log
-dev_templates/
+archive/dev_templates/
 
 *.png
 

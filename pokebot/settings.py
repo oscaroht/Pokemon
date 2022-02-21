@@ -1,3 +1,6 @@
+# base directory
+
+
 # screen settings
 screen_scale_factor = 1         # Resolution settings of the monitor. 1 means 100%
 vertical_offset = 51            # Offset of the upper menu bar of the VBA

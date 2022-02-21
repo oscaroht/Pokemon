@@ -89,7 +89,7 @@ def catch(pokemon_name, start, turn, heal_point, hp_limit=0.3):
 
 
 def train(to_level, which_pokemon, start, turn, heal_point, hp_limit=0.3):
-    '''' this function trains pokemon to a certain level
+    ''''Trains pokemon to a certain level
 
      to_level: int                              to which level to train
      which_pokemon: str                         the name of the pokemon, or maybe index
@@ -102,37 +102,44 @@ def train(to_level, which_pokemon, start, turn, heal_point, hp_limit=0.3):
     from .fight import OwnPokemon
 
     if which_pokemon == 'all':
-        '''' first make a list of all pokemon in party that need training
-         then make a list of all pokemon that have hp>0 and need training
-         while both are true we fight. if no pokemon ready to fight we go 
-         to pc.'''
-        pokemon_to_train = [p for p in OwnPokemon.party if p.level < to_level]
-        pokemon_to_train_ready_to_fight = [p for p in pokemon_to_train if p.current_hp > 0]
-        hp_fractions = sum([p.current_hp / p.stats['hp'] for p in OwnPokemon.party]) / len(OwnPokemon.party)
+        train_subset = OwnPokemon.party
+    else:
+        train_subset = [OwnPokemon.party.get_own_pokemon_by_own_name(which_pokemon)]
+    if train_subset is None:
+        raise Exception(f"Pokemon with name {which_pokemon} not found in Party")
 
-        while pokemon_to_train:  # empty list is False
-            # train
-            while pokemon_to_train and (pokemon_to_train_ready_to_fight and hp_fractions >= hp_limit):
-                print(f"Party: {OwnPokemon.party}")
-                print(f"to train and ready to fight: {pokemon_to_train_ready_to_fight}")
-                Fighter.put_pokemon_in_front_of_party(pokemon_to_train_ready_to_fight[0])
+    # if which_pokemon == 'all':
+    '''' first make a list of all pokemon in party that need training
+     then make a list of all pokemon that have hp>0 and need training
+     while both are true we fight. if no pokemon ready to fight we go 
+     to pc.'''
+    pokemon_to_train = [p for p in train_subset if p.level < to_level]
+    pokemon_to_train_ready_to_fight = [p for p in pokemon_to_train if p.current_hp > 0]
+    hp_fractions = sum([p.current_hp / p.stats['hp'] for p in OwnPokemon.party]) / len(OwnPokemon.party)
 
-                go_to(start, fight_mode='train')
-                go_to(turn, fight_mode='train')
+    while pokemon_to_train:  # empty list is False
+        # train
+        while pokemon_to_train and (pokemon_to_train_ready_to_fight and hp_fractions >= hp_limit):
+            print(f"Party: {OwnPokemon.party}")
+            print(f"to train and ready to fight: {pokemon_to_train_ready_to_fight}")
+            Fighter.put_pokemon_in_front_of_party(pokemon_to_train_ready_to_fight[0])
 
-                pokemon_to_train = [p for p in OwnPokemon.party if p.level < to_level]
-                pokemon_to_train_ready_to_fight = [p for p in pokemon_to_train if
-                                                   p.current_hp > 0]  # could be [] so we put [0] at the first row of thies loop
-                print(f'Pokemon to train: {[p.own_name for p in pokemon_to_train_ready_to_fight]}')
-                hp_fractions = sum([p.current_hp / p.stats['hp'] for p in OwnPokemon.party]) / len(OwnPokemon.party)
+            go_to(start, fight_mode='train')
+            go_to(turn, fight_mode='train')
 
-            while pokemon_to_train and (not pokemon_to_train_ready_to_fight or hp_fractions < hp_limit):
-                print(f"Party: {OwnPokemon.party}")
-                print(f"to train and ready to fight: {pokemon_to_train_ready_to_fight}")
-                talk(heal_point, fight_mode='train')
-                OwnPokemon.party.heal_party()
+            pokemon_to_train = [p for p in train_subset if p.level < to_level]
+            pokemon_to_train_ready_to_fight = [p for p in pokemon_to_train if
+                                               p.current_hp > 0]  # could be [] so we put [0] at the first row of thies loop
+            print(f'Pokemon to train: {[p.own_name for p in pokemon_to_train_ready_to_fight]}')
+            hp_fractions = sum([p.current_hp / p.stats['hp'] for p in OwnPokemon.party]) / len(OwnPokemon.party)
 
-                pokemon_to_train = [p for p in OwnPokemon.party if p.level < to_level]
-                pokemon_to_train_ready_to_fight = [p for p in pokemon_to_train if p.current_hp > 0]
-                print(f'Pokemon to train: {[p.own_name for p in pokemon_to_train_ready_to_fight]}')
-                hp_fractions = sum([p.current_hp / p.stats['hp'] for p in OwnPokemon.party]) / len(OwnPokemon.party)
+        while pokemon_to_train and (not pokemon_to_train_ready_to_fight or hp_fractions < hp_limit):
+            print(f"Party: {OwnPokemon.party}")
+            print(f"to train and ready to fight: {pokemon_to_train_ready_to_fight}")
+            talk(heal_point, fight_mode='train')
+            OwnPokemon.party.heal_party()
+
+            pokemon_to_train = [p for p in train_subset if p.level < to_level]
+            pokemon_to_train_ready_to_fight = [p for p in pokemon_to_train if p.current_hp > 0]
+            print(f'Pokemon to train: {[p.own_name for p in pokemon_to_train_ready_to_fight]}')
+            hp_fractions = sum([p.current_hp / p.stats['hp'] for p in OwnPokemon.party]) / len(OwnPokemon.party)

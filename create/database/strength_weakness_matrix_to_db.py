@@ -9,7 +9,7 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 engine = create_engine(
     f"postgresql+psycopg2://postgres:{config('../users.ini', 'postgres', 'password')}@localhost/pokemon")
 
-df = pd.read_csv('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\db_mappings\\strength_weakness.csv')
+df = pd.read_csv('/strength_weakness.csv')
 
 df = pd.melt(df,id_vars='atk',var_name='def',value_name='multiplier', ignore_index=True)
 df = df.apply(lambda x: x.astype(str).str.lower())
