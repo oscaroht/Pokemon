@@ -4,6 +4,7 @@ import pokebot.short_cuts as sc
 # open_vba()
 
 Gameplan.continue_or_new_game = 'new_game'
+# Gameplan.player_name = 'blue'
 Gameplan.catch_pokemon = ['pidgey', 'pikachu', 'geodude','nidoran_f']
 
 go_to(('route1', 595))

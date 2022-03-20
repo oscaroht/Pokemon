@@ -154,6 +154,9 @@ class Party(list):
     Also, only OwnPokemon object can populate the Party. The index of the list is the position in the party the pokemon
     is in. '''
 
+    def __str__(self):
+        return ', '.join([p.own_name for p in self])
+
     def add(self, pokemon):
         if len(self) < 6:
             self.append(pokemon)
@@ -251,6 +254,9 @@ class OwnPokemon(Pokemon):
         OwnPokemon.all.append(self)
         if in_party:
             OwnPokemon.party.add(self)
+
+    def __str__(self):
+        return self.own_name
 
     @classmethod
     def do_i_have_pokemon_by_name(cls, pokemon_name):
