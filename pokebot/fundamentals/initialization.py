@@ -3,17 +3,40 @@
 
 import os
 import logging
+import sys
 
-from ..fundamentals import config
-from ..fundamentals import open_vba
+# from ..fundamentals import config
+# from ..fundamentals import open_vba
 
+#
+# def initialize_logger(console_level=logging.DEBUG):
+#
+#     logging_directory = os.path.dirname(os.path.realpath(__file__)) + '\\log'
+#
+#     format_str = "%(asctime)s - %(levelname)s - %(filename)s - %(message)s"
+#     logging.basicConfig(
+#                         # filename=logging_directory,
+#                         # stream=sys.stdout,
+#                         level=console_level,
+#                         format=format_str,
+#     )
+#     # # set up logging to console
+#     # stream_handler = logging.StreamHandler()
+#     # stream_handler.setLevel(console_level)
+#     # # set a format which is simpler for console use
+#     # formatter = logging.Formatter(format_str)
+#     # stream_handler.setFormatter(formatter)
+#     # # add the handler to the root logger
+#     # logging.getLogger('').addHandler(stream_handler)
 
-def initialize_logger(logging_directory='default', console_level='INFO', include_lowest_level=True):
-    if logging_directory == 'default':
-        param = config('../settings.ini', 'dirs')
-        logging_directory = param['base_dir'] + param['log']
+#
+def get_custom_logger(console_level='DEBUG'):
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
+
+    logging_directory = os.path.dirname(os.path.realpath(__file__)) + '\\log'
+
+    # logging.basicConfig(filename=logging_directory, stream=sys.stdout, level=logging.DEBUG)
 
     # create console handler and set level to info
     handler = logging.StreamHandler()
@@ -29,39 +52,20 @@ def initialize_logger(logging_directory='default', console_level='INFO', include
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
-    # create error file handler and set level to error
-    handler = logging.FileHandler(os.path.join(logging_directory, "error.log"), "a", encoding=None, delay="true")
-    handler.setLevel(logging.ERROR)
-    formatter = logging.Formatter("%(levelname)s - %(message)s")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-
-    # create warning file handler and set level to warning
-    handler = logging.FileHandler(os.path.join(logging_directory, "warning.log"), "a", encoding=None, delay="true")
-    handler.setLevel(logging.WARNING)
-    formatter = logging.Formatter("%(levelname)s - %(message)s")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-
-    # create info file handler and set level to info
-    handler = logging.FileHandler(os.path.join(logging_directory, "info.log"), "w", encoding=None, delay="true")
-    handler.setLevel(logging.INFO)
-    formatter = logging.Formatter("%(levelname)s - %(message)s")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-
     # create debug file handler and set level to debug
-    if include_lowest_level:
-        handler = logging.FileHandler(os.path.join(logging_directory, "all.log"), "w")
-        handler.setLevel(logging.DEBUG)
-        formatter = logging.Formatter("%(levelname)s - %(message)s")
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
+    handler = logging.FileHandler(os.path.join(logging_directory, "all.log"), "w")
+    handler.setLevel(logging.DEBUG)  # log everything
+    formatter = logging.Formatter("%(levelname)s - %(message)s")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+#
+#     return logger
+
 
 def start_bot(console_level='INFO'):
     open_vba()
-    #initialize_logger(logging_directory='log', console_level=console_level, include_lowest_level=False)
-    #logger.debug('Loading templates')
+    # initialize_logger(logging_directory='log', console_level=console_level, include_lowest_level=False)
+    # logger.debug('Loading templates')
     #load_templates()
     # if console_level == 'DEBUG':
     #     #from debug.debug_location import open_debug_screen
@@ -71,4 +75,6 @@ def start_bot(console_level='INFO'):
 
 
 if __name__ == '__main__':
-    start_bot()
+    initialize_logger(console_level=logging.DEBUG)
+    logger = logging.getLogger()
+    logger.info('Loading templates')

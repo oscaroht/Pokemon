@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 
 # idea for states
 # https://www.geeksforgeeks.org/state-method-python-design-patterns/
@@ -8,7 +10,7 @@ class State:
     def switch(self,state):
         if self.__class__ != state:
             self.__class__ = state
-            print(f'state switched to: {state}')
+            logger.debug(f'state switched to: {state}')
 
 class NoneState(State):
     def __init__(self):
@@ -320,19 +322,19 @@ class StateController:
             #     StateController.state.switch(FightState) #TODO remove so we can get into a walk state
             # get orientation also has a @state_check so we do not have to set something. Just to make sure
 
-            print("Check orientation")
+            logger.debug("Check orientation")
             ori = get_orientation()
             if ori != None:
                 walk_state = WalkRec.eval_states()
                 # bar_is_present = WalkRec.bar_present()
-                # print(f"Bar present: {bar_is_present}")
+                # logger.debug(f"Bar present: {bar_is_present}")
                 # yn = WalkRec.yn_and_bar_present()
 
                 if walk_state in ['talk', 'wait_arrow']:
                     cls.state.switch(WalkTalkState)
                     return
                 elif walk_state == 'yn_talk':
-                    print("HANDLE YN IN BAR. PRESS A FOR NOW FIX LATER")
+                    logger.debug("HANDLE YN IN BAR. PRESS A FOR NOW FIX LATER")
                     cls.state.switch(WalkTalkState)
                     return
                 elif walk_state == 'game_menu':
@@ -400,7 +402,7 @@ class StateController:
 
         _set_state()
         while cls.state == None: # this never happens. I do not know why I put this here
-            print('state: STATE NOT FOUND, keep looking')
+            logger.debug('state: STATE NOT FOUND, keep looking')
             _set_state()
         return str(cls.state)
 
@@ -412,4 +414,4 @@ class StateController:
 if __name__ == '__main__':
 
 
-    print(StateController.eval_state())
+    logger.debug(StateController.eval_state())

@@ -5,7 +5,8 @@ from ..fundamentals import screen_grab, goleft, goup, godown, goright, btnB, btn
 
 import time
 import cv2
-
+import logging
+logger = logging.getLogger(__name__)
 
 class Selector:
     ''' The Selector class acts as an actuator. It contains functions that push the right buttons to accomplish
@@ -48,9 +49,9 @@ class Selector:
             while sn != 'fight_move_pokemon_where':
                 cls._in_stats_or_switch_choose(original_idx, option='switch')
                 sn = StateController.state_name()
-            print("Move to position 0")
+            logger.debug("Move to position 0")
             cls._set_party_menu_cursor(0)
-            print("press A to confirm")
+            logger.debug("press A to confirm")
             btnA()
             btnB(3)
             # after pressing a button we refresh the state
@@ -83,12 +84,12 @@ class Selector:
                 time.sleep(0.1)
                 sn = StateController.eval_state()
             elif sn == 'fight_already_out':
-                print("Apparently this pokemon is already out. Double B to continue fight")
+                logger.info("Apparently this pokemon is already out. Double B to continue fight")
                 btnB(2)
                 time.sleep(0.1)
                 sn = StateController.eval_state()
         else:
-            print("NOT IN CHOOSE NEXT POKEMON STATE")
+            logger.error("NOT IN CHOOSE NEXT POKEMON STATE")
             return
 
 
@@ -177,30 +178,30 @@ class Selector:
         if cursor == None:
             return
         tries = 0
-        print(f" to: {to}, cursor: {cursor}")
+        logger.debug(f" to: {to}, cursor: {cursor}")
         while cursor != to and tries < 5: # if the cursor is not in the desired position move it
             tries += 1
             if to == 'stats':
                 goup()
                 cursor = cls._get_cursor_position(group)
-                print(f" to: {to}, cursor: {cursor}")
+                logger.debug(f" to: {to}, cursor: {cursor}")
             elif to == 'switch':
-                print("btn Up")
+                logger.debug("btn Up")
                 godown()
                 cursor = cls._get_cursor_position(group)
-                print(f" to: {to}, cursor: {cursor}")
+                logger.debug(f" to: {to}, cursor: {cursor}")
 
     @classmethod
     def _in_party_menu_choose_pokemon_by_idx(cls, idx, option= 'stats'):
-        print(f"In party menu choose idx {idx}")
-        print(f"state is: {StateController.state_name()}")
+        logger.debug(f"In party menu choose idx {idx}")
+        logger.debug(f"state is: {StateController.state_name()}")
         #cls.state = cls.eval_fight_states()
         sn = StateController.state_name()
         if sn not in ['fight_stats_or_switch','fight_choose_a_pokemon']:
             cls._in_game_menu_choose(1) # 1 is pokemon
         if sn == 'fight_choose_a_pokemon':
             cls._set_party_menu_cursor(idx)
-            print(f"Party menu cursor now set to {idx}")
+            logger.debug(f"Party menu cursor now set to {idx}")
             time.sleep(0.1)
             btnA()
             time.sleep(0.1)
@@ -213,11 +214,11 @@ class Selector:
         ''' in the game menu chose 'gm_pokedex','gm_pokemon' 'gm_item',ect. '''
         if option not in [0,1,2,3,4,5]:
             raise Exception(f"Invalid input argument option {option}")
-        print(f"In game menu choose {option}")
+        logger.debug(f"In game menu choose {option}")
         sn = StateController.state_name()
         if sn in ['walk','walk_evalstats','walk_game_menu','fight_choose_a_pokemon', 'fight_stats_switch']:
             if sn in ['walk', 'walk_evalstats']:
-                print("Open game menu")
+                logger.debug("Open game menu")
                 btnStart()
                 time.sleep(0.5)
                 StateController.eval_state()
@@ -241,7 +242,7 @@ class Selector:
     @classmethod
     def _go_to_game_menu(cls):
         # not done yet but for lack of something better we start with this
-        print("Open game menu")
+        logger.debug("Open game menu")
         # btnB()
         # time.sleep(0.3)
         # btnB()
@@ -346,7 +347,7 @@ class Selector:
     #@state_check(FightState)
     def eval_fight_states(cls):
         state = cls._get_cursor_position('states')
-        print(f"Eval fightstates: State is {state}")
+        logger.debug(f"Eval fightstates: State is {state}")
         return state
 
 
@@ -355,9 +356,10 @@ class Selector:
         cursor = cls._get_cursor_position('menu')
         if cursor == None:
             return
-        tries = 0
-        while cursor != to and tries < 5:
-            tries += 1
+        # tries = 0
+        while cursor != to:  # and tries < 5
+            logger.debug(f"Try to get to position {to}")
+            # tries += 1
             if to == 'move':
                 if cursor == 'pkmn':
                     goleft()
@@ -402,7 +404,7 @@ class Selector:
                 elif cursor == 'run':
                     goright()
                     cursor = cls._get_cursor_position('menu')
-        print(f"Cursor is now on {cursor}")
+        logger.debug(f"Cursor is now on {cursor}")
 
     @classmethod
     def _set_move_cursor(cls,move_idx: int):
@@ -450,7 +452,7 @@ class Selector:
     @classmethod
     def _go_to_fight_menu(cls):
         ''' from any fight state we can get to the menu by pressing btnB'''
-        print("press B to go to fight menu")
+        logger.debug("press B to go to fight menu")
         btnB()
         time.sleep(0.5)
         StateController.eval_state()
@@ -494,7 +496,7 @@ class Selector:
     @classmethod
     def init_fight(cls):
         # read the text
-        print('click A to start')
+        logger.info('Click A to start the fight')
         time.sleep(0.5) # presses A to soon earlier, now fixed
         btnA()
         time.sleep(2.5) # time for the animation

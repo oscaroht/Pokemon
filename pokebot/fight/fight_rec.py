@@ -4,6 +4,8 @@ import numpy as np
 
 from ..fundamentals import OCR
 from ..fundamentals import screen_grab
+import logging
+logger = logging.getLogger(__name__)
 
 class FightRec(OCR):
 
@@ -168,7 +170,7 @@ class FightRec(OCR):
             hp_current, hp_max = txt.split('/')
             return int(hp_current), int(hp_max)
         else:
-            print("Unable to read hp_current and hp_max because / is not found in raw text")
+            logger.error("Unable to read hp_current and hp_max because / is not found in raw text")
 
     @classmethod
     def read_moves_gm(cls):

@@ -3,7 +3,8 @@ import networkx as nx
 from ..fundamentals import config
 from sqlalchemy import create_engine
 import pandas as pd
-
+import logging
+logger = logging.getLogger(__name__)
 
 def load_graph():
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
@@ -25,7 +26,7 @@ def load_graph():
         for row in distinct_node1:
             G_current = nx.Graph()
             node1_id = row['node1_id']
-            print(f'Loading.. graph node1_id: {node1_id}')
+            logger.info(f'Loading.. graph node1_id: {node1_id}')
             edges = con.execute(f"select * from mart.edges_lvl0 where node1_id = {node1_id}; ")
             nodes = con.execute(f'select node0_id, x, y from mart.nodes_lvl0 where node1_id = {node1_id};')
             for roww in nodes:

@@ -1,5 +1,8 @@
 import os
 import cv2
+# from pokebot.fundamentals.initialization import initialize_logger
+import logging
+logger = logging.getLogger(__name__)
 
 class Template:
     extension = 'tmp'
@@ -30,7 +33,7 @@ def load_templates():
                 mask = cv2.cvtColor(cv2.imread(os.path.join(path, filename)), cv2.COLOR_RGB2GRAY)
         for filename in files:
             if filename.endswith('.tmp'):
-                print('Loading.. template ' + filename)
+                logger.info('Loading.. template ' + filename)
 
                 subdir = path.replace(templates_folder, '')
                 group = subdir.split('\\')[0]

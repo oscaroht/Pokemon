@@ -1,14 +1,24 @@
+
+# from pokebot.fundamentals.initialization import get_custom_logger
+
+import logging
+from datetime import datetime
+logging.basicConfig(level=logging.DEBUG,
+                    format="%(asctime)s - %(filename)s - %(levelname)s - %(message)s",
+                    handlers=[logging.FileHandler(f"log\\{datetime.utcnow().strftime('%Y-%m-%dT%H_%M_%S')}.log"),
+                              logging.StreamHandler()])
+logging.info('test')
 from pokebot import Gameplan, train, talk, buy, go_to, catch, open_vba
 import pokebot.short_cuts as sc
 
-# open_vba()
 
 Gameplan.continue_or_new_game = 'new_game'
-# Gameplan.player_name = 'blue'
+Gameplan.starter_pokemon = 'squirtle'
+Gameplan.player_name = 'blue'
 Gameplan.catch_pokemon = ['pidgey', 'pikachu', 'geodude','nidoran_f']
 
 go_to(('route1', 595))
-talk(sc.starter_pokemon_location['squirtle'])
+talk(sc.starter_pokemon_location[Gameplan.starter_pokemon])
 talk(sc.mom)
 talk(sc.viridian_city_pc)
 talk(sc.viridian_city_market)
@@ -18,13 +28,17 @@ talk(sc.viridian_city_pc)
 buy(sc.viridian_city_market, 'poke ball', 9)
 catch('pidgey', ('route1', 168), ('route1', 161), sc.viridian_city_pc)
 train(5, 'all', ('route1', 168), ('route1', 161), sc.viridian_city_pc)
+talk(sc.viridian_city_pc)
 talk(sc.pewter_city_pc)
-train(10, 'squirtle',  ('route2b', 68), ('route2b', 61), sc.pewter_city_pc)
+train(10, Gameplan.starter_pokemon,  ('route2b', 68), ('route2b', 61), sc.pewter_city_pc)
 talk(sc.pewter_city_pc)
 go_to(('pewter_city_gym', 55))
 talk(sc.pewter_city_pc)
 talk(sc.brock)
 go_to(sc.pewter_city_pc)
+
+
+
 
 # class Legacy:
 

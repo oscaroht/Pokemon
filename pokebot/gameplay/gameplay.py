@@ -3,6 +3,9 @@ from ..fundamentals import btnA, btnB, goup, godown, StateController
 import time
 from pokebot.game_plan import Gameplan
 
+import logging
+logger = logging.getLogger(__name__)
+
 class Gameplay:
 
     @classmethod
@@ -29,16 +32,16 @@ class Gameplay:
                     cls.in_name_menu_choose('blue', 'player')
                 else:
                     cls.in_name_menu_choose('new_name', 'player')
-                    print("MAKE SOMETHING TO HANDLE NEW NAME")
+                    logger.error("MAKE SOMETHING TO HANDLE NEW NAME")
             elif sn == 'gameplay_choose_rival_name_menu':
                 if Gameplan.rival_name == 'red':
                     cls.in_name_menu_choose('red', 'rival')
                 else:
                     cls.in_name_menu_choose('new_name', 'rival')
-                    print("MAKE SOMETHING TO HANDLE NEW NAME")
+                    logger.error("MAKE SOMETHING TO HANDLE NEW NAME")
 
             if sn == 'gameplay_choose_player_name_abc':
-                print("TO BE BUILD")
+                logger.error("TO BE BUILD")
 
             sn = StateController.eval_state()
 
@@ -53,7 +56,7 @@ class Gameplay:
     @classmethod
     def eval_gameplay_states(cls):
         state = GT.which_template_in_group('states')
-        print(f"Eval fightstates: State is {state}")
+        logger.debug(f"Eval fightstates: State is {state}")
         return state
 
     ''' for the start of the game '''
@@ -94,7 +97,7 @@ class Gameplay:
         sn = StateController.state_name()
         while sn == f'gameplay_choose_{who}_name_menu':
             if to not in ['new_name', 'blue', 'red'] or who not in ['player', 'rival']:
-                print(f"Invalid input argument {to}")
+                logger.error(f"Invalid input argument {to}")
                 raise Exception(f"Invalid input argument {to}")
             Gameplay._set_name_cursor(to, who)
             time.sleep(0.2)
@@ -103,11 +106,11 @@ class Gameplay:
             sn = StateController.eval_state()
     @classmethod
     def _set_name_cursor(cls, to, who):
-        print(f'Set cursor to {to} for player/rival: {who}')
+        logger.debug(f'Set cursor to {to} for player/rival: {who}')
         cursor = GT.which_template_in_group(f'choose_{who}_name_menu')
         if to == 'new_name':
             to = f'new_{who}_name'
-        print(f"cursor : {cursor},, to_temp: {to}  so   {cursor != to}")
+        logger.debug(f"cursor : {cursor},, to_temp: {to}  so   {cursor != to}")
         if cursor == None:
             return
         tries = 0
@@ -117,7 +120,7 @@ class Gameplay:
             else:
                 godown()
             cursor = GT.which_template_in_group(f'choose_{who}_name_menu')
-            print(f'cursor is {cursor}. please exit this function')
+            logger.debug(f'cursor is {cursor}. please exit this function')
             tries += 1
 
 
@@ -139,23 +142,23 @@ class Gameplay:
             max_amount = int(money / item.buy) # how many items can I buy as a max
             amount = min(amount, max_amount)
             if amount < 0:
-                print(f"Not enough money to buy any of item {item_name}")
+                logger.error(f"Not enough money to buy any of item {item_name}")
                 return
             while sn != 'gameplay_buy_final':
                 money = cls._read_money()
                 max_amount = int(money / item.buy)  # how many items can I buy as a max
                 amount = min(amount, max_amount)
                 if amount < 0:
-                    print(f"Not enough money to buy any of item {item_name}")
+                    logger.error(f"Not enough money to buy any of item {item_name}")
                     return
                 if sn == 'gameplay_buy_no_money':
                     btnB(4)
                     return
-                print(f"1buy_item state: {sn}")
+                logger.debug(f"1buy_item state: {sn}")
                 cls.in_confirm_choose_yes(item_idx, amount) # 1 for the first item in the shop
                 StateController.eval_state()
                 sn = StateController.state_name()
-                print(f"2buy_item state: {sn}")
+                logger.debug(f"2buy_item state: {sn}")
             # the item was bought in the game. Lets us add it to our system
             item.add_amount(amount)
             btnB(4) # exit the menu
@@ -166,11 +169,11 @@ class Gameplay:
         while 'buy' in sn:
             while sn != 'gameplay_buy_confirm': #, 'gameplay_buy_final']:
                 # if sn != 'gameplay_buy_confirm':
-                print(f"1in_confirm_choose_yes state: {sn}")
+                logger.debug(f"1in_confirm_choose_yes state: {sn}")
                 cls.go_to_buy_confirm(item_idx, amount)
                 StateController.eval_state()
                 sn = StateController.state_name()
-                print(f"2in_confirm_choose_yes state: {sn}")
+                logger.debug(f"2in_confirm_choose_yes state: {sn}")
                 # elif sn == 'gameplay_buy_final':
                 #     return
             time.sleep(0.5)
@@ -191,7 +194,7 @@ class Gameplay:
                     time.sleep(2.5)
                     btnA() # "ITEM? That will be.."
                 sn = StateController.eval_state()
-                print(f"go_to_by_amount state: {sn}")
+                logger.debug(f"go_to_by_amount state: {sn}")
             return
 
     @classmethod
@@ -208,7 +211,7 @@ class Gameplay:
                 elif sn == 'gameplay_buy_final':
                     btnB()
                 sn = StateController.eval_state()
-                print(f"go_to_by_amount state: {sn}")
+                logger.debug(f"go_to_by_amount state: {sn}")
             return
     @classmethod
     def _read_money(cls):

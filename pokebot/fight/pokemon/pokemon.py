@@ -4,6 +4,8 @@ from ...fundamentals import config
 import os
 import pandas as pd
 import difflib
+import logging
+logger = logging.getLogger(__name__)
 
 class PP_below_zero(Exception):
     pass
@@ -160,8 +162,8 @@ class Party(list):
     def add(self, pokemon):
         if len(self) < 6:
             self.append(pokemon)
-        else:
-            raise InvalidPartyError('Already 6 pokemon in party.')
+            return
+        raise InvalidPartyError('Already 6 pokemon in party.')
 
     def rmv(self, pokemon): # remove is a list function
         if len(self.party) > 1:
@@ -189,7 +191,7 @@ class Party(list):
         for p in self:
             if p.own_name == name:
                 return p
-        print(f"Own name {name} not found in party")
+        logger.warning(f"Own name {name} not found in party")
 
     def get_index_of_highest_level_pokemon_ready_to_fight(self):
         '''' gets the party index of the pokemon with the highest level. If pokemon have an equal level the lowest
@@ -200,7 +202,7 @@ class Party(list):
     def stats_need_evaluation(self,return_party_idx = False):
         for i, pokemon in enumerate(self):
             if pokemon.moves==[]:
-                print(f"Pokemon {pokemon.name} stats and moves should be evaluated. Return idx? {return_party_idx}")
+                logger.info(f"Pokemon {pokemon.name} stats and moves should be evaluated. Return idx? {return_party_idx}")
                 if return_party_idx:
                     return i
                 else:
@@ -297,8 +299,8 @@ class OwnPokemon(Pokemon):
 
     @classmethod
     def new_game(cls):
-        cls.all = []
-        cls.party = Party()
+        cls.all.clear()
+        cls.party.clear()
 
     def save(self):
         query =f"""insert into mart.own_pokemon values ({self.own_id}, {self.pokemon_id},'{self.own_name}',{self.level},'{self.status}',{self.current_hp},{self.stats['hp']},{self.stats['atk']},{self.stats['def']},{self.stats['spa']},{self.stats['spd']},{self.stats['spe']},{self.move1.id},{self.move2.id},{self.move3.id}, {self.move4.id}, {self.move1.max_pp}, {self.move2.max_pp}, {self.move3.max_pp}, {self.move4.max_pp})
@@ -343,11 +345,11 @@ class OwnPokemon(Pokemon):
                 self.moves[i] = m
                 return
             elif len(self.moves) == 4 and i > 3: # default i=4 so if one does not specify i but the own pokemon already has 4 moves we throw this error
-                print('ERROR: use the i argument the set the position on which this move should be placed.')
+                logger.error('ERROR: use the i argument the set the position on which this move should be placed.')
                 raise OwnPokemon.OwnPokemonException("Use the i argument the set the position on which this move should be placed.")
-            print(f'ERROR trying to add a move on index {i} but failed.')
+            logger.error(f'ERROR trying to add a move on index {i} but failed.')
         else:
-            print('ERROR: argument should be instance of OwnMove.')
+            logger.error('ERROR: argument should be instance of OwnMove.')
 
     class OwnPokemonException(Exception):
         pass

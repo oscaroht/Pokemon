@@ -1,5 +1,7 @@
 import time
 from pynput.keyboard import Controller
+import logging
+logger = logging.getLogger(__name__)
 
 keyboard = Controller()
 
@@ -9,7 +11,7 @@ turnRatio = 0.0033 # 0.003500 # 0.028
 goRatio = 0.036 # 0.03500  # 0.068
 
 def btnA(*argv):
-    print("A")
+    logger.debug("A")
     if len(argv) == 0:
         n=1
     else:
@@ -22,7 +24,7 @@ def btnA(*argv):
         time.sleep(1)
 
 def btnB(*args):
-    print("B")
+    logger.debug("B")
     if len(args) == 0:
         n=1
     else:
@@ -125,19 +127,19 @@ def test_circle():
         turnright()
         start = time.time()
         goright()
-        print(time.time() - start)
+        logger.debug(time.time() - start)
         turndown()
         start = time.time()
         godown()
-        print(time.time() - start)
+        logger.debug(time.time() - start)
         turnleft()
         start = time.time()
         goleft()
-        print(time.time() - start)
+        logger.debug(time.time() - start)
         turnup()
         start = time.time()
         goup()
-        print(time.time() - start)
+        logger.debug(time.time() - start)
 
 def test2():
 
@@ -161,21 +163,21 @@ def test2():
 
 def test_turn():
     for i in range(4):
-        print(f"Turn right")
+        logger.debug(f"Turn right")
         turnright()
-        print(f"Turn down")
+        logger.debug(f"Turn down")
         turndown()
-        print(f"Turn left")
+        logger.debug(f"Turn left")
         turnleft()
-        print(f"Turn up")
+        logger.debug(f"Turn up")
         turnup()
 
 
 if __name__ == '__main__':
-    print(f"Test starts in.. 3 sec")
+    logger.debug(f"Test starts in.. 3 sec")
     time.sleep(1)
-    print(f"Test starts in.. 2 sec")
+    logger.debug(f"Test starts in.. 2 sec")
     time.sleep(1)
-    print(f"Test starts in.. 1 sec")
+    logger.debug(f"Test starts in.. 1 sec")
     time.sleep(1)
     test_circle()

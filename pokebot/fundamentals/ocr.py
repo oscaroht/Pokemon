@@ -1,6 +1,9 @@
 import tensorflow as tf
 import cv2
 import numpy as np
+import logging
+logger = logging.getLogger(__name__)
+
 from pokebot.settings import characterlist
 
 
@@ -163,7 +166,7 @@ class OCR:
             try:
                 img[0:char_img.shape[0], 0:char_img.shape[1]] = char_img
             except ValueError as e:
-                print(f"Value Exception in character rec. Probably it is inappropriate to read characters at this stage. {e}")
+                logger.error(f"Value Exception in character rec. Probably it is inappropriate to read characters at this stage.", exc_info=True)
                 return
 
             ''''preprocess the image with a simple filter and divide by 255 for the neural network'''
