@@ -1,19 +1,23 @@
+import time
+import logging
+logger = logging.getLogger(__name__)
+
 from .walk import Walker, Position, LocationNotFound, WrongStep
 from .fundamentals import StateController, btnA
 from .fight import Fighter
 from .gameplay.gameplay import Gameplay
-import time
+
 
 def go_to(goal, fight_mode='max_damage'):
     try:
         while not Walker.reached_goal(goal):
             sn = StateController.eval_state()
-            print(f"sn in mMain LOOP : {sn}")
+            logger.debug(f"sn in mMain LOOP : {sn}")
             if sn == 'walk':
                 try:
                     Walker.go(goal)
-                except (WrongStep, LocationNotFound) as e:
-                    print(F'ERROR: {e}')
+                except (WrongStep, LocationNotFound):
+                    logger.error(F'ERROR:', exc_info=True)
             elif 'fight' in sn:  # or  'none' in sn:  ## removed this part
                 Fighter.handle_fight(mode=fight_mode)  # catch or max_damage
             elif sn == 'walk_evalstats':
@@ -24,11 +28,11 @@ def go_to(goal, fight_mode='max_damage'):
                 time.sleep(0.1)
             elif 'gameplay' in sn:
                 Gameplay.handle_gameplay()
-            print(f"LOOP GO_TO. current {Position.map_name} {Position.cor_id} ")
-        print("END")
+            logger.debug(f"LOOP GO_TO. current {Position.map_name} {Position.cor_id} ")
+        logger.debug("END")
 
-    except Walker.GameplayException as e:
-        print(e)
+    except Walker.GameplayException:
+        logger.debug(f"Error ocured", exc_info=True)
 
 
 def talk(goal, fight_mode='max_damage'):
@@ -37,9 +41,9 @@ def talk(goal, fight_mode='max_damage'):
     sn = StateController.eval_state()
     while sn != 'walk_talk':
         btnA(1)  # check is talk state is reached
-        print("Pressing A to start monologue")
+        logger.info("Pressing A to start monologue")
         sn = StateController.eval_state()
-        print(f"In talk main function sn: {sn}")
+        logger.debug(f"In talk main function sn: {sn}")
     Walker.handle_talk()
 
 
@@ -51,7 +55,7 @@ def buy(goal, item_name, amount):
         if 'buy' in sn:
             break
         go_to(goal)
-        print("Pressing A to start market menu")
+        logger.info("Pressing A to start market menu")
         btnA(1)  # start talking
         StateController.eval_state()
         sn = StateController.state_name()
@@ -73,7 +77,7 @@ def catch(pokemon_name, start, turn, heal_point, hp_limit=0.3):
     while pokemon_name not in [p.name for p in OwnPokemon.party]:  # empty list is False
         # train
         while pokemon_name not in [p.name for p in OwnPokemon.party] and hp_fractions >= hp_limit:
-            print(f"Party: {OwnPokemon.party}")
+            logger.debug(f"Party: {OwnPokemon.party}")
 
             go_to(start, fight_mode='train')
             go_to(turn, fight_mode='train')
@@ -81,7 +85,7 @@ def catch(pokemon_name, start, turn, heal_point, hp_limit=0.3):
             hp_fractions = sum([p.current_hp / p.stats['hp'] for p in OwnPokemon.party]) / len(OwnPokemon.party)
 
         while pokemon_name not in [p.name for p in OwnPokemon.party] and hp_fractions < hp_limit:
-            print(f"Party: {OwnPokemon.party}")
+            logger.debug(f"Party: {OwnPokemon.party}")
             talk(heal_point, fight_mode='train')
             OwnPokemon.party.heal_party()
 
@@ -120,8 +124,8 @@ def train(to_level, which_pokemon, start, turn, heal_point, hp_limit=0.3):
     while pokemon_to_train:  # empty list is False
         # train
         while pokemon_to_train and (pokemon_to_train_ready_to_fight and hp_fractions >= hp_limit):
-            print(f"Party: {OwnPokemon.party}")
-            print(f"to train and ready to fight: {pokemon_to_train_ready_to_fight}")
+            logger.info(f"Party: {OwnPokemon.party}")
+            logger.info(f"Need to train and ready to fight: {pokemon_to_train_ready_to_fight}")
             Fighter.put_pokemon_in_front_of_party(pokemon_to_train_ready_to_fight[0])
 
             go_to(start, fight_mode='train')
@@ -130,16 +134,17 @@ def train(to_level, which_pokemon, start, turn, heal_point, hp_limit=0.3):
             pokemon_to_train = [p for p in train_subset if p.level < to_level]
             pokemon_to_train_ready_to_fight = [p for p in pokemon_to_train if
                                                p.current_hp > 0]  # could be [] so we put [0] at the first row of thies loop
-            print(f'Pokemon to train: {[p.own_name for p in pokemon_to_train_ready_to_fight]}')
+            logger.debug(f'Pokemon to train: {[p.own_name for p in pokemon_to_train_ready_to_fight]}')
             hp_fractions = sum([p.current_hp / p.stats['hp'] for p in OwnPokemon.party]) / len(OwnPokemon.party)
 
         while pokemon_to_train and (not pokemon_to_train_ready_to_fight or hp_fractions < hp_limit):
-            print(f"Party: {OwnPokemon.party}")
-            print(f"to train and ready to fight: {pokemon_to_train_ready_to_fight}")
+            logger.info(f"Party: {OwnPokemon.party}")
+            logger.info(f"Need to train and ready to fight: {pokemon_to_train_ready_to_fight}")
+            logger.info(f"Need to heal pokemon sop let's go to PokeCenter")
             talk(heal_point, fight_mode='train')
             OwnPokemon.party.heal_party()
 
             pokemon_to_train = [p for p in train_subset if p.level < to_level]
             pokemon_to_train_ready_to_fight = [p for p in pokemon_to_train if p.current_hp > 0]
-            print(f'Pokemon to train: {[p.own_name for p in pokemon_to_train_ready_to_fight]}')
+            logger.debug(f'Pokemon to train: {[p.own_name for p in pokemon_to_train_ready_to_fight]}')
             hp_fractions = sum([p.current_hp / p.stats['hp'] for p in OwnPokemon.party]) / len(OwnPokemon.party)

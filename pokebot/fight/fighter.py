@@ -45,7 +45,7 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
         pokemon_obj: Pokemon = Pokemon.get_pokemon_by_name(foe_name)
         self.foe = WildPokemon.build_from_pokemon_object(pokemon_obj, foe_level)
         self.foe_hp_fraction: int = FightRec.foe_hp()
-        logger.info(f'Foe.name: {foe_name}\nfoe.level: {foe_level}')
+        logger.info(f'Foe.name: {foe_name}, foe.level: {foe_level}')
         logger.info(f'My_pokemon.name: {my_pokemon}')
 
     def _calculate_damage(self, move):
@@ -487,6 +487,7 @@ class Fighter:
                     # switch pokemon if foe is to strong. We choose the max level pokemon that is ready to fight
                     if f.my_pokemon.level <= f.foe.level and not f.my_pokemon.is_highest_level_in_party_ready_to_fight():
                         # switch to other pokemon
+                        logger.info(f"Switch {f.my_pokemon} out of battle")
                         new_pk_index = OwnPokemon.party.get_index_of_highest_level_pokemon_ready_to_fight()
                         Selector.change_pokemon(new_pk_index) # perform the actual button clicks
                         f.my_pokemon = OwnPokemon.party[new_pk_index] # update the fight object

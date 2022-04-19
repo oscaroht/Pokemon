@@ -1,4 +1,6 @@
-
+import time
+import logging
+logger = logging.getLogger(__name__)
 
 #from position import Position
 from .stepper import Stepper, WrongStep
@@ -7,7 +9,7 @@ from .position import Position, LocationNotFound
 from ..fundamentals.controls import turnright, turndown, turnleft,turnup, btnB, btnA
 from ..fundamentals import StateController
 # from fight.pokemon import OwnPokemon, OwnMove
-import time
+
 
 class Walker():
     '''' this class combines the path with the stepper to execute the path. It loops over the
@@ -60,7 +62,7 @@ class Walker():
         sn = StateController.state_name()
         # if Stepper.position[:len(goal_cor)] == goal_cor:
         #     cls.goal_not_reached = False
-        print(f"walker go state {sn}")
+        logger.debug(f"walker go state {sn}")
 
         while not cls.reached_goal(goal_cor) and sn in ['walk','none_state']:
             try:
@@ -81,7 +83,7 @@ class Walker():
                 # ori = get_orientation()
 
             except (WrongStep, LocationNotFound):
-                print('walk: WRONG STEP or LOCATION NOT FOUND. recalculate route')
+                logger.warning('Wrong stap or location not found. Recalculating route')
             StateController.eval_state()
             sn = StateController.state_name()
 
@@ -94,12 +96,12 @@ class Walker():
         sn = StateController.state_name()
         while sn in ['walk_talk']:
             text = OCR.read_bar()
-            print(text)
+            logger.debug(text)
             if text is not None:
                 if 'fire' in text and 'CHARMANDER?' in text:
                     btnA()
                     time.sleep(0.1)
-                    print("Starter CHARMANDER picked")
+                    logger.info("Starter CHARMANDER picked")
                     from ..fight import OwnPokemon, OwnMove
                     moves = [OwnMove.create_own_move_by_name('scratch'), OwnMove.create_own_move_by_name('growl')]
                     OwnPokemon(4,'charmander','fire','-', {'hp':20, 'atk': 11, 'def':10, 'spe':12, 'spd':10, 'spa':10},
@@ -107,7 +109,7 @@ class Walker():
                 elif 'water' in text and 'SQUIRTLE?' in text:
                     btnA()
                     time.sleep(0.1)
-                    print("Starter SQUIRTLE picked")
+                    logger.info("Starter SQUIRTLE picked")
                     from ..fight import OwnPokemon, OwnMove
                     moves = [OwnMove.create_own_move_by_name('tackle'), OwnMove.create_own_move_by_name('tail whip')]
                     OwnPokemon(4,'squirtle','water','-', {'hp':19, 'atk': 10, 'def':11, 'spe':10, 'spd':11, 'spa':11},
@@ -115,13 +117,13 @@ class Walker():
                 elif 'plant' in text and 'BULBASAUR?' in text:
                     btnA()
                     time.sleep(0.1)
-                    print("Starter BULBASAUR picked")
+                    logger.info("Starter BULBASAUR picked")
                     from ..fight import OwnPokemon, OwnMove
                     moves = [OwnMove.create_own_move_by_name('tackle'), OwnMove.create_own_move_by_name('growl')]
                     OwnPokemon(4,'bulbasaur','grass','poison', {'hp':21, 'atk': 10, 'def':10, 'spe':10, 'spd':12, 'spa':12},
                                1,'bulbasaur', 5, moves, current_hp=21, in_party=True)
                 elif 'nickname' in text:
-                    print("Nickname functionality not yet implemented choose NO")
+                    logger.warning("Nickname functionality not yet implemented choose NO")
                     btnB()
                 elif 'OAK:Hey!Dontgoawayyet!' in text:
                     btnB()

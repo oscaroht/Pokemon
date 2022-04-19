@@ -3,6 +3,8 @@ Maybe we can even store the shrunk cpo versions. Maybe this improves performance
 
 import numpy as np
 import cv2
+import logging
+logger = logging.getLogger(__name__)
 
 from ..fundamentals import screen_grab, Templates
 from .graphs import G
@@ -42,7 +44,7 @@ class Position():
         cls.position = (cls.map_name, cls.cor_id, cls.x, cls.y)
 
     @classmethod
-    def _get_current_map(cls, map):
+    def _get_map_template_by_name(cls, map):
         ''''This is a temporary function used to to take the current map from the the temp_list'''
 
         if isinstance(map, str):
@@ -58,26 +60,33 @@ class Position():
             if list:
                 return list
 
-        elif isinstance(map, int):
-            ''''Need better way to navigate the data structure. Maybe indexing.'''
-            for t in Templates.group('map'):
-                if t.id == map:  # 'pellet_town':
-                    return t.id
+        # elif isinstance(map, int):
+        #     ''''Need better way to navigate the data structure. Maybe indexing.'''
+        #     for t in Templates.group('map'):
+        #         if t.id == map:  # 'pellet_town':
+        #             return t.id
 
     @classmethod
-    def _map_to_cor(cls, t):  # im is a large map
+    def _get_map_window_from_cor(cls, t, x, y):
+        ''''This function gets a map image given an x and y coordinate '''
+        return {'img': t.img[y * 16:(y * 16 + 144), x * 16:(x * 16 + 160)], 'x': x, 'y': y, 'mask': t.mask}
+
+    @classmethod
+    def _get_all_cor_id_window_pairs(cls, t):  # im is a large map
         ''''The idea is to iterate over the image using the same iterator as was used to create the coordinates tables for
         the database. The ids will be the same as long as the map is made with care.'''
         mapping = {}
         h, w = t.img.shape
-        id = 1
+        cor_id = 1
         for y in range(int(h / 16) - 8):
             for x in range(int(w / 16) - 9):
-                mapping[id] = {'img': t.img[y * 16:(y * 16 + 144), x * 16:(x * 16 + 160)], 'x': x, 'y': y,
-                               'mask': t.mask}
-
-                id += 1
+                mapping[cor_id] = cls._get_map_window_from_cor(t, x, y)
+                cor_id += 1
         return mapping  # a dict with img, x, y as keys
+
+    @classmethod
+    def _specific_match_function(cls, img, template, mask=None):
+        return cv2.matchTemplate(img, template, cv2.TM_SQDIFF_NORMED, mask=mask)  # CCOEFF_NORMED) # CCORR_NORMED
 
     @classmethod
     def _get_position_in_map(cls, mapping, screen,
@@ -99,16 +108,14 @@ class Position():
         best_id, best_x, best_y = None, None, None
         for id in mapping:  # +1 because database id starts at 1
 
-            # TODO check the match function
-            res = cv2.matchTemplate(screen, mapping[id]['img'], cv2.TM_SQDIFF_NORMED,
-                                    mask=mapping[id]['mask'])  # CCOEFF_NORMED) # CCORR_NORMED
+            res = cls._specific_match_function(screen, mapping[id]['img'], mask=mapping[id]['mask'])
             if np.max(
                     res) < res_max:  # TODO maybe if match is higher than 90% or so break from the loop if performance is an issue
                 res_max = res
                 best_id = id
 
         if res_max > threshold:
-            print(f'threshold of >{threshold} not passed')
+            logger.debug(f'threshold of >{threshold} not passed')
             return None
 
         best_x = mapping[best_id]['x']
@@ -149,7 +156,7 @@ class Position():
 
         '''' if a map name or id is given than check if we find a coordinate. If not move on to all templates'''
         if cls.map_name != None:
-            cor = cls._get_position_in_map(cls._map_to_cor(cls._get_current_map(cls.map_name)), screen_grab())
+            cor = cls._get_position_in_map(cls._get_all_cor_id_window_pairs(cls._get_map_template_by_name(cls.map_name)), screen_grab())
             if cor != None:  # if cor is not None than this was indeed the map
                 cls._set_position(cls.map_name, *cor)
                 return cls.map_name, *cor
@@ -159,24 +166,54 @@ class Position():
         '''' if two maps are similar, like mom_lvl1 and mom_lvl2 this is problematic because the first one will be 
         found'''
         temp_order = template_order()
-        print(f"Template check order: {[t.name for t in temp_order]}")
+        logger.debug(f"Template check order: {[t.name for t in temp_order]}")
 
         for t in temp_order:
             # iterate over all map templates
-            print(f' trying map {t.name}')
-            cor = cls._get_position_in_map(cls._map_to_cor(t), screen_grab())
+            logger.debug(f' trying map {t.name}')
+            cor = cls._get_position_in_map(cls._get_all_cor_id_window_pairs(t), screen_grab())
             if cor is not None:
-                print('found')
+                logger.debug(f'position found in {t.name}')
                 cls._set_position(t.name, *cor)
                 return t.name, *cor
         raise LocationNotFound
 
+    @classmethod
+    def is_position(cls, map_name, x, y, threshold=0.05):  # 0.05 not tested
+        t = cls._get_map_template_by_name(map_name)  # get the template for the current map name
+        window = cls._get_map_window_from_cor(t, x, y)  # get the window of this template, x, y
+
+        screen = screen_grab()
+        h, w = window['img'].shape
+        screen = cv2.resize(screen, (w, h))
+
+        # # for testing
+        # cv2.imshow('resized screen', screen)
+        # cv2.waitKey()
+        # cv2.imshow('window of template', window['img'])
+        # cv2.waitKey()
+
+        res = cls._specific_match_function(screen, window['img'], mask=window['mask'])
+        logger.debug(f"The match result in is_position is {res[0][0]}")
+        if res[0][0] > threshold:
+            return False
+        return True
+
+
 
 def main():
-    Position.map_name = 'pewter_city_gym'
+    import time
+    logging.basicConfig(level=logging.DEBUG,
+                        format="%(asctime)s - %(filename)s - %(levelname)s - %(message)s",
+                        handlers=[logging.StreamHandler()])
+    Position.map_name = 'pellet_town'
+    start = time.time()
+    Position.is_position(4, 4)
+    print(f'is_position took {time.time()-start}')
+    start = time.time()
     Position.eval_position()
-    print(Position.position)
-
+    print(f'is_position took {time.time()-start}')
+    print(Position.get_position())
 
 if __name__ == '__main__':
     main()

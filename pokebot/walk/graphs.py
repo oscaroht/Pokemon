@@ -1,6 +1,6 @@
 import os
 import networkx as nx
-from ..fundamentals import config
+from pokebot.fundamentals import config
 from sqlalchemy import create_engine
 import pandas as pd
 import logging

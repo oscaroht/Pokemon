@@ -9,6 +9,14 @@ keyboard = Controller()
 wait = 0.400
 turnRatio = 0.0033 # 0.003500 # 0.028
 goRatio = 0.036 # 0.03500  # 0.068
+# I want go to take 0.45 seconds
+
+def adjust_go_ratio(measured_time, desired_time = 0.45, threshold=0.01):
+    global goRatio
+    increase = desired_time/measured_time
+    if abs(increase-1) >= threshold:
+        logger.debug(f"New button hold time {round(increase*100)} % of old hold time")
+        goRatio *= increase
 
 def btnA(*argv):
     logger.debug("A")
@@ -84,6 +92,7 @@ def turndown():
 
 
 def goright(*args):
+    logger.debug(f"Go ratio is now {goRatio}")
     if len(args) == 0:
         n=1
     else:
@@ -93,6 +102,7 @@ def goright(*args):
     btnright(n, goRatio)
 
 def goleft(*args):
+    logger.debug(f"Go ratio is now {goRatio}")
     if len(args) == 0:
         n=1
     else:
@@ -102,6 +112,7 @@ def goleft(*args):
     btnleft(n, goRatio)
 
 def goup(*args):
+    logger.debug(f"Go ratio is now {goRatio}")
     if len(args) == 0:
         n=1
     else:
@@ -111,6 +122,7 @@ def goup(*args):
     btnup(n, goRatio)
 
 def godown(*args):
+    logger.debug(f"Go ratio is now {goRatio}")
     if len(args) == 0:
         n=1
     else:

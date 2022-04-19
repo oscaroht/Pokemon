@@ -3,7 +3,7 @@
 
 import logging
 from datetime import datetime
-logging.basicConfig(level=logging.DEBUG,
+logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s - %(filename)s - %(levelname)s - %(message)s",
                     handlers=[logging.FileHandler(f"log\\{datetime.utcnow().strftime('%Y-%m-%dT%H_%M_%S')}.log"),
                               logging.StreamHandler()])

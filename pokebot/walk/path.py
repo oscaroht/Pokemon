@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__name__)
+
 from .graphs import G
 from .position import Position, LocationNotFound
 
@@ -81,7 +84,7 @@ class Path():
         #     return G
 
         (start_map_name, from_id, x, y) = Position.eval_position()
-        print(f"Path: position is {(start_map_name, from_id, x, y)}")
+        logger.debug(f"Path: position is {(start_map_name, from_id, x, y)}")
 
         # get start map id using the name
         start_map_id = G.df_edges_lvl1[G.df_edges_lvl1['from_name'] == start_map_name].iloc[0]['from_id']
@@ -111,7 +114,7 @@ class Path():
         if len(path_lvl1) == 1:
             g = G.G_lvl0[start_map_id]
             if from_id not in g:  # if the start is not in the 1st map
-                print(f"start coordinate not in start Graph")
+                logger.warning(f"Start coordinate not in start Graph")
                 g, start = add_exit_entry_node(g, x, y)  # add entry node
             path[start_map_id] = nx.dijkstra_path(g, from_id, end_cor[1])
             rt[start_map_id] = get_cor_list(g, path[start_map_id])
@@ -127,7 +130,7 @@ class Path():
                     g, start = add_exit_entry_node(g,series['enter_x'], series['enter_y']) # add entry node
                 else:
                     if start not in g: # if the start is not in the 1st map
-                        print(f"start coordinate not in start Graph")
+                        logger.warning(f"Start coordinate not in start Graph")
                         g, start = add_exit_entry_node(g, x, y)  # add entry node
                 series = G.edges_lvl1[eep]
                 if idx == len(eeps + [eeps[-1]])-1: # last one
@@ -141,12 +144,12 @@ class Path():
                 #     end = goal # the last map we are not going to the exit, we are going to the goal coordinate
 
                 current_path = nx.dijkstra_path(g, start, end)
-                print(f"current_path: {current_path}")
+                logger.debug(f"current_path: {current_path}")
                 path[from_map_id] = current_path
                 rt[from_map_id] = get_cor_list(g, current_path)
 
 
-        print(f"path: {path}")
+        logger.debug(f"Full path: {path}")
         self.id_path = path
         Path.path = path
         return rt

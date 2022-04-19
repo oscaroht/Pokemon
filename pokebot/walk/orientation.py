@@ -1,4 +1,6 @@
 import cv2
+import logging
+logger = logging.getLogger(__name__)
 
 from ..fundamentals import screen_grab, Templates
 
@@ -18,9 +20,9 @@ def get_orientation(threshold=0.15):
             best_score = min_val
             t_best = t
     if best_score > threshold: # lowest score is the best for SQDIFF
-        print('No orientation found.')
+        logger.debug('No orientation found.')
         return None
-    print(f'{t_best.name} with a score of {best_score}')
+    logger.debug(f'{t_best.name} with a score of {best_score}')
     return t_best.option
 
 if __name__ == '__main__':
