@@ -5,12 +5,16 @@ debugging'''
 from sqlalchemy import create_engine
 import networkx as nx
 import matplotlib.pyplot as plt
-from fundamentals.config import config
+from pokebot.fundamentals.config import config
+from pathlib import Path
 
-password = config('../users.ini','postgres','password')
+p = Path(__file__).parents[2]
+print(p)
+
+password = config(str(p) + '\\users.ini','postgres','password')
 engine = create_engine(f'postgresql+psycopg2://postgres:{password}@localhost/pokemon')
 
-node1_id = 6
+node1_id = 18
 
 G_current_lvl0 = nx.Graph() # create empty graph
 

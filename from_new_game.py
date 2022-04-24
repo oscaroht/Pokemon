@@ -3,10 +3,12 @@
 
 import logging
 from datetime import datetime
-logging.basicConfig(level=logging.INFO,
-                    format="%(asctime)s - %(filename)s - %(levelname)s - %(message)s",
-                    handlers=[logging.FileHandler(f"log\\{datetime.utcnow().strftime('%Y-%m-%dT%H_%M_%S')}.log"),
-                              logging.StreamHandler()])
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO,
+                        format="%(asctime)s - %(filename)s - %(levelname)s - %(message)s",
+                        handlers=[logging.FileHandler(f"log\\{datetime.utcnow().strftime('%Y-%m-%dT%H_%M_%S')}.log"),
+                                  logging.StreamHandler()])
 logging.info('test')
 from pokebot import Gameplan, train, talk, buy, go_to, catch, open_vba
 import pokebot.short_cuts as sc

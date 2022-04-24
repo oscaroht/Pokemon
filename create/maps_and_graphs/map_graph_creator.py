@@ -2,10 +2,14 @@
 ''''First a naive graph is created. This is a graph for a area without any obstacles'''
 
 from sqlalchemy import create_engine
-from fundamentals.config import config
+from pokebot.fundamentals.config import config
 import cv2
+from pathlib import Path
 
-password = config('../users.ini','postgres','password')
+p = Path(__file__).parents[2]
+print(p)
+
+password = config(str(p)+'\\users.ini','postgres','password')
 engine = create_engine(f'postgresql+psycopg2://postgres:{password}@localhost/pokemon')
 
 ## add a lvl1 node
@@ -41,14 +45,15 @@ def naive_creator(node1_id, w,h):
 # create ptb  (13, 10, 7)
 
 # use this to calculate the w en h of the network
-im = cv2.imread("C:\\Users\\oscar\\PycharmProjects\\Pokemon\\walk\\templates\\map\\viridian_forest.tmp")
+im = cv2.imread("C:\\Users\\oscar\\PycharmProjects\\Pokemon\\pokebot\\walk\\templates\\map\\route3.tmp")
 cv2.imshow('bla', im)
 cv2.waitKey()
 
 # im2 = cv2.hconcat([im, im[:,365:366,:]])
 # cv2.imshow('ad',im2)
 # cv2.waitKey()
+w = im.shape[1]/16 - 9
+h = im.shape[0]/16 - 8
+print(f"width: {w}\nheight: {h}") # so the number of pixels devided by 16x16 pixels per tile, minus 9 adn 8 for the edges of the image
 
-print(f"width: {im.shape[1]/16 - 9}\nheight: {im.shape[0]/16 - 8}") # so the number of pixels devided by 16x16 pixels per tile, minus 9 adn 8 for the edges of the image
-
-naive_creator(12, 32, 48)
+naive_creator(-99, int(w), int(h))

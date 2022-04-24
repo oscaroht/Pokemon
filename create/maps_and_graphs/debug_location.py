@@ -1,12 +1,13 @@
 
 import cv2
 
-from walk.position import Position
+from pokebot.walk.position import Position
 # from fundamentals.initialization import load_templates
-from fundamentals.screen import screen_grab
-from fundamentals.open_vba import open_vba
-from fundamentals.config import config
-from walk.orientation import get_orientation
+from pokebot.fundamentals.screen import screen_grab
+# from pokebot.fundamentals.open_vba import open_vba
+from pokebot.fundamentals.config import config
+from pokebot.walk.orientation import get_orientation
+from pokebot import settings
 
 from multiprocessing.pool import ThreadPool
 from collections import deque
@@ -16,8 +17,11 @@ from time import sleep
 
 def open_debug_screen(map_name):
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
-    w = int(config('../settings.ini', 'window_size','w'))
-    h = int(config('../settings.ini', 'window_size', 'h'))
+    # w = int(config('../settings.ini', 'window_size','w'))
+    # h = int(config('../settings.ini', 'window_size', 'h'))
+
+    w = settings.window_size_w
+    h = settings.window_size_h
 
     window_name = 'debug_screen'
     cv2.moveWindow(window_name, int(w), 20)
@@ -27,8 +31,13 @@ def open_debug_screen(map_name):
         debug_screen = cv2.cvtColor(debug_screen,cv2.COLOR_GRAY2RGB)
         # Write some Text
 
-        loc = Position.eval_position()
-        ori = get_orientation(0.15)
+        try:
+            loc = Position.eval_position()
+            ori = get_orientation(0.15)
+        except Exception:
+            loc = '--'
+            ori = '--'
+            pass
 
         font = cv2.FONT_HERSHEY_SIMPLEX
         cv2.putText(debug_screen, str(loc), (int(w/5), int(h/1.8)), font, 1, (0, 125, 255), 2, cv2.LINE_AA)
@@ -36,7 +45,7 @@ def open_debug_screen(map_name):
 
         cv2.imshow(window_name, debug_screen)
 
-        if cv2.waitKey(2) & 0xFF == ord('q'):
+        if cv2.waitKey(1) & 0xFF == ord('q'):
             cv2.destroyAllWindows()
             break
 
@@ -83,5 +92,5 @@ if __name__ == "__main__":
     #     global temp_list
     #     temp_list = load_templates()
 
-    open_debug_screen('pellet_town')
+    open_debug_screen('route3')
 

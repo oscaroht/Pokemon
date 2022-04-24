@@ -206,7 +206,7 @@ def main():
     logging.basicConfig(level=logging.DEBUG,
                         format="%(asctime)s - %(filename)s - %(levelname)s - %(message)s",
                         handlers=[logging.StreamHandler()])
-    Position.map_name = 'pellet_town'
+    Position.map_name = 'route3'
     start = time.time()
     Position.is_position(4, 4)
     print(f'is_position took {time.time()-start}')

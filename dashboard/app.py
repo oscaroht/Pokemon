@@ -38,7 +38,7 @@ def blank_fig():
 
     return fig
 
-from fight.pokemon import OwnPokemon
+from pokebot.fight import OwnPokemon
 
 party = OwnPokemon.party
 
@@ -144,8 +144,8 @@ app.layout = html.Div(children=[
 )
 def train_action(n_clicks):
     if n_clicks>0:
-        from main import train
-        train(9, 'all', ('route1', 161), ('route1', 168), ('viridian_city_pc', 4, 'up'))
+        from pokebot.combiner import train
+        train(10, 'all', ('route1', 161), ('route1', 168), ('viridian_city_pc', 4, 'up'))
         print(f'test {datetime.utcnow()}')
     return
 
@@ -157,7 +157,7 @@ def train_action(n_clicks):
 )
 def open_vba_action(n_clicks):
     if n_clicks>0:
-        from fundamentals.open_vba import open_vba
+        from pokebot.fundamentals.open_vba import open_vba
         open_vba()
     return
 
@@ -165,7 +165,7 @@ def open_vba_action(n_clicks):
 @app.callback(Output(component_id='chart-output', component_property='figure'),
               Input('interval-component', 'n_intervals'))
 def level_graph(n):
-    from fight.pokemon import OwnPokemon
+    from pokebot.fight import OwnPokemon
 
     df = pd.DataFrame(columns=['Pokemon', 'Level'])
     for p in OwnPokemon.party:
@@ -204,7 +204,7 @@ def level_graph(n):
 @app.callback(Output(component_id='chart-hp', component_property='figure'),
               Input('interval-component', 'n_intervals'))
 def party_charts(n):
-    from fight.pokemon import OwnPokemon
+    from pokebot.fight import OwnPokemon
 
     party = OwnPokemon.party
 
