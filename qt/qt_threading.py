@@ -1,7 +1,9 @@
 import sys
 from time import sleep
+
+import cv2
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, QTimer
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QColor, QImage, QFont, QFontDatabase
 from PyQt5 import QtWidgets
 # from PyQt5.QtWidgets import (
 #     QApplication,
@@ -14,8 +16,15 @@ from PyQt5 import QtWidgets
 #     QProgressBar, QGroupBox,
 # )
 from PyQt5.QtWidgets import *
+import random
 
 # https://www.pythonguis.com/tutorials/creating-your-own-custom-widgets/
+from datetime import datetime
+import logging
+logging.basicConfig(level=logging.INFO,
+                    format="%(asctime)s - %(filename)s - %(levelname)s - %(message)s",
+                    handlers=[logging.FileHandler(f"log\\{datetime.utcnow().strftime('%Y-%m-%dT%H_%M_%S')}.log"),
+                              logging.StreamHandler()])
 
 from pokebot.fight import OwnPokemon
 
@@ -37,196 +46,185 @@ class Worker(QObject):
 class Pokemon(QtWidgets.QWidget):
     pass
 
+def shadow_image(img):
+    ''''cv2 image comes in and goes out '''
+    h = img.shape[0]
+    w = img.shape[0]
+    for y in range(h):
+        for x in range(w):
+            if img[y, x, 3] != 0: # where the opacity is 0 (so not the background)
+                img[y, x, :3] = [0, 0, 0]  # set the color to black (nor the opacity to 0!)
+    return img
+
+
+
 
 class Window(QMainWindow):
+
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.clicksCount = 0
         self.setupUi()
         self.setupTimer()
 
-    def partyBox(self):
-        partyGroupBox = QGroupBox(self.tr("Party"))
-        grid_layout = QGridLayout()
-        for i, p in enumerate(['charmander', 'bulbasaur']): # , 'vulpix', 'pidgey'
-            col_num = i%2
-            row_num = int(i/2+1)
-            widget = self.pokeBox(p)
-            grid_layout.addWidget(widget, row_num, col_num)
-        grid_layout.setColumnStretch(0, 1)
-        grid_layout.setColumnStretch(1, 1)
-        return partyGroupBox.setLayout(grid_layout)
+        QFontDatabase.addApplicationFont('Pokemon GB.ttf')
 
-    def pokeBox(self, pokemon_name):
-        print(f"Adding {pokemon_name}")
-        pokemonGroupBox = QGroupBox(self.tr(pokemon_name))
-        layout = QHBoxLayout()
+    def convert_cv_qt_pixelmap(self, cv_img):
+        h, w, ch = cv_img.shape
+        bytes_per_line = ch * w
+        convert_to_Qt_format = QImage(
+            cv_img.data, w, h, bytes_per_line, QImage.Format_RGBA8888
+        )
+        # p = convert_to_Qt_format.scaled(
+        #     self.disply_width, self.display_height, Qt.KeepAspectRatio
+        # )
+        return QPixmap.fromImage(convert_to_Qt_format)
 
-        layout.addWidget(self.pokemon_label, stretch=1)
-        layout.addWidget(self.pbar, stretch=6)
-        return pokemonGroupBox.setLayout(layout)
+    # def partyBox(self):
+    #     partyGroupBox = QGroupBox(self.tr("Party"))
+    #     grid_layout = QGridLayout()
+    #     for i, p in enumerate(['charmander', 'bulbasaur']): # , 'vulpix', 'pidgey'
+    #         col_num = i%2
+    #         row_num = int(i/2+1)
+    #         widget = self.pokeBox(p)
+    #         grid_layout.addWidget(widget, row_num, col_num)
+    #     grid_layout.setColumnStretch(0, 1)
+    #     grid_layout.setColumnStretch(1, 1)
+    #     return partyGroupBox.setLayout(grid_layout)
+    #
+    # def pokeBox(self, pokemon_name):
+    #     print(f"Adding {pokemon_name}")
+    #     pokemonGroupBox = QGroupBox(self.tr(pokemon_name))
+    #     layout = QHBoxLayout()
+    #
+    #     layout.addWidget(self.pokemon_label, stretch=1)
+    #     layout.addWidget(self.pbar, stretch=6)
+    #     return pokemonGroupBox.setLayout(layout)
+
+
 
 
     def setupUi(self):
-        self.setWindowTitle("Freezing GUI")
+        self.setWindowTitle("Pokebot")
         self.setGeometry(300, 100, 900, 1000) # x0, y0, width, height
 
 
         # Create and connect widgets
-        self.clicksLabel = QLabel("Pokemon", self)
+        # self.clicksLabel = QLabel("Pokemon", self)
         # self.clicksLabel.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-        self.countBtn = QPushButton("Update image", self)
+        self.start_vba_btn = QPushButton("Open VBA", self)
+        self.start_vba_btn.setFont(QFont('Pokemon GB'))
         # self.countBtn.setGeometry(20, 15, 10, 40)
-        self.countBtn.clicked.connect(self.update_image)
+        self.start_vba_btn.clicked.connect(self.start_vba)
 
         # self.openvbaBtn = QPushButton("Start VBA", self)
         # self.openvbaBtn.clicked.connect(self.start_vba)
 
         self.stepLabel = QLabel("Start New Game")
+        self.stepLabel.setFont(QFont('Pokemon GB'))
         # self.stepLabel.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
 
         self.longRunningBtn = QPushButton("Start New Game!", self)
+        self.longRunningBtn.setFont(QFont('Pokemon GB'))
         self.longRunningBtn.setGeometry(20, 15, 10, 40)
         self.longRunningBtn.clicked.connect(self.runLongTask)
 
+        self.badgesLabels = list()
+        for b in ['bolder_badge', 'cascade_badge', 'thunder_badge', 'rainbow_badge', 'soul_badge', 'marsh_badge', 'volcano_badge', 'earth_badge']:
+            badge_label = QLabel(self)
+            img = cv2.imread('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\dashboard\\assets\\' + b + '.png',
+                             cv2.IMREAD_UNCHANGED)
+            pixmap = self.convert_cv_qt_pixelmap(shadow_image(img))
+            # pixmap = QPixmap('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\dashboard\\assets\\' + b + '.png')
+            pixmap.scaled(128, 128)
+            # pixmap.fill(QColor(0, 0, 0))
+            badge_label.setPixmap(pixmap)
+            self.badgesLabels.append(badge_label)
+
+            # pixmap.createMaskFromColor()
+
+
+
         self.pokemonLabels = list()
+        self.hpBars = list()
+        self.ppBars = {}
+        self.pokemonGroups = []
+        self.all_move_labels = {}
         for i in range(6):
+            # image
             pokemon_label = QLabel(self)
             pixmap = QPixmap('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\dashboard\\assets\\' + 'poke_ball.png')
-            pixmap.scaled(128, 128)
+            pixmap.scaled(64, 64)
             pokemon_label.setPixmap(pixmap)
             self.pokemonLabels.append(pokemon_label)
 
-        # self.pokemon_label = QLabel(self)
-        # pixmap = QPixmap('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\dashboard\\assets\\' + 'poke_ball.png')
-        # pixmap.scaled(128, 128)
-        # self.pokemon_label.setPixmap(pixmap)
-        #
-        # self.pokemon_label2 = QLabel(self)
-        # pixmap = QPixmap('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\dashboard\\assets\\' + 'poke_ball.png')
-        # pixmap.scaled(128, 128)
-        # self.pokemon_label2.setPixmap(pixmap)
-        #
-        # self.pokemon_label3 = QLabel(self)
-        # pixmap = QPixmap('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\dashboard\\assets\\' + 'poke_ball.png')
-        # pixmap.scaled(128, 128)
-        # self.pokemon_label3.setPixmap(pixmap)
-        #
-        # self.pokemon_label4 = QLabel(self)
-        # pixmap = QPixmap('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\dashboard\\assets\\' + 'poke_ball.png')
-        # pixmap.scaled(128, 128)
-        # self.pokemon_label4.setPixmap(pixmap)
-
-        # self.setCentralWidget(label)
-        # self.resize(pixmap.width(), pixmap.height())
-
-        self.progressBars = list()
-        for i in range(6):
-            pbar = QProgressBar(self)
-            pbar.setStyleSheet(
+            # hpBar
+            hpbar = QProgressBar(self)
+            hpbar.setStyleSheet(
                 " QProgressBar { text-align: center; } QProgressBar::chunk {background-color: #3add36; width: 1px;}")
-            pbar.setValue(50)
-            pbar.adjustSize()
-            self.progressBars.append(pbar)
+            hpbar.setValue(100)
+            hpbar.setFormat('HP bar')
+            hpbar.adjustSize()
+            self.hpBars.append(hpbar)
 
-        # self.pbar = QProgressBar(self)
-        # self.pbar.setStyleSheet(" QProgressBar { text-align: center; } QProgressBar::chunk {background-color: #3add36; width: 1px;}")
-        # self.pbar.setValue(50)
-        # self.pbar.adjustSize()
-        #
-        # self.pbar2 = QProgressBar(self)
-        # self.pbar2.setStyleSheet(
-        #     " QProgressBar { text-align: center; } QProgressBar::chunk {background-color: #3add36; width: 1px;}")
-        # self.pbar2.setValue(50)
-        # self.pbar2.adjustSize()
-        #
-        # self.pbar3 = QProgressBar(self)
-        # self.pbar3.setStyleSheet(
-        #     " QProgressBar { text-align: center; } QProgressBar::chunk {background-color: #3add36; width: 1px;}")
-        # self.pbar3.setValue(50)
-        # self.pbar3.adjustSize()
-        #
-        # self.pbar4 = QProgressBar(self)
-        # self.pbar4.setStyleSheet(
-        #     " QProgressBar { text-align: center; } QProgressBar::chunk {background-color: #3add36; width: 1px;}")
-        # self.pbar4.setValue(50)
-        # self.pbar4.adjustSize()
 
-        # self.label_1 = QLabel("new border ", self)
-        # # moving position
-        # self.label_1.move(100, 100)
-        # self.label_1.setStyleSheet("border :3px solid black;")
+            # moves
+            # moves_group_box = QGroupBox(self.tr("Moves"))
+            moves_grid_layout = QGridLayout()
+            moves = list()
+            self.ppBars[i] = []
+            self.all_move_labels[i] = []
+            for j in range(4):
+                # PP bar
+                ppbar = QProgressBar(self)
+                ppbar.setStyleSheet(
+                    " QProgressBar { text-align: center; height: 2px } QProgressBar::chunk {background-color: #7D94B0; width: 1px; height: 2px;}")
+                ppbar.setValue(50)
+                ppbar.setFormat('PP bar')
+                # ppbar.setGeometry(200, 100, 2, 5)
+                # ppbar.adjustSize()
+                self.ppBars[i].append(ppbar)
 
-        # Set the layout
-        # layout = QVBoxLayout()
-        # layout2 = QHBoxLayout()
-        # # layout.addWidget(self.clicksLabel)
-        # # layout.addWidget(self.countBtn)
-        # layout.addStretch()
-        # # layout.addWidget(self.openvbaBtn)
-        # layout.addStretch()
-        # layout.addWidget(self.stepLabel)
-        # layout.addWidget(self.longRunningBtn)
-        # layout2.addWidget(self.pokemon_label)
-        # # layout.addWidget(self.label_1)
-        # # layout2.addWidget(self.pbar)
-        # self.centralWidget.setLayout(layout)
-        # self.centralWidget.setLayout(layout2)
+                single_move_layout = QVBoxLayout()
+                single_move_group_box = QGroupBox()
+                m = QLabel(self)
+                m.setText(f'move {j}')
+                self.all_move_labels[i].append(m)
+                single_move_layout.addWidget(m)
+                single_move_layout.addStretch(4)
+                single_move_layout.addWidget(ppbar)
+                single_move_layout.addStretch(1)
+                single_move_group_box.setLayout(single_move_layout)
+                moves_grid_layout.addWidget(single_move_group_box, int(j / 2 + 1), j % 2)
+                moves.append(m)
+            moves_grid_layout.setColumnStretch(0, 1)
+            moves_grid_layout.setColumnStretch(1, 1)
+            # moves_group_box.setLayout(moves_grid_layout)
 
-        buttonGroupBox = QGroupBox(self.tr("Button options"))
-        button_layout = QVBoxLayout()
-        button_layout.addWidget(self.countBtn)
-        button_layout.addWidget(self.longRunningBtn)
-        buttonGroupBox.setLayout(button_layout)
+            # combine progressbar and moves
+            hp_and_moves_layout = QVBoxLayout()
+            hp_and_moves_layout.addWidget(hpbar)
+            hp_and_moves_layout.addLayout(moves_grid_layout)
 
-        self.pokemonGroups = list()
-        for i in range(6):
             pokemonGroupBox = QGroupBox(self.tr(f"Pokemon {i}"))
             layout = QHBoxLayout()
-            layout.addWidget(self.pokemonLabels[i], stretch=1)
-            # layout.addLayout(self.pokemon_label, 1)
-            layout.addWidget(self.progressBars[i], stretch=8)
-            # layout.addLayout(self.pbar, 3)
+            layout.addWidget(pokemon_label, stretch=1)
+            layout.addLayout(hp_and_moves_layout, stretch=2)
             pokemonGroupBox.setLayout(layout)
             self.pokemonGroups.append(pokemonGroupBox)
-        #
-        # pokemonGroupBox = QGroupBox(self.tr("Pokemon 1"))
-        # layout = QHBoxLayout()
-        # layout.addWidget(self.pokemon_label, stretch=1)
-        # # layout.addLayout(self.pokemon_label, 1)
-        # layout.addWidget(self.pbar, stretch=8)
-        # # layout.addLayout(self.pbar, 3)
-        # pokemonGroupBox.setLayout(layout)
-        #
-        # pokemonGroupBox2 = QGroupBox(self.tr("Pokemon 2"))
-        # layout2 = QHBoxLayout()
-        # layout2.addWidget(self.pokemon_label2, stretch=1)
-        # layout2.addWidget(self.pbar2, stretch=8)
-        # pokemonGroupBox2.setLayout(layout2)
-        #
-        # pokemonGroupBox3 = QGroupBox(self.tr("Pokemon 3"))
-        # layout3 = QHBoxLayout()
-        # layout3.addWidget(self.pokemon_label3, stretch=1)
-        # layout3.addWidget(self.pbar3, stretch=8)
-        # pokemonGroupBox3.setLayout(layout3)
-        #
-        # pokemonGroupBox4 = QGroupBox(self.tr("Pokemon 4"))
-        # layout4 = QHBoxLayout()
-        # layout4.addWidget(self.pokemon_label4, stretch=1)
-        # layout4.addWidget(self.pbar4, stretch=8)
-        # pokemonGroupBox4.setLayout(layout4)
 
-        # pokemonGroupBox5 = QGroupBox(self.tr("Pokemon 5"))
-        # layout5 = QHBoxLayout()
-        # layout5.addWidget(self.pokemon_label5, stretch=1)
-        # layout5.addWidget(self.pbar5, stretch=8)
-        # pokemonGroupBox5.setLayout(layout5)
+        # self.pokemonGroups = list()
+        # for i in range(6):
+        #     pokemonGroupBox = QGroupBox(self.tr(f"Pokemon {i}"))
+        #     layout = QHBoxLayout()
+        #     layout.addWidget(self.pokemonLabels[i], stretch=1)
         #
-        # pokemonGroupBox6 = QGroupBox(self.tr("Pokemon 6"))
-        # layout6 = QHBoxLayout()
-        # layout6.addWidget(self.pokemon_label6, stretch=1)
-        # layout6.addWidget(self.pbar6, stretch=8)
-        # pokemonGroupBox6.setLayout(layout6)
+        #     # layout.addLayout(self.pokemon_label, 1)
+        #     # layout.addWidget(self.progressBars[i], stretch=8)
+        #     # layout.addLayout(self.pbar, 3)
+        #     pokemonGroupBox.setLayout(layout)
+        #     self.pokemonGroups.append(pokemonGroupBox)
 
         partyGroupBox = QGroupBox(self.tr("Party"))
         grid_layout = QGridLayout()
@@ -241,7 +239,23 @@ class Window(QMainWindow):
         grid_layout.setColumnStretch(1, 1)
         partyGroupBox.setLayout(grid_layout)
 
+        # buttons
+        buttonGroupBox = QGroupBox(self.tr("Button options"))
+        button_layout = QVBoxLayout()
+        button_layout.addWidget(self.start_vba_btn)
+        button_layout.addWidget(self.longRunningBtn)
+        buttonGroupBox.setLayout(button_layout)
+
+        # badges
+        badgesGroupBox = QGroupBox(self.tr("Badges"))
+        badges_layout = QGridLayout()
+        for i in range(8):
+            badges_layout.addWidget(self.badgesLabels[i], int(i / 4 + 1), i%4+1)
+        badgesGroupBox.setLayout(badges_layout)
+
+
         mainLayout = QVBoxLayout()
+        mainLayout.addWidget(badgesGroupBox, 1)
         mainLayout.addWidget(buttonGroupBox,1)
         # partyGroupBox = self.partyBox()
         mainLayout.addWidget(partyGroupBox, 2)
@@ -262,7 +276,7 @@ class Window(QMainWindow):
         self.timer.start(500)
 
     def update_gui(self):
-        path = 'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\dashboard\\assets\\'
+        assets_folder = 'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\dashboard\\assets\\'
 
         # print('take party object')
         try:
@@ -279,11 +293,63 @@ class Window(QMainWindow):
             #     self.pokemon_label2.setPixmap(QPixmap(path + 'bulbasaur' + '.png').scaled(128, 128))
             #     print(f"Nothing in party")
 
-            party_names = ['charmander', 'bulbasaur', 'vulpix', 'pidgey', 'arbok', 'abra' ]
-            # labels = [self.pokemon_label, self.pokemon_label2, self.pokemon_label3, self.pokemon_label4]
-            for i, (name, label) in enumerate(zip(party_names, self.pokemonLabels)):
-                label.setPixmap(QPixmap(path + str(name) + '.png').scaled(128, 128))
-                self.pokemonGroups[i].setTitle(name)
+            for i in range(6):
+                if i >= len(OwnPokemon.party):
+                    # no pokemon choose non pokemon view
+                    self.pokemonLabels[i].setPixmap(QPixmap(assets_folder + 'poke_ball' + '.png').scaled(90, 90))
+                    self.pokemonGroups[i].setTitle('--')
+
+                    self.hpBars[i].setValue(0)
+
+                    # all moves should be none
+                    for k in range(4):
+                        self.ppBars[i][k].setValue(0)
+                        self.all_move_labels[i][k].setText('--')
+                else:
+                    pokemon = OwnPokemon.party[i]
+                    self.pokemonLabels[i].setPixmap(QPixmap(assets_folder + str(pokemon.name) + '.png').scaled(128, 128))
+                    self.pokemonGroups[i].setTitle(pokemon.own_name + '   L:' + str(pokemon.level))
+                    hp_percentage = int(100 * pokemon.current_hp / int(pokemon.stats['hp']))
+                    self.hpBars[i].setValue(hp_percentage)
+                    if hp_percentage < 15:
+                        self.hpBars[i].setStyleSheet(
+                            " QProgressBar { text-align: center; } QProgressBar::chunk {background-color: red;}")
+                    else:
+                        self.hpBars[i].setStyleSheet(
+                            " QProgressBar { text-align: center; } QProgressBar::chunk {background-color: #3add36;}")
+
+                    for j in range(4):
+                        if j >= len(pokemon.moves):
+                            # no move
+                            self.ppBars[i][j].setValue(0)
+                            self.all_move_labels[i][j].setText('--')
+                        else:
+                            move = pokemon.moves[j]
+                            self.all_move_labels[i][j].setText(move.name)
+                            self.ppBars[i][j].setValue(int(100*move.pp/move.max_pp))
+
+
+            # party_names = ['abra', 'bulbasaur', 'vulpix', 'pidgey', 'arbok', 'abra' ]
+            # # labels = [self.pokemon_label, self.pokemon_label2, self.pokemon_label3, self.pokemon_label4]
+            # for i, (pokemon, label) in enumerate(zip(OwnPokemon.party, self.pokemonLabels)):
+            #     # print(f'pokemon name {pokemon.own_name}')
+            #     # print(f"path {path + str(pokemon.name) + '.png'}")
+            #     label.setPixmap(QPixmap(assets_folder + str(pokemon.name) + '.png').scaled(128, 128))
+            #     self.pokemonGroups[i].setTitle(pokemon.own_name)
+            #     self.progressBars[i].setValue(int(100*pokemon.current_hp/int(pokemon.stats['hp'])))
+
+                # hp = random.randint(0,100)
+                # self.progressBars[i].setValue(hp)
+                # if hp < 10:
+                #     self.progressBars[i].setStyleSheet(" QProgressBar { text-align: center; } QProgressBar::chunk {background-color: red; width: 1px;}")
+                # else:
+                #     self.progressBars[i].setStyleSheet(" QProgressBar { text-align: center; } QProgressBar::chunk {background-color: #3add36; width: 1px;}")
+
+            badges = ['bolder_badge', 'cascade_badge']
+            # badges_bools = [True, True, True, False, True, False, False]
+            for name, badge_label in zip(badges, self.badgesLabels):
+                # todo the order is not fixed right now.
+                badge_label.setPixmap(QPixmap(assets_folder + str(name) + '.png'))
 
         except Exception as e:
             print(f"issues: {e}")
@@ -348,6 +414,7 @@ class Window(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    # app.setFont('Pokemon GB')
     win = Window()
     win.show()
     # timer = QTimer(win)
