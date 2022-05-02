@@ -128,11 +128,10 @@ class Position():
         map: int or str '''
 
         def map_name_to_id(map_name):
-            from .path import Path
             try:
-                return int(Path.df_edges_lvl1[Path.df_edges_lvl1['from_name'] == map_name].iloc[0]['from_id'])
+                return int(G.df_edges_lvl1[G.df_edges_lvl1['from_name'] == map_name].iloc[0]['from_id'])
             except:
-                test = 1
+                logger.warning(f"Unable to find {map_name} in G.df_edges_lvl1")
 
         def template_order():
             from .path import Path
@@ -147,7 +146,7 @@ class Position():
                     if map_name_to_id(t.name) == map_id:
                         # this is always found 1 time
                         break  # break from the inner loop
-                new_order.append(t)
+                new_order.append(t)  # the first element of p should be the first of t
             '''' now add every map that is not in the path '''
             for t in Templates.group('map'):
                 if t not in new_order:
@@ -206,9 +205,9 @@ def main():
     logging.basicConfig(level=logging.DEBUG,
                         format="%(asctime)s - %(filename)s - %(levelname)s - %(message)s",
                         handlers=[logging.StreamHandler()])
-    Position.map_name = 'route3'
+    Position.map_name = 'mount_moon1'
     start = time.time()
-    Position.is_position(4, 4)
+    # Position.is_position(4, 4)
     print(f'is_position took {time.time()-start}')
     start = time.time()
     Position.eval_position()
