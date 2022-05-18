@@ -245,6 +245,22 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
         pokemon.stats['spd'] = new_stats['special']
         pokemon.stats['spa'] = new_stats['special']
 
+        time.sleep(1)
+
+        text = FightRec.read_bar()
+        if 'evolving' in text:
+            logger.info("Pokemon is evolving")
+            time.sleep(7)  # it takes time to evolve okeay..
+            text = FightRec.read_bar()
+            new_name = text.split('into')[1]
+            new_p = Pokemon.get_pokemon_by_name(Pokemon.get_closest_match_by_name(new_name))
+            pokemon.evolve(new_p)
+
+            # new_id = pokemon.pokemon_id + 1
+            # new_p = pokemon.get_pokemon_by_id(new_id)
+
+
+
     def _bar_new_move_learned(self,text):
         ''' this function used the difflib to figure out what move it is.'''
         # from .pokemon import Move, OwnMove
@@ -312,6 +328,8 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
             return btnB()
         elif 'about' in text and 'use' in text:
             return self._bar_next_pokemon(text)
+        # elif 'evolving' in text:
+        #     return self._bar_evolve()
         # elif 'change' in text and 'POK' in text:
         #     return Fighter.choose_new_pokemon('current_pokemon') # after interpret text A is clicked in the function\
         # we do not want this so we make an independent state

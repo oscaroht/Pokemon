@@ -234,7 +234,8 @@ class OwnPokemon(Pokemon):
         super(OwnPokemon, self).__init__(pokemon_id, pokemon_name, type1, type2, stats, adding= False)
 
         if own_id is None:
-            max_own_id = max([pok.own_id for pok in OwnPokemon.all])  # create new own_id by incrementing the max by 1
+            # if len(OwnPokemon.all)>0:
+            max_own_id = max([pok.own_id for pok in OwnPokemon.all]) if len(OwnPokemon.all)>0 else 0  # create new own_id by incrementing the max by 1
             own_id = max_own_id + 1
 
         self.own_id = own_id
@@ -268,6 +269,10 @@ class OwnPokemon(Pokemon):
             return True
         else:
             return False
+
+    def evolve(self, new_p: Pokemon):
+        self.name = new_p.name
+        self.pokemon_id = new_p.pokemon_id
 
     def is_highest_level_in_party_ready_to_fight(self):
         for p in self.party:
