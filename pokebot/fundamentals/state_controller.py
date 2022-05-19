@@ -218,6 +218,12 @@ class FightStatsPageMovesState(State):
         self.name = 'fight_stats_page_moves'
     def __str__(self):
         return 'fight_stats_page_moves'
+class FightEvolveState(State):
+    def __init__(self):
+        self.name = 'fight_evolve'
+    def __str__(self):
+        return 'fight_evolve'
+
 
 class StoryState(State):
     pass
@@ -317,6 +323,9 @@ class StateController:
                 return
             elif state_name == 'stats_page_moves':
                 StateController.state.switch(FightStatsPageMovesState)
+                return
+            elif state_name == 'evolve':
+                StateController.state.switch(FightEvolveState)
                 return
             # else:
             #     StateController.state.switch(FightState) #TODO remove so we can get into a walk state

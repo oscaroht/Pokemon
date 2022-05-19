@@ -247,20 +247,6 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
 
         time.sleep(1)
 
-        text = FightRec.read_bar()
-        if 'evolving' in text:
-            logger.info("Pokemon is evolving")
-            time.sleep(7)  # it takes time to evolve okeay..
-            text = FightRec.read_bar()
-            new_name = text.split('into')[1]
-            new_p = Pokemon.get_pokemon_by_name(Pokemon.get_closest_match_by_name(new_name))
-            pokemon.evolve(new_p)
-
-            # new_id = pokemon.pokemon_id + 1
-            # new_p = pokemon.get_pokemon_by_id(new_id)
-
-
-
     def _bar_new_move_learned(self,text):
         ''' this function used the difflib to figure out what move it is.'''
         # from .pokemon import Move, OwnMove
@@ -557,6 +543,26 @@ class Fighter:
                 logger.info(f"Next pokemon idx {next_pokemon_idx} with name {OwnPokemon.party[next_pokemon_idx]}")
                 Selector.bring_out_or_choose_next_pokemon(next_pokemon_idx)
                 my_pokemon = OwnPokemon.party[next_pokemon_idx]
+            elif sn == 'fight_evolve':
+                text = FightRec.read_bar()
+                poke_name = Pokemon.get_closest_match_by_name(text.split('What')[1].split('isevol')[0])
+                p = OwnPokemon.party.get_own_pokemon_by_own_name(poke_name)
+
+                time.sleep(7)  # it takes time to evolve okeay..
+
+
+                while 'into' not in text:
+                    text = FightRec.read_bar()
+                    logger.info('done yet?')
+                    time.sleep(.5)
+
+                text = FightRec.read_bar()
+                new_name = text.split('into')[1]
+                new_p = OwnPokemon.get_pokemon_by_name(Pokemon.get_closest_match_by_name(new_name))
+                p.evolve(new_p)
+                time.sleep(5)
+
+
 
             # else the battle has ended
 

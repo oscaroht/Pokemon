@@ -95,7 +95,7 @@ class Pokemon:
     @classmethod
     def get_closest_match_by_name(cls, name):
         import difflib
-        options = difflib.get_close_matches(name, Pokemon.get_list_of_all_pokemon_names(), n=1)
+        options = difflib.get_close_matches(name.lower(), Pokemon.get_list_of_all_pokemon_names(), n=1)
         if len(options) < 1:
             raise Exception(f"Pokemon with name {name} not found in all lower case Pokemon names")
         return options[0]
@@ -271,7 +271,9 @@ class OwnPokemon(Pokemon):
             return False
 
     def evolve(self, new_p: Pokemon):
-        self.name = new_p.name
+        logger.info(f"Pokemon {self.name} evolved into {new_p.name}")
+        if self.name == self.own_name:  # pokemon with nicknames keep their nickname
+            self.name = new_p.name
         self.pokemon_id = new_p.pokemon_id
 
     def is_highest_level_in_party_ready_to_fight(self):
