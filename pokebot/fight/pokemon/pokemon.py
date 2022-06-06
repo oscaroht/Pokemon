@@ -273,7 +273,8 @@ class OwnPokemon(Pokemon):
     def evolve(self, new_p: Pokemon):
         logger.info(f"Pokemon {self.name} evolved into {new_p.name}")
         if self.name == self.own_name:  # pokemon with nicknames keep their nickname
-            self.name = new_p.name
+            self.own_name = new_p.name
+        self.name = new_p.name
         self.pokemon_id = new_p.pokemon_id
 
     def is_highest_level_in_party_ready_to_fight(self):
@@ -284,7 +285,7 @@ class OwnPokemon(Pokemon):
 
     def is_ready_to_fight(self):
         '''' if hp is larger than 0 and there is at least 1 move with a pp larger than zero and that does damage '''
-        if self.current_hp > 0 and len([m for m in self.moves if m.pp>0 and m.power > 0]) > 0:
+        if self.current_hp > 0 and len([m for m in self.moves if m.pp > 0 and m.power > 0]) > 0:
             return True
         return False
 
