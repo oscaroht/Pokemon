@@ -151,7 +151,7 @@ class OCR:
 
         # del bbox[0]
         for char_img in char_images:
-            ''''every image that goes into the neural network needs to have the same shape [32,32]. To do this we in a 
+            ''''Every image that goes into the neural network needs to have the same shape [32,32]. To do this we in a 
             relatively scale invariant way a white 32, 32 image is created, past the character image in there (if it 
             does not fit reshape it.'''
             img = np.zeros([32, 32], dtype=np.uint8)
@@ -187,6 +187,7 @@ class OCR:
 
     @classmethod
     def read_roi(cls,roi):
+        ''''Read the characters inside any region of interest and returns them as a string'''
         from .screen import screen_grab
         screen = screen_grab()
         roi_im = screen[roi[0]: roi[1], roi[2]:roi[3]]
@@ -224,9 +225,29 @@ class OCR:
 
         return characters
 
+    @classmethod
+    def received_item(cls, text):
+        ''''Checks if an item was received and add it to the Items class'''
+
+        from ..game_plan import Gameplan
+        from ..gameplay.item import Item, Items
+        import string
+        player_name_upper = Gameplan.player_name.upper()
+
+        if not (player_name_upper in text and 'received' in text):
+            return
+
+        item_name = text.replace(player_name_upper, '')\
+                    .translate(str.maketrans('', '', string.ascii_lowercase))\
+                    .lower()  # the string will contain 'a', 'an' or 'the' so we want to remove the lower case characters
+
+        item = Items.find_item_by_name(item_name)
+        logger.info(f"Item {item.name} obtained")
+        item.add_amount()
 
     @classmethod
     def read_bar(cls):
+        ''''Returns the characters in the game's text bar as string'''
         from .screen import screen_grab
         screen = screen_grab(resize=False)
 
@@ -245,6 +266,8 @@ class OCR:
             characters = cls._read_characters( imgs_for_nn )
         except ValueError:
             characters = "OCR ERROR unable to read characters"
+
+        cls.received_item(characters)  # check if an item was received
 
         return characters
 

@@ -12,6 +12,8 @@ def load_items():
             Item(row['item_id'], row['item_name'], row['buy'], row['sell'], 0)
         for row in con.execute(f"select * from vault.tmhm;"):
             Item(row['item_id'], row['move_code'], row['price'], None, 0)
+        for row in con.execute(f"select * from vault.badges;"):
+            Item(row['item_id'], row['badge_name'], None, None, 0)
         for row in con.execute(f"select * from vault.own_items;"):
             Items.get_item_by_id(row['item_id']).amount = row['amount']
 
@@ -34,6 +36,12 @@ class Items(metaclass=IterItems):
         return None
 
     @classmethod
+    def find_item_by_name(cls, name):
+        import difflib
+        correct_name = difflib.get_close_matches(name, [str(x) for x in list(cls.all['name'].keys())], n=1)[0]
+        return cls.all['name'][correct_name]
+
+    @classmethod
     def get_item_price_by_name(cls, name):
         item = cls.get_item_by_name(name)
         return item.buy
@@ -54,18 +62,18 @@ class Items(metaclass=IterItems):
 class Item:
 
     def __init__(self, item_id, item_name, buy, sell, amount, add_to_all=True):
-        self.item_id = item_id
-        self.item_name = item_name
+        self.id = item_id
+        self.name = item_name
         self.buy = buy
         self.sell = sell
         self.amount = amount
 
         if add_to_all:
-            Items.all['id'][self.item_id] = self
-            Items.all['name'][self.item_name] = self
+            Items.all['id'][self.id] = self
+            Items.all['name'][self.name] = self
 
     def __str__(self):
-        return f"Item: {self.item_name}, amount {self.amount}"
+        return f"Item: {self.name}, amount {self.amount}"
 
     def lower_amount(self, subtract=1):
         if self.amount - subtract >= 0:
@@ -73,7 +81,7 @@ class Item:
             return
         raise Exception(f"Unable to lower amount for amount {self.amount}")
 
-    def add_amount(self, added):
+    def add_amount(self, added=1):
         if added > 0 and added < 99:
             self.amount += added
             return
