@@ -8,7 +8,7 @@ keyboard = Controller()
 # control settings. Can be tuned using the function below
 wait = 0.400
 turnRatio = 0.0035 # 0.003500 # 0.028
-goRatio = 0.039 # 0.03500  # 0.068
+goRatio = 0.042 # 0.03500  # 0.068
 # I want go to take 0.45 seconds
 
 def adjust_go_ratio(measured_time, desired_time = 0.45, threshold=0.01):
