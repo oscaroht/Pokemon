@@ -228,10 +228,11 @@ class OCR:
     @classmethod
     def received_item(cls, text):
         ''''Checks if an item was received and add it to the Items class'''
-
+        from pokebot.fight.pokemon.pokemon import Pokemon
         from ..game_plan import Gameplan
         from ..gameplay.item import Item, Items
         import string
+        import difflib
         player_name_upper = Gameplan.player_name.upper()
 
         if not (player_name_upper in text and 'received' in text):
@@ -242,8 +243,9 @@ class OCR:
                     .lower()  # the string will contain 'a', 'an' or 'the' so we want to remove the lower case characters
 
         item = Items.find_item_by_name(item_name)
-        logger.info(f"Item {item.name} obtained")
-        item.add_amount()
+        if item:
+            logger.info(f"Item {item.name} obtained")
+            item.add_amount()
 
     @classmethod
     def read_bar(cls):
