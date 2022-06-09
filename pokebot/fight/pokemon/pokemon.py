@@ -230,8 +230,8 @@ class OwnPokemon(Pokemon):
     all = []
     party = Party()
 
-    def __init__(self,pokemon_id, pokemon_name, type1, type2, stats, own_id,own_name,level, own_moves, current_hp = 0, status = 'normal', in_party=False): # add some kind of move id or move object
-        super(OwnPokemon, self).__init__(pokemon_id, pokemon_name, type1, type2, stats, adding= False)
+    def __init__(self,pokemon_id, pokemon_name, type1, type2, stats, own_id,own_name,level, own_moves, current_hp=0, status='normal', in_party=False): # add some kind of move id or move object
+        super(OwnPokemon, self).__init__(pokemon_id, pokemon_name, type1, type2, stats, adding=False)
 
         if own_id is None:
             # if len(OwnPokemon.all)>0:
@@ -239,7 +239,7 @@ class OwnPokemon(Pokemon):
             own_id = max_own_id + 1
 
         self.own_id = own_id
-        self.own_name =own_name
+        self.own_name = own_name
         # if you dont know (after caught) set stats to base_stats * level function and current_hp = 0
         self.stats = stats
         self.current_hp = current_hp
@@ -257,6 +257,28 @@ class OwnPokemon(Pokemon):
         OwnPokemon.all.append(self)
         if in_party:
             OwnPokemon.party.add(self)
+
+    @classmethod
+    def create_from_pokemon(cls, pokemon):
+        max_own_id = max([pok.own_id for pok in OwnPokemon.all])  # create new own_id by incrementing the max by 1
+        own_id = max_own_id + 1
+
+        if len(OwnPokemon.party) < 6: # if the party is less then 6 long the pokemon is added to the party
+            ip = True
+        else:
+            ip = False
+
+        new_own_pokemon = OwnPokemon(pokemon.pokemon_id,
+                   pokemon.name,
+                   pokemon.type1,
+                   pokemon.type2,
+                   pokemon.base_stats,
+                   own_id,
+                   pokemon.name,
+                   pokemon.level,
+                   [],
+                   in_party=ip)
+        return new_own_pokemon
 
     def __str__(self):
         return self.own_name
