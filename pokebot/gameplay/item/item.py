@@ -1,6 +1,8 @@
 import os
 from sqlalchemy import create_engine
 from ...fundamentals import config
+import logging
+logger = logging.getLogger(__name__)
 
 def load_items():
     # loads all items from database
@@ -38,8 +40,17 @@ class Items(metaclass=IterItems):
     @classmethod
     def find_item_by_name(cls, name):
         import difflib
-        correct_name = difflib.get_close_matches(name, [str(x) for x in list(cls.all['name'].keys())], n=1)[0]
+
+        options = difflib.get_close_matches(name.lower(), [str(x) for x in list(cls.all['name'].keys())], n=1)
+        if not options:
+            logger.warning('Unknown item was obtained')
+            return
+        correct_name = options[0]
         return cls.all['name'][correct_name]
+
+    @classmethod
+    def get_list_of_all_item_names(cls):
+        return list(cls.all['name'].values())
 
     @classmethod
     def get_item_price_by_name(cls, name):
