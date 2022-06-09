@@ -337,7 +337,7 @@ class Fighter:
         logger.debug(f"Check which pokemon needs stats eval")
         idx = OwnPokemon.party.stats_need_evaluation(return_party_idx = True)
         logger.debug(f"That pokemon is at idx {idx}")
-        if idx == None:
+        if idx is None:
             raise Exception("eval_pokemon_stats needed says SC but no pokemon was found which need evaluation")
         logger.debug(f"Go to stats page of game menu for pokemon {idx}")
         Selector.go_to_pokemon_stats_page_by_idx(idx)  # bring us to the stats page in the game menu
