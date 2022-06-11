@@ -113,10 +113,11 @@ class Path():
         rt = {}
         if len(path_lvl1) == 1:
             g = G.G_lvl0[start_map_id]
+            start = from_id
             if from_id not in g:  # if the start is not in the 1st map
                 logger.warning(f"Start coordinate not in start Graph")
                 g, start = add_exit_entry_node(g, x, y)  # add entry node
-            path[start_map_id] = nx.dijkstra_path(g, from_id, end_cor[1])
+            path[start_map_id] = nx.dijkstra_path(g, start, end_cor[1])
             rt[start_map_id] = get_cor_list(g, path[start_map_id])
         else:
             start = from_id
