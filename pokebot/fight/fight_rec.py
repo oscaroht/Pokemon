@@ -69,7 +69,7 @@ class FightRec(OCR):
                         }
     roi_stat_gm_hp = [int(32*scale_factor),int(40*scale_factor),int(80*scale_factor),int(153*scale_factor)]
     roi_moves_gm = {
-                1: [int(70*scale_factor),int(73*scale_factor),int(14*scale_factor),int(150*scale_factor)],
+                1: [int(71 * scale_factor), int(80 * scale_factor), int(14 * scale_factor), int(150 * scale_factor)],
                 2: [int(88*scale_factor),int(96*scale_factor),int(14*scale_factor),int(150*scale_factor)],
                 3: [int(104*scale_factor),int(112*scale_factor),int(14*scale_factor),int(150*scale_factor)],
                 4: [int(120*scale_factor),int(130*scale_factor),int(14*scale_factor),int(150*scale_factor)]
@@ -179,9 +179,15 @@ class FightRec(OCR):
             characters = cls._core_ocr(value)
             if len(characters) > 1: # if the length is 1 or less, it is the - indicating no move
                 moves.append(characters)
-        # # for testing
-        cv2.imshow('a', roi_im)
+
+        scale_factor = 4
+        screen = screen_grab()
+        cv2.imshow('a',screen[int(cls.roi_moves_gm[1][0]):
+                           int(cls.roi_moves_gm[1][1]),
+                           int(cls.roi_moves_gm[1][2]):
+                           int(cls.roi_moves_gm[1][3])])
         cv2.waitKey()
+
         return moves
 
     @classmethod
