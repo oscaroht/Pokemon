@@ -35,6 +35,9 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
 
         self.my_pokemon = my_pokemon
 
+        self.last_executed_move_idx = None
+        self.disabled_moves_idx = []
+
         foe_level: str = FightRec.read_foe_level()
         if foe_level.isdigit():
             foe_level = int(foe_level)
@@ -125,7 +128,7 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
         d = []
         logger.info(f"Pokemon {self.my_pokemon.name}'s moves are {[x.name for x in self.my_pokemon.moves]}")
         for i in range(len(self.my_pokemon.moves)):
-            if self.my_pokemon.moves[i].pp == 0:
+            if self.my_pokemon.moves[i].pp == 0 or i in self.disabled_moves_idx:
                 d += [-1] # lets append -1 so this move is not chosen
             elif self.my_pokemon.moves[i].power == 0:
                 d += [0] # the _calculate_damage equation becomes slightly positive so lets set it back to 0
@@ -179,6 +182,7 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
     def _perform_move(self, idx):
         # from fight.selector import Selector
         # select the best move Selector
+        self.last_executed_move_idx = idx
         Selector.select_move_by_idx(idx)
 
         # lower the pp in the move object associated with the pokemon
@@ -278,12 +282,20 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
         else:
             logger.error('TO DO add handling of replacing a move')
 
+    def _bar_my_pokemon_fainted(self):
+        self.my_pokemon.current_hp = 0
+    def _bar_blacked_out(self):
+        OwnPokemon.party.heal_party()
+    def _bar_move_disabled(self):
+        self.disabled_moves_idx.append(self.last_executed_move_idx)
 
     def interpret_bar(self, text):
         '''' instead of a string we could return functions depending on what needs to be done '''
 
         if 'Enem' in text and 'fainted' in text:
             return self._bar_enemy_fainted()
+        elif self.my_pokemon.own_name.upper() in text and 'fainted' in text:
+            return self._bar_my_pokemon_fainted()
         elif 'gain' in text and 'EXP' in text:
             return self._bar_exp_gained()
         elif 'appeared' in text:
@@ -314,6 +326,10 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
             return btnB()
         elif 'about' in text and 'use' in text:
             return self._bar_next_pokemon(text)
+        elif 'blackedout' in text:
+            return self._bar_blacked_out()
+        elif 'isdisabled' in text:
+            return self._bar_move_disabled()
         # elif 'evolving' in text:
         #     return self._bar_evolve()
         # elif 'change' in text and 'POK' in text:
