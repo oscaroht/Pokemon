@@ -51,6 +51,11 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
         logger.info(f'Foe.name: {foe_name}, foe.level: {foe_level}')
         logger.info(f'My_pokemon.name: {my_pokemon}')
 
+    def _new_my_pokemon(self, pokemon):
+        self.my_pokemon = pokemon
+        self.disabled_moves_idx = []
+        self.last_executed_move_idx =None
+
     def _calculate_damage(self, move):
         if move.id == -1:
             return 0
@@ -96,6 +101,53 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
         return damage
 
 
+
+
+    def _calculate_damage_any_pokemon(self, pokemon, move):
+        if move.id == -1:
+            return 0
+
+        special_moves = ['water', 'grass', 'fire', 'ice', 'electric', 'psychic']
+        physical_moves = ['normal', 'fighting', 'flying', 'ground', 'rock', 'bug', 'ghost', 'poison']
+
+        if move.type == pokemon.type1 or move.type == pokemon.type2:
+            stab = 1.5  # same type attack bonus (stab)
+        else:
+            stab = 1
+
+        multiplier = Pokemon.df_strength_weakness[
+            (Pokemon.df_strength_weakness['atk'] == move.type) & (Pokemon.df_strength_weakness['def'] == self.foe.type1)].iloc[0][
+            'multiplier']  # has to be iloc instead of loc because we are not using the indexes
+        if self.foe.type2 != '-':
+            multiplier_2 = Pokemon.df_strength_weakness[
+                (Pokemon.df_strength_weakness['atk'] == move.type) & (Pokemon.df_strength_weakness['def'] == self.foe.type2)].iloc[0][
+                'multiplier']  # has to be iloc instead of loc because we are not using the indexes
+            multiplier *= multiplier_2
+        random = 235.5 / 254  # this is a normally distributed range between 217 and 254 divided by 254. So on average
+                                # it is 235.5/254
+
+        modifier = random * multiplier * stab
+
+        critical = 1  # if it is a critical hit this value is 2. but there is now way to know beforehand
+
+        """" from https://bulbapedia.bulbagarden.net/wiki/Damage#Damage_calculation
+         the 100/50 gives special moves such as growl also damage. Which should not be the case."""
+        if move.type in special_moves:
+            damage = (((2 / 5) * pokemon.level * critical + 2) * move.power * pokemon.stats['spa'] /
+                      self.foe.stats['spd'] + 100) / 50 * modifier
+        elif move.type in physical_moves:
+            damage = (((2 / 5) * pokemon.level * critical + 2) * move.power * pokemon.stats['atk'] /
+                      self.foe.stats['def'] + 100) / 50 * modifier
+        else:
+            raise Exception(f'Move type {move.type} unknown.')
+
+        logger.debug(f"Move {move.name} has power {move.power} with my_pokemon {pokemon.name} has level {pokemon.level} and attack "
+              f"{pokemon.stats['atk']} and spa {pokemon.stats['spa']}. Foe {self.foe.name} def {self.foe.stats['def']}"
+              f"and spd {self.foe.stats['spd']}. Modifier {modifier}")
+
+        return damage, modifier
+
+
     # def calculate_best_move(self, mode = 'max_damage'):
     #     d = []
     #     logger.info(f"Pokemon {self.my_pokemon.name}'s moves are {[x.name for x in self.my_pokemon.moves]}")
@@ -119,6 +171,27 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
     #                 d[i] = -2
     #         return np.argmax(d), max(d)
 
+    def _get_damage_list(self, pokemon):
+        ''''Creates a list of damages per move for a given own_pokemon.
+
+        When a fighting pokemon is out of moves or does not have damaging moves (left) this function can determine what
+        other pokemon in party can be used'''
+        d, m = [], []
+        logger.info(f"Pokemon {pokemon.name}'s moves are {[x.name for x in pokemon.moves]}")
+        for i in range(len(pokemon.moves)):
+            if pokemon.moves[i].pp == 0:
+                d += [-1] # lets append -1 so this move is not chosen
+                m += [-1]  # lets append -1 so this move is not chosen
+            elif pokemon.moves[i].power == 0:
+                d += [0] # the _calculate_damage equation becomes slightly positive so lets set it back to 0
+                m += [0]
+            else:
+                r = self._calculate_damage_any_pokemon(pokemon, pokemon.moves[i])
+                d += [r[0]]
+                m += [r[1]]
+        logger.info(f"Damages {d}")
+        return d, m
+
     def execute_best_move(self, mode='max_damage'):
         ''' mode can be 'best', 'save_pp' '''
         # from fight.selector import Selector
@@ -138,11 +211,31 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
 
         if mode == 'max_damage':
             if max(d) > 0:
-                move_idx = np.argmax(d) # so argmax 0 becomes move 1
+                move_idx = np.argmax(d)  # so argmax 0 becomes move 1
                 self._perform_move(move_idx)
             else:
-                logger.info("No damaging move left")
-                logger.error("NOT IMPLEMENTED YET")
+                logger.info("No damaging move left. Switch to other pokemon")
+                max_damages = []
+                for p in OwnPokemon.party:
+                    if not p.is_ready_to_fight() or p == self.my_pokemon:
+                        max_damages.append(-2)  # append a penalty
+                    else:
+                        max_damages.append(max(self._get_damage_list(p)[0]))
+                    # results.append = {'pokemon':p , 'max_damage': max_damage}  # a dict that combines the own pokemon object with the max damaging move that has pp
+
+                if max(max_damages) <= 0:
+                    logger.warning(f"NO one in party is ready to fight and has damaging moves felt")
+                    logger.warning(f"NOT IMPLEMENTED")
+                    raise Exception(f"FUNCTIONALITY NOT IMPLEMENTED")
+
+                logger.info(f"list of mas damages {max_damages}")
+
+                p_idx = np.argmax(max_damages)  # get the idx with the pokemon with highest damaging move
+                logger.info(f"Switch to pokemon {OwnPokemon.party[p_idx]}")
+                Selector.change_pokemon(p_idx)
+                self._new_my_pokemon(OwnPokemon.party[p_idx])
+                return
+
         elif mode == 'catch':
             from ..gameplay import Items
             hp_fraction = FightRec.foe_hp() # check the foe's current hp
@@ -283,6 +376,7 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
             logger.error('TO DO add handling of replacing a move')
 
     def _bar_my_pokemon_fainted(self):
+        logger.info(f"My pokemon {self.my_pokemon} fainted. Set current_hp to 0")
         self.my_pokemon.current_hp = 0
     def _bar_blacked_out(self):
         OwnPokemon.party.heal_party()
@@ -516,6 +610,9 @@ class Fighter:
                 f.execute_best_move(mode=mode)
             elif sn == 'none_state':
                 pass
+            elif sn == 'fight_bring_out_which_pokemon':
+                logger.info(f"{f.my_pokemon} fainted. Choose new pokemon")
+                return
             else:
                 logger.debug(f"in a state I do not expect. Lets return")
                 return
