@@ -85,12 +85,15 @@ class Position():
         return mapping  # a dict with img, x, y as keys
 
     @classmethod
-    def _specific_match_function(cls, img, template, mask=None):
-        return cv2.matchTemplate(img, template, cv2.TM_SQDIFF_NORMED, mask=mask)  # CCOEFF_NORMED) # CCORR_NORMED
+    def _specific_match_function(cls, img, template, mask=None, match_type='ccorr'):
+        if match_type == 'sqdiff':
+            return cv2.matchTemplate(img, template, cv2.TM_SQDIFF_NORMED, mask=mask)  # CCOEFF_NORMED) # CCORR_NORMED
+        elif match_type == 'ccorr':
+            return np.subtract(1, cv2.matchTemplate(img, template, cv2.TM_CCORR_NORMED, mask=mask))
 
     @classmethod
     def _get_position_in_map(cls, mapping, screen,
-                             threshold=0.03):  # 0.06 was good but we are very strickt now 0.07 is too high
+                             threshold=0.06):  # 0.06 was good but we are very strickt now 0.07 is too high
         ''''This function returns the node0_id where the player is at this very moment.'''
 
         # screen_cpo = cls._cpo(screen, 16 * 4)
@@ -100,17 +103,14 @@ class Position():
         # cv2.waitKey()
 
         h, w = mapping[1]['img'].shape
-        # screen_cpo = cv2.resize(screen, (w, h))
         screen = cv2.resize(screen, (w, h))
 
         res_max = 1
-        node0_id = None
         best_id, best_x, best_y = None, None, None
         for id in mapping:  # +1 because database id starts at 1
 
-            res = cls._specific_match_function(screen, mapping[id]['img'], mask=mapping[id]['mask'])
-            if np.max(
-                    res) < res_max:  # TODO maybe if match is higher than 90% or so break from the loop if performance is an issue
+            res = np.max(cls._specific_match_function(screen, mapping[id]['img'], mask=mapping[id]['mask']))
+            if res < res_max:
                 res_max = res
                 best_id = id
 
