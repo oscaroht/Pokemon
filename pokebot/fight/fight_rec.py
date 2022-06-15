@@ -180,13 +180,14 @@ class FightRec(OCR):
             if len(characters) > 1: # if the length is 1 or less, it is the - indicating no move
                 moves.append(characters)
 
-        scale_factor = 4
-        screen = screen_grab()
-        cv2.imshow('a',screen[int(cls.roi_moves_gm[1][0]):
-                           int(cls.roi_moves_gm[1][1]),
-                           int(cls.roi_moves_gm[1][2]):
-                           int(cls.roi_moves_gm[1][3])])
-        cv2.waitKey()
+        # # for testing
+        # scale_factor = 4
+        # screen = screen_grab()
+        # cv2.imshow('a',screen[int(cls.roi_moves_gm[1][0]):
+        #                    int(cls.roi_moves_gm[1][1]),
+        #                    int(cls.roi_moves_gm[1][2]):
+        #                    int(cls.roi_moves_gm[1][3])])
+        # cv2.waitKey()
 
         return moves
 
