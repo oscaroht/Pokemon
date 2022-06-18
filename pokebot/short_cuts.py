@@ -1,6 +1,7 @@
 mom = ('mom_lvl1', 38, 'up')
 oak = ('oaks_lab', 26, 'up')
 brock = ('pewter_city_gym', 15, 'up')
+misty = ('cerulean_city_gym', 4, 'left')
 viridian_city_pc = ('viridian_city_pc', 4, 'up')
 pewter_city_pc = ('pewter_city_pc', 4, 'up')
 route3b_pc = ('route3b_pc', 4, 'up')
