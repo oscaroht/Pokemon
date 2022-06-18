@@ -159,6 +159,9 @@ class Party(list):
     def __str__(self):
         return ', '.join([p.own_name for p in self])
 
+    def other_pokemon(self, pokemon):
+        return [p for p in self if p != pokemon]
+
     def add(self, pokemon):
         if len(self) < 6:
             self.append(pokemon)
