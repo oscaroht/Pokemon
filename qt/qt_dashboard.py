@@ -23,11 +23,21 @@ from datetime import datetime
 import logging
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s - %(filename)s - %(levelname)s - %(message)s",
-                    handlers=[logging.FileHandler(f"log\\{datetime.utcnow().strftime('%Y-%m-%dT%H_%M_%S')}.log"),
+                    handlers=[logging.FileHandler(f"C:\\Users\\oscar\\PycharmProjects\\Pokemon\\qt\\log\\{datetime.utcnow().strftime('%Y-%m-%dT%H_%M_%S')}.log"),
                               logging.StreamHandler()])
 logger = logging.getLogger(__name__)
 
 from pokebot.fight import OwnPokemon
+from pokebot.gameplay import Items
+from qt.qt_badges import QBadges
+from qt.qt_pokemon import QParty, QMoves
+
+OwnPokemon.new_game()
+Items.new_game()
+
+
+VBA_DIR = "C:\\Users\\oscar\\PycharmProjects\\Pokemon"
+
 
 # Step 1: Create a worker class
 class Worker(QObject):
@@ -45,9 +55,10 @@ class Worker(QObject):
 
     def execute_command(self):
         from pokebot.combiner import go_to, talk
-        print(f"Executing: {self.execute_command_arg}")
+        # print(f"Executing: {self.execute_command_arg}")
         try:
-            exec(self.execute_command_arg)
+            # exec(self.execute_command_arg)
+            print(f"Executing: {self.execute_command_arg}")
         except Exception:
             logger.error(f"Uncaught backend error: ", exc_info=True)
         print(f"Command executed")
@@ -79,8 +90,159 @@ class Window(QMainWindow):
         super().__init__(parent)
         self.setup_ui()
         self.setup_timer()
+        # self.menu_bar()
+        self._createActions()
+        self._create_menubar()
+        self._connectActions()
 
         QFontDatabase.addApplicationFont('Pokemon GB.ttf')
+
+    def _create_menubar(self):
+        import os
+        menuBar = self.menuBar()
+        # File menu
+        fileMenu = QMenu("&File", self)
+        menuBar.addMenu(fileMenu)
+        fileMenu.addAction(self.newAction)
+        self.load_menu = fileMenu.addMenu("Load saved game...")
+
+        self.save_menu = fileMenu.addMenu("Save game...")
+        # fileMenu.addAction(self.saveAction)
+        fileMenu.addAction(self.exitAction)
+        # Edit menu
+        editMenu = menuBar.addMenu("&Edit")
+        editMenu.addAction(self.copyAction)
+        editMenu.addAction(self.pasteAction)
+        editMenu.addAction(self.cutAction)
+
+        # Help menu
+        helpMenu = menuBar.addMenu("&Help")
+        helpMenu.addAction(self.helpContentAction)
+        helpMenu.addAction(self.aboutAction)
+
+    def _createActions(self):
+        import os
+        # Creating action using the first constructor
+        self.newAction = QAction(self)
+        self.newAction.setText("&New")
+        # Creating actions using the second constructor
+        # self.load1_action = QAction("&Load game 1", self)
+        # self.load2_action = QAction("&Load game 2", self)
+        self.saveAction = QAction("&Save", self)
+        self.exitAction = QAction("&Exit", self)
+        self.copyAction = QAction("&Copy", self)
+        self.pasteAction = QAction("&Paste", self)
+        self.cutAction = QAction("&Cut", self)
+        self.helpContentAction = QAction("&Help Content", self)
+        self.aboutAction = QAction("&About", self)
+
+    def _connectActions(self):
+        # Connect File actions
+        self.load_menu.aboutToShow.connect(self.populate_load_menu)
+        self.save_menu.aboutToShow.connect(self.populate_save_menu)
+
+    def get_number(self,f):
+        return int(''.join([s for s in f if s.isdigit()]))
+
+    def populate_save_menu(self):
+        import os, functools
+        self.save_menu.clear()
+        filenames = [filename for filename in os.listdir(VBA_DIR) if filename.endswith('sgm')]
+        # filenames.sort(key=self.get_number)
+
+        opt = {}
+        for i in range(10):
+            opt[i + 1] = '--'
+        actions = []
+        for filename in filenames:
+            index = self.get_number(filename)
+            opt[index] = filename
+        for key,value in opt.items():
+            action = QAction(value, self)
+            action.triggered.connect(functools.partial(self.save_this_file, key))
+            actions.append(action)
+        self.save_menu.addActions(actions)
+
+
+        # actions = []
+        # file_options = 10*['--']
+        # for i, f in enumerate(filenames):
+        #     file_options[i] = f
+        # for slot, f in enumerate(file_options):
+        #     action = QAction(f, self)
+        #     action.triggered.connect(functools.partial(self.save_this_file, slot + 1))
+        #     actions.append(action)
+        # self.save_menu.addActions(actions)
+
+
+    def populate_load_menu(self):
+        import os, functools
+        self.load_menu.clear()
+        filenames = [filename for i, filename in enumerate(os.listdir(VBA_DIR)) if filename.endswith('sgm')]
+        filenames.sort(key=self.get_number)
+
+        # opt = {}
+        # for i in range(10):
+        #     opt[i + 1] = '--'
+        # actions = []
+        # for filename in filenames:
+        #     index = self.get_number(filename)
+        #     opt[index] = filename
+        # for key,value in opt.items():
+        #     action = QAction(value, self)
+        #     action.triggered.connect(functools.partial(self.load_this_file, key))
+        #     actions.append(action)
+        # self.load_menu.addActions(actions)
+
+        actions = []
+        print(filenames)
+        for f in filenames:
+            action = QAction(f, self)
+            action.triggered.connect(functools.partial(self.load_this_file, f))
+            actions.append(action)
+        self.load_menu.addActions(actions)
+
+
+    def load_this_file(self, f):
+        from pokebot.fundamentals.load_game import load_game
+        # VBA LOAD
+        from pokebot.fundamentals.controls import btnF
+        from pygetwindow import getWindowsWithTitle, PyGetWindowException
+        try:
+            vb = getWindowsWithTitle('VisualBoyAdvance')[0]
+            vb.activate()  # also possible to uncheck 'Pause when inactive' in vba settings
+            num = ''.join([s for s in f if s.isdigit()])
+            btnF(int(num))
+        except PyGetWindowException:  # windows returns code 0 when everything is successful. Unfortunately this is handled as an error
+            pass
+
+        # DATABASE LOAD
+        try:
+            load_game(f)
+        except Exception:
+            logger.error('Err: ', exc_info=True)
+
+    def save_this_file(self, slot):
+        # VBA SAVE
+        from pokebot.fundamentals.controls import btn_save
+        from pygetwindow import getWindowsWithTitle, PyGetWindowException
+        try:
+            vb = getWindowsWithTitle('VisualBoyAdvance')[0]
+            vb.activate()  # also possible to uncheck 'Pause when inactive' in vba settings
+            btn_save(slot)
+        except PyGetWindowException:  # windows returns code 0 when everything is successful. Unfortunately this is handled as an error
+            pass
+
+        f = f"Pokemon Blue{slot}.sgm"
+        if f != '--':
+            print("Are you sure you want to overwrite this file")
+        print(f"saving on {f}")
+        try:
+            from pokebot.fundamentals.save_game import save_game
+            save_game(f, slot)
+        except Exception:
+            logger.error("Err: ", exc_info=True)
+
 
     def convert_cv_qt_pixelmap(self, cv_img):
         ''''Converts a open cv image to a qt pixmap.'''
@@ -104,27 +266,10 @@ class Window(QMainWindow):
         textbox_layout.addWidget(self.command_btn)
         command_groupbox.setLayout(textbox_layout)
 
-        # Initiate badge section
-        self.badgesLabels = list()
-        for b in ['bolder_badge', 'cascade_badge', 'thunder_badge', 'rainbow_badge', 'soul_badge', 'marsh_badge',
-                  'volcano_badge', 'earth_badge']:
-            badge_label = QLabel(self)
-            img = cv2.imread('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\dashboard\\assets\\' + b + '.png',
-                             cv2.IMREAD_UNCHANGED)
-            pixmap = self.convert_cv_qt_pixelmap(shadow_image(img))
-            # pixmap = QPixmap('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\dashboard\\assets\\' + b + '.png')
-            pixmap.scaled(128, 128)
-            # pixmap.fill(QColor(0, 0, 0))
-            badge_label.setPixmap(pixmap)
-            self.badgesLabels.append(badge_label)
 
-        # Add the badges to a box
-        badges_groupbox = QGroupBox(self.tr("Badges"))
-        badges_layout = QGridLayout()
-        for i in range(8):
-            badges_layout.addWidget(self.badgesLabels[i], int(i / 4 + 1), i % 4 + 1)
-        badges_groupbox.setLayout(badges_layout)
 
+
+        self.badges = QBadges(self)
 
         # Initiate button section
         self.start_vba_btn = QPushButton("Open VBA", self)
@@ -149,91 +294,15 @@ class Window(QMainWindow):
         button_layout.addWidget(self.load_btn)
         buttonGroupBox.setLayout(button_layout)
 
-
-        # Initiate party section
-        self.pokemon_labels = list()
-        self.hp_bars = list()
-        self.pp_bars = {}
-        self.pokemon_groupboxes = []
-        self.all_move_labels = {}
-        for i in range(6):
-            # pokemon image
-            pokemon_label = QLabel(self)
-            pixmap = QPixmap('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\dashboard\\assets\\' + 'poke_ball.png')
-            pixmap.scaled(64, 64)
-            pokemon_label.setPixmap(pixmap)
-            self.pokemon_labels.append(pokemon_label)
-
-            # pokemon hpBar
-            hp_progressbar = QProgressBar(self)
-            hp_progressbar.setStyleSheet(
-                " QProgressBar { text-align: center; } QProgressBar::chunk {background-color: #3add36; width: 1px;}")
-            hp_progressbar.setValue(100)
-            hp_progressbar.setFormat('HP bar')
-            hp_progressbar.adjustSize()
-            self.hp_bars.append(hp_progressbar)
-
-            # pokemon moves
-            # moves_group_box = QGroupBox(self.tr("Moves"))
-            moves_grid_layout = QGridLayout()
-            moves = list()
-            self.pp_bars[i] = []
-            self.all_move_labels[i] = []
-            for j in range(4):
-                # PP bar
-                pp_progressbar = QProgressBar(self)
-                pp_progressbar.setStyleSheet(
-                    " QProgressBar { text-align: center; height: 2px } QProgressBar::chunk {background-color: #7D94B0; width: 1px; height: 2px;}")
-                pp_progressbar.setValue(50)
-                pp_progressbar.setFormat('PP bar')
-                self.pp_bars[i].append(pp_progressbar)
-
-                single_move_layout = QVBoxLayout()
-                single_move_groupbox = QGroupBox()
-                m = QLabel(self)
-                m.setText(f'move {j}')
-                self.all_move_labels[i].append(m)
-                single_move_layout.addWidget(m)
-                single_move_layout.addStretch(4)
-                single_move_layout.addWidget(pp_progressbar)
-                single_move_layout.addStretch(1)
-                single_move_groupbox.setLayout(single_move_layout)
-                moves_grid_layout.addWidget(single_move_groupbox, int(j / 2 + 1), j % 2)
-                moves.append(m)
-            moves_grid_layout.setColumnStretch(0, 1)
-            moves_grid_layout.setColumnStretch(1, 1)
-            # moves_group_box.setLayout(moves_grid_layout)
-
-            # combine progressbar and moves
-            hp_and_moves_layout = QVBoxLayout()
-            hp_and_moves_layout.addWidget(hp_progressbar)
-            hp_and_moves_layout.addLayout(moves_grid_layout)
-
-            # combine pokemon label, image, hp and moves
-            pokemon_groupbox = QGroupBox(self.tr(f"Pokemon {i}"))
-            pokemon_layout = QHBoxLayout()
-            pokemon_layout.addWidget(pokemon_label, stretch=1)
-            pokemon_layout.addLayout(hp_and_moves_layout, stretch=2)
-            pokemon_groupbox.setLayout(pokemon_layout)
-            self.pokemon_groupboxes.append(pokemon_groupbox)
-
-        # combine to make a party box
-        party_groupbox = QGroupBox(self.tr("Party"))
-        grid_layout = QGridLayout()
-        for i in range(6):
-            row = int(i / 2 + 1)
-            col = i % 2
-            grid_layout.addWidget(self.pokemon_groupboxes[i], row, col)  # left -> right, up->down
-        grid_layout.setColumnStretch(0, 1)
-        grid_layout.setColumnStretch(1, 1)
-        party_groupbox.setLayout(grid_layout)
+        self.party = QParty(self)
+        # party_goupbox = self.party.groupbox(self)
 
         # total layout
         main_layout = QVBoxLayout()
-        main_layout.addWidget(badges_groupbox, alignment=1)
-        main_layout.addWidget(buttonGroupBox, alignment=1)
-        main_layout.addWidget(party_groupbox, alignment=2)
-        main_layout.addWidget(command_groupbox, alignment=1)
+        main_layout.addWidget(self.badges.groupbox, 1)
+        main_layout.addWidget(buttonGroupBox, 1)
+        main_layout.addWidget(self.party.groupbox, 2)
+        main_layout.addWidget(command_groupbox, 1)
 
         self.central_widget = QWidget()
         self.central_widget.setLayout(main_layout)
@@ -245,60 +314,24 @@ class Window(QMainWindow):
         self.timer.timeout.connect(self.update_gui)
         self.timer.start(500)  # set the reset frequency in milli seconds
 
+
+
+
+
     def update_gui(self):
         ''''Updates the gui. '''
 
         try:
-            assets_folder = 'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\dashboard\\assets\\'
-
-            for i in range(6):
-                if i >= len(OwnPokemon.party):
-                    # no pokemon choose non pokemon view
-                    self.pokemon_labels[i].setPixmap(QPixmap(assets_folder + 'poke_ball' + '.png').scaled(90, 90))
-                    self.pokemon_groupboxes[i].setTitle('--')
-
-                    self.hp_bars[i].setValue(0)
-
-                    # all moves should be none
-                    for k in range(4):
-                        self.pp_bars[i][k].setValue(0)
-                        self.all_move_labels[i][k].setText('--')
-                else:
-                    pokemon = OwnPokemon.party[i]
-                    self.pokemon_labels[i].setPixmap(QPixmap(assets_folder + str(pokemon.name) + '.png').scaled(128, 128))
-                    self.pokemon_groupboxes[i].setTitle(pokemon.own_name + '   L:' + str(pokemon.level))
-                    hp_percentage = int(100 * pokemon.current_hp / int(pokemon.stats['hp']))
-                    self.hp_bars[i].setValue(hp_percentage)
-                    if hp_percentage < 15:
-                        self.hp_bars[i].setStyleSheet(
-                            " QProgressBar { text-align: center; } QProgressBar::chunk {background-color: red;}")
-                    else:
-                        self.hp_bars[i].setStyleSheet(
-                            " QProgressBar { text-align: center; } QProgressBar::chunk {background-color: #3add36;}")
-
-                    for j in range(4):
-                        if j >= len(pokemon.moves):
-                            # no move
-                            self.pp_bars[i][j].setValue(0)
-                            self.all_move_labels[i][j].setText('--')
-                        else:
-                            move = pokemon.moves[j]
-                            self.all_move_labels[i][j].setText(move.name)
-                            self.pp_bars[i][j].setValue(int(100 * move.pp / move.max_pp))
-
-
-            from pokebot.gameplay.item import Items
-            badges = [{'name': 'bolder_badge', 'have': Items.do_i_have('bolder badge')},
-                      {'name': 'cascade_badge', 'have': Items.do_i_have('cascade badge')},
-                      ]
-
-            for badge_dict, badge_label in zip(badges, self.badgesLabels):
-                if badge_dict['have']:
-                    badge_label.setPixmap(QPixmap(assets_folder + str(badge_dict['name']) + '.png'))
-
+            self.party.update()
+            self.badges.update()
         except Exception:
             logger.error(f"Uncaught frontend error: ", exc_info=True)
             raise
+
+
+
+
+
 
     def start_vba(self):
         from pokebot.fundamentals import open_vba
@@ -306,7 +339,7 @@ class Window(QMainWindow):
 
     def load_game8(self):
         try:
-            import load_saved_game8
+            import load_saved_game3
         except Exception:
             logger.error(f"error: ", exc_info=True)
 

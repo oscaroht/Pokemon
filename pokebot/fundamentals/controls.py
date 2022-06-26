@@ -1,5 +1,5 @@
 import time
-from pynput.keyboard import Controller
+from pynput.keyboard import Controller, Key
 import logging
 logger = logging.getLogger(__name__)
 
@@ -17,6 +17,43 @@ def adjust_go_ratio(measured_time, desired_time = 0.45, threshold=0.01):
     if abs(increase-1) >= threshold:
         logger.debug(f"New button hold time {round(increase*100)} % of old hold time")
         goRatio *= increase
+
+def btnF(number):
+    f_map = {1:Key.f1,
+           2:Key.f2,
+           3:Key.f3,
+           4:Key.f4,
+           5:Key.f5,
+           6:Key.f6,
+           7:Key.f7,
+           8:Key.f8,
+           9:Key.f9,
+           10:Key.f10,
+           11:Key.f11,
+           12:Key.f12}
+
+    keyboard.press(f_map[number])
+    time.sleep(1)
+    keyboard.release(f_map[number])
+
+def btn_save(number):
+    f_map = {1:Key.f1,
+           2:Key.f2,
+           3:Key.f3,
+           4:Key.f4,
+           5:Key.f5,
+           6:Key.f6,
+           7:Key.f7,
+           8:Key.f8,
+           9:Key.f9,
+           10:Key.f10
+             }
+
+    keyboard.press(Key.shift)
+    keyboard.press(f_map[number])
+    time.sleep(1)
+    keyboard.release(f_map[number])
+    keyboard.release(Key.shift)
 
 def btnA(*argv):
     logger.debug("A")
@@ -192,4 +229,4 @@ if __name__ == '__main__':
     time.sleep(1)
     logger.debug(f"Test starts in.. 1 sec")
     time.sleep(1)
-    test_circle()
+    btnF(12)
