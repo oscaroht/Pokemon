@@ -7,7 +7,7 @@ import logging
 from datetime import datetime
 
 
-class QBadges(QMainWindow):
+class QBadges(QWidget):
 
     def __init__(self, win):
         self.badge_list = list()
@@ -27,7 +27,7 @@ class QBadges(QMainWindow):
         for b in self.badge_list:
             b.update()
 
-class QBadge(QMainWindow):
+class QBadge(QWidget):
 
     def __init__(self, win, badge_filename):
         self.badge_filename = badge_filename

@@ -5,16 +5,6 @@ import cv2
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, QTimer
 from PyQt5.QtGui import QPixmap, QColor, QImage, QFont, QFontDatabase
 from PyQt5 import QtWidgets
-# from PyQt5.QtWidgets import (
-#     QApplication,
-#     QLabel,
-#     QMainWindow,
-#     QPushButton,
-#     QVBoxLayout,
-#     QHBoxLayout,
-#     QWidget,
-#     QProgressBar, QGroupBox,
-# )
 from PyQt5.QtWidgets import *
 import random
 
@@ -31,6 +21,7 @@ from pokebot.fight import OwnPokemon
 from pokebot.gameplay import Items
 from qt.qt_badges import QBadges
 from qt.qt_pokemon import QParty, QMoves
+from qt.qt_menu import CustomMenuBar
 
 OwnPokemon.new_game()
 Items.new_game()
@@ -88,169 +79,15 @@ class Window(QMainWindow):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        # Create menu bar
+        menu_bar = CustomMenuBar(self)
+        self.setMenuBar(menu_bar)
+
         self.setup_ui()
         self.setup_timer()
-        # self.menu_bar()
-        self._createActions()
-        self._create_menubar()
-        self._connectActions()
 
         QFontDatabase.addApplicationFont('Pokemon GB.ttf')
 
-    def _create_menubar(self):
-        import os
-        menuBar = self.menuBar()
-        # File menu
-        fileMenu = QMenu("&File", self)
-        menuBar.addMenu(fileMenu)
-        fileMenu.addAction(self.newAction)
-        self.load_menu = fileMenu.addMenu("Load saved game...")
-
-        self.save_menu = fileMenu.addMenu("Save game...")
-        # fileMenu.addAction(self.saveAction)
-        fileMenu.addAction(self.exitAction)
-        # Edit menu
-        editMenu = menuBar.addMenu("&Edit")
-        editMenu.addAction(self.copyAction)
-        editMenu.addAction(self.pasteAction)
-        editMenu.addAction(self.cutAction)
-
-        # Help menu
-        helpMenu = menuBar.addMenu("&Help")
-        helpMenu.addAction(self.helpContentAction)
-        helpMenu.addAction(self.aboutAction)
-
-    def _createActions(self):
-        import os
-        # Creating action using the first constructor
-        self.newAction = QAction(self)
-        self.newAction.setText("&New")
-        # Creating actions using the second constructor
-        # self.load1_action = QAction("&Load game 1", self)
-        # self.load2_action = QAction("&Load game 2", self)
-        self.saveAction = QAction("&Save", self)
-        self.exitAction = QAction("&Exit", self)
-        self.copyAction = QAction("&Copy", self)
-        self.pasteAction = QAction("&Paste", self)
-        self.cutAction = QAction("&Cut", self)
-        self.helpContentAction = QAction("&Help Content", self)
-        self.aboutAction = QAction("&About", self)
-
-    def _connectActions(self):
-        # Connect File actions
-        self.load_menu.aboutToShow.connect(self.populate_load_menu)
-        self.save_menu.aboutToShow.connect(self.populate_save_menu)
-
-    def get_number(self,f):
-        return int(''.join([s for s in f if s.isdigit()]))
-
-    def populate_save_menu(self):
-        import os, functools
-        self.save_menu.clear()
-        filenames = [filename for filename in os.listdir(VBA_DIR) if filename.endswith('sgm')]
-        # filenames.sort(key=self.get_number)
-
-        opt = {}
-        for i in range(10):
-            opt[i + 1] = '--'
-        actions = []
-        for filename in filenames:
-            index = self.get_number(filename)
-            opt[index] = filename
-        for key,value in opt.items():
-            action = QAction(value, self)
-            action.triggered.connect(functools.partial(self.save_this_file, key))
-            actions.append(action)
-        self.save_menu.addActions(actions)
-
-
-        # actions = []
-        # file_options = 10*['--']
-        # for i, f in enumerate(filenames):
-        #     file_options[i] = f
-        # for slot, f in enumerate(file_options):
-        #     action = QAction(f, self)
-        #     action.triggered.connect(functools.partial(self.save_this_file, slot + 1))
-        #     actions.append(action)
-        # self.save_menu.addActions(actions)
-
-
-    def populate_load_menu(self):
-        import os, functools
-        self.load_menu.clear()
-        filenames = [filename for i, filename in enumerate(os.listdir(VBA_DIR)) if filename.endswith('sgm')]
-        filenames.sort(key=self.get_number)
-
-        # opt = {}
-        # for i in range(10):
-        #     opt[i + 1] = '--'
-        # actions = []
-        # for filename in filenames:
-        #     index = self.get_number(filename)
-        #     opt[index] = filename
-        # for key,value in opt.items():
-        #     action = QAction(value, self)
-        #     action.triggered.connect(functools.partial(self.load_this_file, key))
-        #     actions.append(action)
-        # self.load_menu.addActions(actions)
-
-        actions = []
-        print(filenames)
-        for f in filenames:
-            action = QAction(f, self)
-            action.triggered.connect(functools.partial(self.load_this_file, f))
-            actions.append(action)
-        self.load_menu.addActions(actions)
-
-
-    def load_this_file(self, f):
-        from pokebot.fundamentals.load_game import load_game
-        # VBA LOAD
-        from pokebot.fundamentals.controls import btnF
-        from pygetwindow import getWindowsWithTitle, PyGetWindowException
-        try:
-            vb = getWindowsWithTitle('VisualBoyAdvance')[0]
-            vb.activate()  # also possible to uncheck 'Pause when inactive' in vba settings
-            num = ''.join([s for s in f if s.isdigit()])
-            btnF(int(num))
-        except PyGetWindowException:  # windows returns code 0 when everything is successful. Unfortunately this is handled as an error
-            pass
-
-        # DATABASE LOAD
-        try:
-            load_game(f)
-        except Exception:
-            logger.error('Err: ', exc_info=True)
-
-    def save_this_file(self, slot):
-        # VBA SAVE
-        from pokebot.fundamentals.controls import btn_save
-        from pygetwindow import getWindowsWithTitle, PyGetWindowException
-        try:
-            vb = getWindowsWithTitle('VisualBoyAdvance')[0]
-            vb.activate()  # also possible to uncheck 'Pause when inactive' in vba settings
-            btn_save(slot)
-        except PyGetWindowException:  # windows returns code 0 when everything is successful. Unfortunately this is handled as an error
-            pass
-
-        f = f"Pokemon Blue{slot}.sgm"
-        if f != '--':
-            print("Are you sure you want to overwrite this file")
-        print(f"saving on {f}")
-        try:
-            from pokebot.fundamentals.save_game import save_game
-            save_game(f, slot)
-        except Exception:
-            logger.error("Err: ", exc_info=True)
-
-
-    def convert_cv_qt_pixelmap(self, cv_img):
-        ''''Converts a open cv image to a qt pixmap.'''
-
-        h, w, ch = cv_img.shape
-        bytes_per_line = ch * w
-        convert_to_Qt_format = QImage(cv_img.data, w, h, bytes_per_line, QImage.Format_RGBA8888)
-        return QPixmap.fromImage(convert_to_Qt_format)
 
     def setup_ui(self):
         self.setWindowTitle("Pokebot")
@@ -267,9 +104,8 @@ class Window(QMainWindow):
         command_groupbox.setLayout(textbox_layout)
 
 
-
-
         self.badges = QBadges(self)
+
 
         # Initiate button section
         self.start_vba_btn = QPushButton("Open VBA", self)
@@ -295,7 +131,6 @@ class Window(QMainWindow):
         buttonGroupBox.setLayout(button_layout)
 
         self.party = QParty(self)
-        # party_goupbox = self.party.groupbox(self)
 
         # total layout
         main_layout = QVBoxLayout()
@@ -315,9 +150,6 @@ class Window(QMainWindow):
         self.timer.start(500)  # set the reset frequency in milli seconds
 
 
-
-
-
     def update_gui(self):
         ''''Updates the gui. '''
 
@@ -327,10 +159,6 @@ class Window(QMainWindow):
         except Exception:
             logger.error(f"Uncaught frontend error: ", exc_info=True)
             raise
-
-
-
-
 
 
     def start_vba(self):

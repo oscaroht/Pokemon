@@ -4,7 +4,7 @@ import cv2
 
 from pokebot.fight.pokemon import OwnPokemon, OwnMove
 
-class QPokemon(QMainWindow):
+class QPokemon(QWidget):
 
     pixmaps = {}
     assets_folder = 'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\dashboard\\assets\\'
@@ -90,7 +90,7 @@ class QPokemon(QMainWindow):
 
 
 
-class QMoves(QMainWindow):
+class QMoves(QWidget):
 
     def __init__(self, win):
         self.moves_list=[]
@@ -110,7 +110,7 @@ class QMoves(QMainWindow):
             q.update(m)
 
 
-class QMove(QMainWindow):
+class QMove(QWidget):
 
     def __init__(self, win, index):
         self.pp_progressbar = QProgressBar(win)
@@ -142,7 +142,7 @@ class QMove(QMainWindow):
         self.label.setText('')
         self.pp_progressbar.setValue(0)
 
-class QParty(QMainWindow):
+class QParty(QWidget):
 
     def __init__(self, win):
         self.all = []
