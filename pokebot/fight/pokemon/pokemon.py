@@ -389,7 +389,7 @@ class OwnPokemon(Pokemon):
 
 
 
-def load_pokemon():
+def load_pokemon(saved_game_id):
 
     query = """select 
     a.own_pokemon_id,
@@ -439,7 +439,8 @@ def load_pokemon():
     join mappings.pokemon_move c on a.move1_id = c.move_id 
     join mappings.pokemon_move d on a.move2_id = d.move_id 
     join mappings.pokemon_move e on a.move3_id = e.move_id 
-    join mappings.pokemon_move f on a.move4_id = f.move_id; """
+    join mappings.pokemon_move f on a.move4_id = f.move_id
+    where a.saved_game_id = {saved_game_id}; """
 
 
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
