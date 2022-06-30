@@ -391,7 +391,7 @@ class OwnPokemon(Pokemon):
 
 def load_pokemon(saved_game_id):
 
-    query = """select 
+    query = f"""select 
     a.own_pokemon_id,
     a.pokemon_id,
     a.own_pokemon_name,
