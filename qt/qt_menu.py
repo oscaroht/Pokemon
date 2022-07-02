@@ -26,11 +26,16 @@ logging.basicConfig(level=logging.DEBUG,
                               logging.StreamHandler()])
 logger = logging.getLogger(__name__)
 
+from pokebot.fundamentals.vba import VBA_controller
+
+
 # new idea create object that extends QMenubar and assign it in the Main Window
 
 class CustomMenuBar(QMenuBar):
 
     VBA_DIR = "C:\\Users\\oscar\\PycharmProjects\\Pokemon"
+
+    vba = VBA_controller()
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -40,16 +45,21 @@ class CustomMenuBar(QMenuBar):
         self._create_menubar()
         self._connectActions()
 
+    def save_action(func):
+        def wrapper(self, a):
+            func(self, a)
+            self.parent.unsaved_actions = False
+        return wrapper
 
     def _create_menubar(self):
         # File menu
         fileMenu = self.addMenu("&File")
-        fileMenu.addAction(self.newAction)
+        fileMenu.addAction(self.new_game_action)
         # fileMenu.addAction(win.newAction)
         self.load_menu = fileMenu.addMenu("Load saved game...")
         self.save_menu = fileMenu.addMenu("Save game...")
-        fileMenu.addAction(self.saveAction)
-        fileMenu.addAction(self.exitAction)
+        fileMenu.addAction(self.open_vba_action)
+        fileMenu.addAction(self.exit_action)
         # Edit menu
         editMenu = self.addMenu("&Edit")
         editMenu.addAction(self.copyAction)
@@ -64,11 +74,11 @@ class CustomMenuBar(QMenuBar):
     def create_actions(self):
         import os
         # Creating action using the first constructor
-        self.newAction = QAction(self.parent)
-        self.newAction.setText("&New")
+        self.new_game_action = QAction(self.parent)
+        self.new_game_action.setText("&New game")
         # Creating actions using the second constructor
-        self.saveAction = QAction("&Save", self.parent)
-        self.exitAction = QAction("&Exit", self.parent)
+        self.open_vba_action = QAction("&Open VBA", self.parent)
+        self.exit_action = QAction("&Exit", self.parent)
         self.copyAction = QAction("&Copy", self.parent)
         self.pasteAction = QAction("&Paste", self.parent)
         self.cutAction = QAction("&Cut", self.parent)
@@ -79,10 +89,33 @@ class CustomMenuBar(QMenuBar):
         # Connect File actions
         self.load_menu.aboutToShow.connect(self.populate_load_menu)
         self.save_menu.aboutToShow.connect(self.populate_save_menu)
-        self.newAction.triggered.connect(self.new)
+        self.new_game_action.triggered.connect(self.new_game)
+        self.open_vba_action.triggered.connect(self.open_vba)
+        self.exit_action.triggered.connect(self.exit)
 
-    def new(self):
+    def open_vba(self):
+        self.vba.open_vba_window_if_not_exists()
+
+    def exit(self):
+        if self.parent.unsaved_actions:
+            sd = SaveDialog()
+            sd.exec()
+            if sd.passed:
+                self.vba.close()
+                super().close(self.parent)  # close the window
+
+
+    def new_game(self):
+        from pokebot.game_plan import Gameplan
+
         print(f"New clicked")
+        dw = NewGameDialog(self)
+        dw.exec()
+        if dw.passed:
+            print(f"Questions passed")
+            Gameplan.set_new_game()
+            CustomMenuBar.vba.reset_game()
+
 
     def get_number(self,f):
         return int(''.join([s for s in f if s.isdigit()]))
@@ -120,46 +153,171 @@ class CustomMenuBar(QMenuBar):
             actions.append(action)
         self.load_menu.addActions(actions)
 
-
+    @save_action
     def load_this_file(self, f):
         from pokebot.fundamentals.load_game import load_game
-        # VBA LOAD
-        from pokebot.fundamentals.controls import btnF
-        from pygetwindow import getWindowsWithTitle, PyGetWindowException
-        try:
-            vb = getWindowsWithTitle('VisualBoyAdvance')[0]
-            vb.activate()  # also possible to uncheck 'Pause when inactive' in vba settings
-            num = ''.join([s for s in f if s.isdigit()])
-            btnF(int(num))
-        except PyGetWindowException:  # windows returns code 0 when everything is successful. Unfortunately this is handled as an error
-            pass
 
-        # DATABASE LOAD
-        try:
-            load_game(f)
-        except Exception:
-            logger.error('Err: ', exc_info=True)
+        if self.parent.unsaved_actions:
+            print(f"there are unsaved changes")
+            sd = SaveDialog(self)
+            sd.exec()
+            if not sd.passed:
+                return
 
+        print(f"Loading")
+
+        # try:
+        #     # file
+        #     num = int(''.join([s for s in f if s.isdigit()]))
+        #     self.vba.load_game(num)
+        #     # database
+        #     load_game(f)
+        # except Exception:
+        #     logger.error('Err: ', exc_info=True)
+
+    def list_saved_games(self):
+        import os
+        return [filename for i, filename in enumerate(os.listdir(self.VBA_DIR)) if filename.endswith('sgm')]
+
+    @save_action
     def save_this_file(self, slot):
         # VBA SAVE
+        import os
         from pokebot.fundamentals.controls import btn_save
         from pygetwindow import getWindowsWithTitle, PyGetWindowException
-        try:
-            vb = getWindowsWithTitle('VisualBoyAdvance')[0]
-            vb.activate()  # also possible to uncheck 'Pause when inactive' in vba settings
-            btn_save(slot)
-        except PyGetWindowException:  # windows returns code 0 when everything is successful. Unfortunately this is handled as an error
-            pass
 
         f = f"Pokemon Blue{slot}.sgm"
-        if f != '--':
-            print("Are you sure you want to overwrite this file")
+        print(f"sving {f}")
+        if f in self.list_saved_games():
+            print(f"{f} already in saved games")
+            od = OverwriteDialog()
+            od.exec()
+            if not od.passed:
+                print(f"cancel save")
+                return
         print(f"saving on {f}")
-        try:
-            from pokebot.fundamentals.save_game import save_game
-            save_game(f, slot)
-        except Exception:
-            logger.error("Err: ", exc_info=True)
+
+        # try:
+        #     from pokebot.fundamentals.save_game import save_game
+        #     self.vba.save_game(slot)
+        #     save_game(f, slot)
+        # except Exception:
+        #     logger.error("Err: ", exc_info=True)
+
+
+
+class NewGameDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.passed = False
+
+        self.setWindowTitle('New game')
+
+        self.first = QLineEdit(self)
+        self.second = QLineEdit(self)
+        buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
+
+
+        self.ash_label = QLabel()
+        self.pixmap = QPixmap('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\dashboard\\assets\\' + 'ash' + '.png')
+        self.ash_label.setPixmap(self.pixmap)
+
+
+        layout = QFormLayout(self)
+        layout.setVerticalSpacing(20)
+        layout.addRow("Player name", self.first)
+        layout.setVerticalSpacing(20)
+        layout.addRow("Rival name", self.second)
+        layout.setVerticalSpacing(20)
+        layout.addWidget(buttonBox)
+        # question_gb = QGroupBox()
+        # question_gb.setLayout(layout)
+        #
+        # gb = QHBoxLayout()
+        # gb.addWidget(self.ash_label)
+        # gb.addWidget(question_gb)
+        # self.setLayout(gb)
+
+
+
+        buttonBox.accepted.connect(self.accept)
+        buttonBox.rejected.connect(self.reject)
+
+    def getInputs(self):
+        return (self.first.text(), self.second.text())
+
+    def accept(self):
+        from pokebot.game_plan import Gameplan
+        if self.first.text() and self.second.text():
+            # if there is any input
+            p = Gameplan.set_player_name(self.first.text())
+            r = Gameplan.set_rival_name(self.second.text())
+            self.passed = True
+        super().accept()
+
+    def reject(self):
+        self.passed = False
+        super().reject()
+
+    @staticmethod
+    def convert_cv_qt_pixelmap(cv_img):
+        ''''Converts a open cv image to a qt pixmap.'''
+
+        h, w, ch = cv_img.shape
+        bytes_per_line = ch * w
+        convert_to_Qt_format = QImage(cv_img.data, w, h, bytes_per_line, QImage.Format_RGBA8888)
+        return QPixmap.fromImage(convert_to_Qt_format)
+
+
+
+class OverwriteDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.passed = False
+
+        self.setWindowTitle("Overwrite existing game?")
+
+        QBtn = QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+
+        self.buttonBox = QDialogButtonBox(QBtn)
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+
+        self.layout = QVBoxLayout()
+        message = QLabel("You already have a game at this slot.\nClick OK if you want to overwrite it.")
+        self.layout.addWidget(message)
+        self.layout.addWidget(self.buttonBox)
+        self.setLayout(self.layout)
+
+    def accept(self):
+        self.passed = True
+        super().accept()
+
+
+class SaveDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.passed = False
+
+        self.setWindowTitle("Unsaved changes")
+
+        QBtn = QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+
+        self.buttonBox = QDialogButtonBox(QBtn)
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+
+        self.layout = QVBoxLayout()
+        message = QLabel("You have unsaved changes.\nIf you want to discard these changes click OK")
+        self.layout.addWidget(message)
+        self.layout.addWidget(self.buttonBox)
+        self.setLayout(self.layout)
+
+    def accept(self):
+        self.passed = True
+        super().accept()
+
+
 
 if __name__ == '__main__':
     class Window(QMainWindow):
@@ -168,6 +326,9 @@ if __name__ == '__main__':
         def __init__(self, parent=None):
             """Initializer."""
             super().__init__(parent)
+
+            self.unsaved_actions = True
+
             self.setWindowTitle("Menus & Toolbars")
             self.resize(400, 200)
             self.centralWidget = QLabel("Central Widget")

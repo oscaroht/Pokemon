@@ -17,6 +17,26 @@ class Gameplan:
 
     sku = {'item_name': 'Poke Ball', 'amount': 10}
 
+    @classmethod
+    def set_new_game(cls):
+        cls.continue_or_new_game = 'new_game'
+
+    @classmethod
+    def set_continue_game(cls):
+        cls.continue_or_new_game = 'continue'
+
+    @classmethod
+    def set_player_name(cls, name):
+        # do some validation
+        cls.player_name = name
+        return True
+
+    @classmethod
+    def set_rival_name(cls, name):
+        # do some validation
+        cls.rival_name = name
+        return True
+
 if __name__ == '__main__':
     print(Gameplan.player_name)
 

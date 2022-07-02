@@ -18,6 +18,16 @@ def adjust_go_ratio(measured_time, desired_time = 0.45, threshold=0.01):
         logger.debug(f"New button hold time {round(increase*100)} % of old hold time")
         goRatio *= increase
 
+def ctrl_plus(letter: chr):
+    """Presses control key plus a letter key"""
+
+    keyboard.press(Key.ctrl)
+    keyboard.press(letter)
+    time.sleep(1)
+    keyboard.release(letter)
+    keyboard.release(Key.ctrl)
+
+
 def btnF(number):
     f_map = {1:Key.f1,
            2:Key.f2,

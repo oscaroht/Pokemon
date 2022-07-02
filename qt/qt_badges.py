@@ -6,33 +6,54 @@ import cv2
 import logging
 from datetime import datetime
 
+class QBadgesGroupBox(QGroupBox):
 
-class QBadges(QWidget):
-
-    def __init__(self, win):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.parent = parent
         self.badge_list = list()
         for b in ['bolder_badge', 'cascade_badge', 'thunder_badge', 'rainbow_badge', 'soul_badge', 'marsh_badge', 'volcano_badge', 'earth_badge']:
-            self.badge_list.append(QBadge(win, b))
-        self.groupbox = self.set_groupbox(win)
+            self.badge_list.append(QBadge(parent, b))
 
-    def set_groupbox(self, win):
-        badges_groupbox = QGroupBox(win.tr("Badges"))
+        self.setTitle('Badges')
         badges_layout = QGridLayout()
         for i in range(8):
             badges_layout.addWidget(self.badge_list[i].badge_label, int(i / 4 + 1), i % 4 + 1)
-        badges_groupbox.setLayout(badges_layout)
-        return badges_groupbox
+        self.setLayout(badges_layout)
 
     def update(self):
         for b in self.badge_list:
             b.update()
 
+
+#
+# class QBadges(QWidget):
+#
+#     def __init__(self, parent):
+#         self.parent = parent
+#         self.badge_list = list()
+#         for b in ['bolder_badge', 'cascade_badge', 'thunder_badge', 'rainbow_badge', 'soul_badge', 'marsh_badge', 'volcano_badge', 'earth_badge']:
+#             self.badge_list.append(QBadge(parent, b))
+#         self.groupbox = self.set_groupbox(parent)
+#
+#     def set_groupbox(self, win):
+#         badges_groupbox = QGroupBox(win.tr("Badges"))
+#         badges_layout = QGridLayout()
+#         for i in range(8):
+#             badges_layout.addWidget(self.badge_list[i].badge_label, int(i / 4 + 1), i % 4 + 1)
+#         badges_groupbox.setLayout(badges_layout)
+#         return badges_groupbox
+#
+#     def update(self):
+#         for b in self.badge_list:
+#             b.update()
+
 class QBadge(QWidget):
 
-    def __init__(self, win, badge_filename):
+    def __init__(self, parent, badge_filename):
         self.badge_filename = badge_filename
         self.badge_name = badge_filename.replace('_',' ')
-        self.badge_label = QLabel(win)
+        self.badge_label = QLabel(parent)
         img = cv2.imread('C:\\Users\\oscar\\PycharmProjects\\Pokemon\\dashboard\\assets\\' + badge_filename + '.png',
                          cv2.IMREAD_UNCHANGED)
         self.pixmap = self.convert_cv_qt_pixelmap(img)

@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 from pokebot.fight import OwnPokemon
 from pokebot.gameplay import Items
-from qt.qt_badges import QBadges
+from qt.qt_badges import QBadgesGroupBox
 from qt.qt_pokemon import QParty, QMoves
 from qt.qt_menu import CustomMenuBar
 
@@ -77,6 +77,8 @@ def shadow_image(img):
 
 class Window(QMainWindow):
 
+    unsaved_actions = True
+
     def __init__(self, parent=None):
         super().__init__(parent)
         # Create menu bar
@@ -88,6 +90,11 @@ class Window(QMainWindow):
 
         QFontDatabase.addApplicationFont('Pokemon GB.ttf')
 
+    def poke_action(func):
+        def wrapper(self):
+            self.unsaved_actions = True
+            func(self)
+        return wrapper
 
     def setup_ui(self):
         self.setWindowTitle("Pokebot")
@@ -104,7 +111,7 @@ class Window(QMainWindow):
         command_groupbox.setLayout(textbox_layout)
 
 
-        self.badges = QBadges(self)
+        self.badges = QBadgesGroupBox(self)
 
 
         # Initiate button section
@@ -134,7 +141,7 @@ class Window(QMainWindow):
 
         # total layout
         main_layout = QVBoxLayout()
-        main_layout.addWidget(self.badges.groupbox, 1)
+        main_layout.addWidget(self.badges, 1)
         main_layout.addWidget(buttonGroupBox, 1)
         main_layout.addWidget(self.party.groupbox, 2)
         main_layout.addWidget(command_groupbox, 1)
@@ -171,6 +178,7 @@ class Window(QMainWindow):
         except Exception:
             logger.error(f"error: ", exc_info=True)
 
+    @poke_action
     def run_command(self):
         # Step 2: Create a QThread object
 
@@ -199,7 +207,7 @@ class Window(QMainWindow):
             lambda: self.command_btn.setEnabled(True)
         )
 
-
+    @poke_action
     def runLongTask(self):
         # Step 2: Create a QThread object
         self.thread = QThread()
