@@ -28,8 +28,10 @@ class Fight(): # Maybe we need to inherit OwnPokemon so the OwnPokemon objects g
     we can have several modes: 'max_damage', 'save_pp', 'catch', 'save_hp'
       these modes determine how we play.'''
 
-    def __init__(self, my_pokemon=OwnPokemon.party[0]):
+    def __init__(self, my_pokemon=None):
         ''' construct the foe'''
+        if my_pokemon is None:
+            my_pokemon = OwnPokemon.party[0]
         self.foe_def = False
         self.next_foe_name = None
 
