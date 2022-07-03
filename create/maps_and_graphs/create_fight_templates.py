@@ -1202,39 +1202,17 @@ def evolve():
         'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\pokebot\\fight\\templates\\states\\evolve\\evolve_m.png',
         mask)
 
+def cursor():
+    img = cv2.imread(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\cursor.png')
 
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    cv2.imshow('img', cv2.resize(img[40:49, 8:15], (500, 500), interpolation=cv2.INTER_AREA))
+    cv2.waitKey()
 
-
-img = cv2.imread(
-    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\pokebot\\fight\\templates\\states\\evolve\\evolve.png')
-
-img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-cv2.imshow('img', cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA))
-cv2.waitKey()
-
-mask = np.ones(img.shape[:2], dtype="uint8")
-
-# cv2.rectangle(mask, (8, 8), (13, 47), 0, -1)
-cv2.rectangle(mask, (0, 0), (160, 95), 0, -1)
-cv2.rectangle(mask, (50, 110), (150, 120), 0, -1)
-# cv2.rectangle(mask, (40, 25), (150, 70), 0, -1)
-# cv2.rectangle(mask, (40, 25), (55, 95), 0, -1)
-
-# cv2.rectangle(mask, (63, 80), (150, 88), 0, -1)  # price
-
-mask_view = cv2.resize(mask, (500, 500), interpolation=cv2.INTER_AREA)
-
-masked = cv2.bitwise_and(img, img, mask=mask)
-masked = cv2.resize(masked, (500, 500), interpolation=cv2.INTER_AREA)
-
-cv2.imshow('mask', masked)
-cv2.waitKey()
-cv2.imwrite(
-    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\pokebot\\fight\\templates\\states\\evolve\\evolve_preview.png',
-    masked)
-
-''' afterwards change the name and extension to fight_menu.msk'''
-cv2.imwrite(
-    'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\pokebot\\fight\\templates\\states\\evolve\\evolve_m.png',
-    mask)
+    cv2.imshow('mask', img)
+    cv2.waitKey()
+    cv2.imwrite(
+        'C:\\Users\\oscar\\PycharmProjects\\Pokemon\\cursor_preview.png',
+        img[40:49, 8:15])
 

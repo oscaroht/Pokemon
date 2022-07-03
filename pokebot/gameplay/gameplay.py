@@ -1,12 +1,57 @@
-from .templates import GT
-from ..fundamentals import btnA, btnB, goup, godown, StateController
+from pokebot.gameplay.templates import GT
+from pokebot.fundamentals import btnA, btnB,goleft, goright, goup, godown, StateController
 import time
 from pokebot.game_plan import Gameplan
 
 import logging
 logger = logging.getLogger(__name__)
 
+class TwoWayDict(dict):
+    def __setitem__(self, key, value):
+        # Remove any previous connections with these values
+        if key in self:
+            del self[key]
+        if value in self:
+            del self[value]
+        dict.__setitem__(self, key, value)
+        dict.__setitem__(self, value, key)
+
 class Gameplay:
+
+    cursor_template = None
+
+    abc_map = {'a': (0, 0),
+               'b': (1, 0),
+               'c': (2, 0),
+               'd': (3, 0),
+               'e': (4, 0),
+               'f': (5, 0),
+               'g': (6, 0),
+               'h': (7, 0),
+               'i': (8, 0),
+
+               'j': (0, 1),
+               'k': (1, 1),
+               'l': (2, 1),
+               'm': (3, 1),
+               'n': (4, 1),
+               'o': (5, 1),
+               'p': (6, 1),
+               'q': (7, 1),
+               'r': (8, 1),
+
+               's': (0, 2),
+               't': (1, 2),
+               'u': (2, 2),
+               'v': (3, 2),
+               'w': (4, 2),
+               'x': (5, 2),
+               'y': (6, 2),
+               'z': (7, 2),
+               ' ': (8, 2),
+
+               '*end*': (8, 4)
+               }
 
     @classmethod
     def handle_gameplay(cls):
@@ -32,13 +77,15 @@ class Gameplay:
                     cls.in_name_menu_choose('blue', 'player')
                 else:
                     cls.in_name_menu_choose('new_name', 'player')
-                    logger.error("MAKE SOMETHING TO HANDLE NEW NAME")
+                    time.sleep(2)
+                    cls.abc_choose(Gameplan.player_name)  # better to create a state than to assume we arrive here
             elif sn == 'gameplay_choose_rival_name_menu':
                 if Gameplan.rival_name == 'red':
                     cls.in_name_menu_choose('red', 'rival')
                 else:
                     cls.in_name_menu_choose('new_name', 'rival')
-                    logger.error("MAKE SOMETHING TO HANDLE NEW NAME")
+                    time.sleep(2)
+                    cls.abc_choose(Gameplan.rival_name)  # better to create a state than to assume we arrive here
 
             if sn == 'gameplay_choose_player_name_abc':
                 logger.error("TO BE BUILD")
@@ -52,6 +99,58 @@ class Gameplay:
     #
     #     text = OCR.read_bar()
 
+    @classmethod
+    def _get_cursor_position(cls):
+        import cv2
+        import numpy as np
+        from pokebot.fundamentals import screen_grab
+
+        if cls.cursor_template is None:
+            import pathlib
+            import os
+            path = pathlib.Path(__file__).parent.resolve()
+            filepath = os.path.join(path, "cursor_template\\cursor.tmp")
+
+            cls.cursor_template = cv2.cvtColor(cv2.imread(filepath), cv2.COLOR_RGB2GRAY)
+
+            # cls.cursor_template = cv2.imread(filepath)
+
+        screen = screen_grab(resize=True)
+
+        res = cv2.matchTemplate(screen, cls.cursor_template, cv2.TM_SQDIFF_NORMED)
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+
+        x = min_loc[0]
+        y = min_loc[1]
+        column_number = round((x-8)/16)
+        row_number = round((y-40)/16)
+        print((column_number, row_number))
+        return (column_number, row_number)
+
+    @classmethod
+    def select_letter(cls, letter):
+        x, y = cls._get_cursor_position()
+        x_goal, y_goal = cls.abc_map[letter]
+        print(f"Goal: {x_goal, y_goal}")
+        while x_goal < x:
+            goleft()
+            x, y = cls._get_cursor_position()
+        while x_goal > x:
+            goright()
+            x, y = cls._get_cursor_position()
+        while y_goal < y:
+            goup()
+            x, y = cls._get_cursor_position()
+        while y_goal > y:
+            godown()
+            x, y = cls._get_cursor_position()
+        btnA()
+
+    @classmethod
+    def abc_choose(cls, name):
+        for char in name:
+            cls.select_letter(char)
+        cls.select_letter('*end*')
 
     @classmethod
     def eval_gameplay_states(cls):
@@ -250,4 +349,6 @@ class Gameplay:
 
 
 if __name__ == '__main__':
-    Gameplay.buy_item('Poke Ball',9)
+    # Gameplay.buy_item('Poke Ball',9)
+    Gameplay.abc_choose('oscar')
+    test=1

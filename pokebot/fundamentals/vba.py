@@ -7,12 +7,9 @@ from pokebot.fundamentals.controls import *
 class VBA_controller:
 
     def __init__(self):
-        # if not self.vba_window_exists():
-        #     self.open_vba_window()
-        # else:
-        #     self.window = getWindowsWithTitle('VisualBoyAdvance')[0]
-        # self.window.activate()  # also possible to uncheck 'Pause when inactive' in vba settings
-        pass
+        self.window = None
+        if self._vba_window_exists():
+            self.window = self.window = getWindowsWithTitle('VisualBoyAdvance')[0]
 
     @classmethod
     def _vba_window_exists(cls):
@@ -33,6 +30,8 @@ class VBA_controller:
         def wrapper(self):
             if not self._vba_window_exists():
                 self._open_vba_window()
+            if self.window is None:
+                self.window = getWindowsWithTitle('VisualBoyAdvance')[0]
             self.window.activate()
             func(self)
         return wrapper

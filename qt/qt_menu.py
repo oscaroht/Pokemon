@@ -106,15 +106,20 @@ class CustomMenuBar(QMenuBar):
 
 
     def new_game(self):
-        from pokebot.game_plan import Gameplan
-
         print(f"New clicked")
         dw = NewGameDialog(self)
         dw.exec()
         if dw.passed:
-            print(f"Questions passed")
+            from pokebot.game_plan import Gameplan
+            from pokebot.fight.pokemon import OwnPokemon
+            from pokebot.gameplay.item import Items
+            from pokebot.combiner import go_to
+
             Gameplan.set_new_game()
-            CustomMenuBar.vba.reset_game()
+            OwnPokemon.new_game()
+            Items.new_game()
+            self.vba.reset_game()
+            go_to(('mom_lvl2', 44))  # this is the coordinate where the game starts
 
 
     def get_number(self,f):
