@@ -6,7 +6,7 @@ from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, QTimer
 from PyQt5.QtGui import QPixmap, QColor, QImage, QFont, QFontDatabase
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import *
-import random
+from functools import partial
 
 # https://www.pythonguis.com/tutorials/creating-your-own-custom-widgets/
 from datetime import datetime
@@ -22,38 +22,13 @@ from pokebot.gameplay import Items
 from qt.qt_badges import QBadgesGroupBox
 from qt.qt_pokemon import QParty, QMoves
 from qt.qt_menu import CustomMenuBar
+from qt.qt_worker import Worker
 
 OwnPokemon.new_game()
 Items.new_game()
 
 
 VBA_DIR = "C:\\Users\\oscar\\PycharmProjects\\Pokemon"
-
-
-# Step 1: Create a worker class
-class Worker(QObject):
-    finished = pyqtSignal()
-    execute_command_arg = None  # set this variable to a command
-
-    def run(self):
-        """Long-running task."""
-        try:
-            import from_saved_state8
-        except Exception:
-            logger.info(f"Uncaught backend error: ", exc_info=True)
-            raise
-        self.finished.emit()  # tell the main thread that we are done
-
-    def execute_command(self):
-        from pokebot.combiner import go_to, talk
-        # print(f"Executing: {self.execute_command_arg}")
-        try:
-            # exec(self.execute_command_arg)
-            print(f"Executing: {self.execute_command_arg}")
-        except Exception:
-            logger.error(f"Uncaught backend error: ", exc_info=True)
-        print(f"Command executed")
-        self.finished.emit()  # tell the main thread that we are done
 
 
 
