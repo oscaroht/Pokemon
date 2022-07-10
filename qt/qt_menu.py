@@ -1,35 +1,45 @@
 import sys
-from time import sleep
-
-import cv2
-from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, QTimer
+from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, QTimer, pyqtSlot
 from PyQt5.QtGui import QPixmap, QColor, QImage, QFont, QFontDatabase
-from PyQt5 import QtWidgets
-# from PyQt5.QtWidgets import (
-#     QApplication,
-#     QLabel,
-#     QMainWindow,
-#     QPushButton,
-#     QVBoxLayout,
-#     QHBoxLayout,
-#     QWidget,
-#     QProgressBar, QGroupBox,
-# )
 from PyQt5.QtWidgets import *
 from datetime import datetime
-import random
-
+from functools import partial
 import logging
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s - %(filename)s - %(levelname)s - %(message)s",
                     handlers=[logging.FileHandler(f"C:\\Users\\oscar\\PycharmProjects\\Pokemon\\qt\\log\\{datetime.utcnow().strftime('%Y-%m-%dT%H_%M_%S')}.log"),
                               logging.StreamHandler()])
+
 logger = logging.getLogger(__name__)
-
 from pokebot.fundamentals.vba import VBA_controller
+from qt.qt_worker import Worker
+
+# had some issues with passing args to functions called with triggered.connect
+# espacially the decorators did not work with *args and **kwargs
+# https://stackoverflow.com/questions/68728433/how-can-i-use-a-decorator-on-a-pyqt-signal
+
+def saves_action(func):
+    @pyqtSlot()  # needed to make *args and **kwargs work
+    def wrapper(self,  *args, **kwargs):
+        func(self, *args, **kwargs)
+        self.parent.unsaved_actions = False
+
+    return wrapper
 
 
-# new idea create object that extends QMenubar and assign it in the Main Window
+def discards_changes(func):
+    @pyqtSlot()  # needed to make *args and **kwargs work
+    def wrapper(self, *args, **kwargs):
+        if self.parent.unsaved_actions:
+            print(f"there are unsaved changes")
+            sd = SaveDialog(self)
+            sd.exec()
+            if not sd.passed:
+                return
+        func(self, *args, **kwargs)
+
+    return wrapper
+
 
 class CustomMenuBar(QMenuBar):
 
@@ -45,11 +55,7 @@ class CustomMenuBar(QMenuBar):
         self._create_menubar()
         self._connectActions()
 
-    def save_action(func):
-        def wrapper(self, a):
-            func(self, a)
-            self.parent.unsaved_actions = False
-        return wrapper
+
 
     def _create_menubar(self):
         # File menu
@@ -96,17 +102,15 @@ class CustomMenuBar(QMenuBar):
     def open_vba(self):
         self.vba.open_vba_window_if_not_exists()
 
+    @discards_changes
     def exit(self):
-        if self.parent.unsaved_actions:
-            sd = SaveDialog()
-            sd.exec()
-            if sd.passed:
-                self.vba.close()
-                super().close(self.parent)  # close the window
+        super().close(self.parent)  # close the window
 
 
+    @discards_changes
     def new_game(self):
         print(f"New clicked")
+
         dw = NewGameDialog(self)
         dw.exec()
         if dw.passed:
@@ -119,8 +123,25 @@ class CustomMenuBar(QMenuBar):
             OwnPokemon.new_game()
             Items.new_game()
             self.vba.reset_game()
-            go_to(('mom_lvl2', 44))  # this is the coordinate where the game starts
 
+            self.thread = QThread()
+            # Step 3: Create a worker object
+            self.worker = Worker()
+            # Step 4: Move worker to the thread
+            self.worker.moveToThread(self.thread)
+            # Step 5: Connect signals and slots
+            self.thread.started.connect(partial(self.worker.run2, go_to, ('mom_lvl2', 44)))
+            self.worker.finished.connect(self.thread.quit)
+            self.worker.finished.connect(self.worker.deleteLater)
+            self.thread.finished.connect(self.thread.deleteLater)
+            # self.worker.progress.connect(self.reportProgress)
+            # Step 6: Start the thread
+            self.thread.start()
+
+            self.new_game_action.setEnabled(False)
+            self.thread.finished.connect(
+                lambda: self.new_game_action.setEnabled(True)
+            )
 
     def get_number(self,f):
         return int(''.join([s for s in f if s.isdigit()]))
@@ -158,39 +179,26 @@ class CustomMenuBar(QMenuBar):
             actions.append(action)
         self.load_menu.addActions(actions)
 
-    @save_action
+    @discards_changes
+    @saves_action
     def load_this_file(self, f):
         from pokebot.fundamentals.load_game import load_game
-
-        if self.parent.unsaved_actions:
-            print(f"there are unsaved changes")
-            sd = SaveDialog(self)
-            sd.exec()
-            if not sd.passed:
-                return
-
         print(f"Loading")
-
-        # try:
-        #     # file
-        #     num = int(''.join([s for s in f if s.isdigit()]))
-        #     self.vba.load_game(num)
-        #     # database
-        #     load_game(f)
-        # except Exception:
-        #     logger.error('Err: ', exc_info=True)
+        try:
+            # file
+            num = int(''.join([s for s in f if s.isdigit()]))
+            self.vba.load_game(num)
+            # database
+            load_game(f)
+        except Exception:
+            logger.error('Err: ', exc_info=True)
 
     def list_saved_games(self):
         import os
         return [filename for i, filename in enumerate(os.listdir(self.VBA_DIR)) if filename.endswith('sgm')]
 
-    @save_action
+    @saves_action
     def save_this_file(self, slot):
-        # VBA SAVE
-        import os
-        from pokebot.fundamentals.controls import btn_save
-        from pygetwindow import getWindowsWithTitle, PyGetWindowException
-
         f = f"Pokemon Blue{slot}.sgm"
         print(f"sving {f}")
         if f in self.list_saved_games():
@@ -202,12 +210,12 @@ class CustomMenuBar(QMenuBar):
                 return
         print(f"saving on {f}")
 
-        # try:
-        #     from pokebot.fundamentals.save_game import save_game
-        #     self.vba.save_game(slot)
-        #     save_game(f, slot)
-        # except Exception:
-        #     logger.error("Err: ", exc_info=True)
+        try:
+            from pokebot.fundamentals.save_game import save_game
+            self.vba.save_game(slot)
+            save_game(f, slot)
+        except Exception:
+            logger.error("Err: ", exc_info=True)
 
 
 
