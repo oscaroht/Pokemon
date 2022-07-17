@@ -7,7 +7,7 @@ from pokebot.gameplay.item import Item, Items
 from .config import config
 
 
-def load_game(filename):
+def load_game_in_database(filename):
     OwnPokemon.new_game()
     Items.new_game()
 
@@ -107,4 +107,4 @@ def load_game(filename):
             Items.get_item_by_id(row['item_id']).amount = row['amount']
 
 if __name__ == '__main__':
-    load_game('Pokemon Blue8.sgm')
+    load_game_in_database('Pokemon Blue8.sgm')

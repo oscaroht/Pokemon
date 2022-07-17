@@ -35,19 +35,17 @@ VBA_DIR = "C:\\Users\\oscar\\PycharmProjects\\Pokemon"
 # class Pokemon(QtWidgets.QWidget):
 #     pass
 
-def shadow_image(img):
-    ''''Takes and returns a cv2 image with black color but opacity intact.
-
-    It is used to shade the badges that are not yet obtained by the player.'''
-    h = img.shape[0]
-    w = img.shape[0]
-    for y in range(h):
-        for x in range(w):
-            if img[y, x, 3] != 0: # where the opacity is 0 (so not the background)
-                img[y, x, :3] = [0, 0, 0]  # set the color to black (nor the opacity to 0!)
-    return img
-
-
+# def shadow_image(img):
+#     ''''Takes and returns a cv2 image with black color but opacity intact.
+#
+#     It is used to shade the badges that are not yet obtained by the player.'''
+#     h = img.shape[0]
+#     w = img.shape[0]
+#     for y in range(h):
+#         for x in range(w):
+#             if img[y, x, 3] != 0:  # where the opacity is 0 (so not the background)
+#                 img[y, x, :3] = [0, 0, 0]  # set the color to black (nor the opacity to 0!)
+#     return img
 
 
 class Window(QMainWindow):
@@ -66,14 +64,17 @@ class Window(QMainWindow):
         QFontDatabase.addApplicationFont('Pokemon GB.ttf')
 
     def poke_action(func):
-        def wrapper(self):
+        """"
+        Decorator that sets the unsaved actions class attribute to True
+        """
+        def wrapper(self, *args, **kwargs):
             self.unsaved_actions = True
-            func(self)
+            func(self, *args, **kwargs)
         return wrapper
 
     def setup_ui(self):
         self.setWindowTitle("Pokebot")
-        self.setGeometry(300, 100, 900, 1000) # x0, y0, width, height
+        self.setGeometry(300, 100, 900, 1000)  # x0, y0, width, height
 
         command_groupbox = QGroupBox(self.tr("Command line"))
         self.command_textbox = QLineEdit("go_to(('route4', 902))")
@@ -85,9 +86,7 @@ class Window(QMainWindow):
         textbox_layout.addWidget(self.command_btn)
         command_groupbox.setLayout(textbox_layout)
 
-
         self.badges = QBadgesGroupBox(self)
-
 
         # Initiate button section
         self.start_vba_btn = QPushButton("Open VBA", self)
@@ -133,8 +132,9 @@ class Window(QMainWindow):
 
 
     def update_gui(self):
-        ''''Updates the gui. '''
-
+        ''''
+        Updates the gui by calling the party widget's update function and calling the badges widget's update function.
+        '''
         try:
             self.party.update()
             self.badges.update()
@@ -208,8 +208,6 @@ class Window(QMainWindow):
         self.thread.finished.connect(
             lambda: self.command_btn.setEnabled(True)
         )
-
-
 
 
 if __name__ == '__main__':

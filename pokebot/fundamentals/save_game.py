@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 from .config import config
 import os
 
-def save_game(f, slot):
+def save_game_in_database(f, slot):
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
     engine = create_engine(
         f"postgresql+psycopg2://postgres:{config('../../users.ini', 'postgres', 'password')}@localhost/pokemon")
