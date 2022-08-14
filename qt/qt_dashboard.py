@@ -1,5 +1,6 @@
 import sys
 from time import sleep
+from functools import wraps
 
 import cv2
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, QTimer
@@ -19,6 +20,8 @@ logger = logging.getLogger(__name__)
 
 from pokebot.fight import OwnPokemon
 from pokebot.gameplay import Items
+from pokebot.fundamentals.vba import VBA_controller
+# from pokebot.combiner import *
 from qt.qt_badges import QBadgesGroupBox
 from qt.qt_pokemon import QParty, QMoves
 from qt.qt_menu import CustomMenuBar
@@ -51,6 +54,7 @@ VBA_DIR = "C:\\Users\\oscar\\PycharmProjects\\Pokemon"
 class Window(QMainWindow):
 
     unsaved_actions = True
+    vba = VBA_controller()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -67,16 +71,23 @@ class Window(QMainWindow):
         """"
         Decorator that sets the unsaved actions class attribute to True
         """
+        @wraps(func)  # otherwise multiple uses of the decorator are confused
         def wrapper(self, *args, **kwargs):
-            self.unsaved_actions = True
-            func(self, *args, **kwargs)
+            try:
+                self.unsaved_actions = True
+                self.vba.prepare_action()
+                logger.debug(f"Start function")
+                func(self, *args, **kwargs)
+                logger.debug(f"Function done")
+            except Exception:
+                logger.error('', exc_info=True)
         return wrapper
 
     def setup_ui(self):
         self.setWindowTitle("Pokebot")
         self.setGeometry(300, 100, 900, 1000)  # x0, y0, width, height
 
-        command_groupbox = QGroupBox(self.tr("Command line"))
+        self.command_groupbox = QGroupBox(self.tr("Command line"))
         self.command_textbox = QLineEdit("go_to(('route4', 902))")
         self.command_btn = QPushButton("Run command")
         self.command_btn.setFont(QFont('Pokemon GB'))
@@ -84,41 +95,62 @@ class Window(QMainWindow):
         textbox_layout = QVBoxLayout()
         textbox_layout.addWidget(self.command_textbox)
         textbox_layout.addWidget(self.command_btn)
-        command_groupbox.setLayout(textbox_layout)
+        self.command_groupbox.setLayout(textbox_layout)
 
         self.badges = QBadgesGroupBox(self)
 
-        # Initiate button section
-        self.start_vba_btn = QPushButton("Open VBA", self)
-        self.start_vba_btn.setFont(QFont('Pokemon GB'))
-        self.start_vba_btn.clicked.connect(self.start_vba)  # link th button to the start VBA function
-
-        self.new_game_btn = QPushButton("Start New Game!", self)
-        self.new_game_btn.setFont(QFont('Pokemon GB'))
-        self.new_game_btn.setGeometry(20, 15, 10, 40)
-        self.new_game_btn.clicked.connect(self.runLongTask)
-
-        self.load_btn = QPushButton("Load saved game 8", self)
-        self.load_btn.setFont(QFont('Pokemon GB'))
-        self.load_btn.setGeometry(20, 15, 10, 40)
-        self.load_btn.clicked.connect(self.load_game8)
+        # # Initiate button section
+        # self.start_vba_btn = QPushButton("Open VBA", self)
+        # self.start_vba_btn.setFont(QFont('Pokemon GB'))
+        # self.start_vba_btn.clicked.connect(self.start_vba)  # link th button to the start VBA function
+        #
+        # self.new_game_btn = QPushButton("Start New Game!", self)
+        # self.new_game_btn.setFont(QFont('Pokemon GB'))
+        # self.new_game_btn.setGeometry(20, 15, 10, 40)
+        # self.new_game_btn.clicked.connect(self.runLongTask)
+        #
+        # self.load_btn = QPushButton("Load saved game 8", self)
+        # self.load_btn.setFont(QFont('Pokemon GB'))
+        # self.load_btn.setGeometry(20, 15, 10, 40)
+        # self.load_btn.clicked.connect(self.load_game8)
 
         # Add buttons to a box
-        buttonGroupBox = QGroupBox(self.tr("Button options"))
-        button_layout = QVBoxLayout()
-        button_layout.addWidget(self.start_vba_btn)
-        button_layout.addWidget(self.new_game_btn)
-        button_layout.addWidget(self.load_btn)
-        buttonGroupBox.setLayout(button_layout)
+        # buttonGroupBox = QGroupBox(self.tr("Button options"))
+        # button_layout = QVBoxLayout()
+        # button_layout.addWidget(self.start_vba_btn)
+        # button_layout.addWidget(self.new_game_btn)
+        # button_layout.addWidget(self.load_btn)
+        # buttonGroupBox.setLayout(button_layout)
 
         self.party = QParty(self)
+
+        self.command_box = QGroupBox(self.tr("Command line"))
+        self.command_layout = QHBoxLayout()
+        self.confirm_btn = QPushButton('Run')
+        self.confirm_btn.clicked.connect(self.run_command2)
+        self.cb = QComboBox()
+        self.cb.addItems(['go to', 'talk', 'train', 'catch', 'buy'])
+        self.cb.currentIndexChanged.connect(self.update_command_layout)
+        self.cb_options = QComboBox()
+        self.cb_options.addItems(['Mom','Professor Oak'])
+        self.cb_options.setEditable(True)
+        self.cb.setInsertPolicy(QComboBox.NoInsert)
+        self.level_textbox = QLineEdit("to what level?")  # not yet in layout
+        self.catch_textbox = QLineEdit("which pokemon?")  # not yet in layout
+
+        self.command_layout.addWidget(self.cb)
+        self.command_layout.addWidget(self.cb_options)
+        self.command_layout.addWidget(self.confirm_btn)
+        self.command_box.setLayout(self.command_layout)
+
 
         # total layout
         main_layout = QVBoxLayout()
         main_layout.addWidget(self.badges, 1)
-        main_layout.addWidget(buttonGroupBox, 1)
+        # main_layout.addWidget(buttonGroupBox, 1)
         main_layout.addWidget(self.party.groupbox, 2)
-        main_layout.addWidget(command_groupbox, 1)
+        main_layout.addWidget(self.command_groupbox, 1)
+        main_layout.addWidget(self.command_box)
 
         self.central_widget = QWidget()
         self.central_widget.setLayout(main_layout)
@@ -143,44 +175,122 @@ class Window(QMainWindow):
             raise
 
 
-    def start_vba(self):
-        from pokebot.fundamentals import open_vba
-        open_vba()
+    # def start_vba(self):
+    #     from pokebot.fundamentals import open_vba
+    #     open_vba()
+    #
+    # def load_game8(self):
+    #     try:
+    #         import load_saved_game3
+    #     except Exception:
+    #         logger.error(f"error: ", exc_info=True)
 
-    def load_game8(self):
-        try:
-            import load_saved_game3
-        except Exception:
-            logger.error(f"error: ", exc_info=True)
+    def update_command_layout(self):
+        # clear all widgets from layout
+        for i in reversed(range(self.command_layout.count())):
+            self.command_layout.itemAt(i).widget().setParent(None)
+
+        self.command_layout.addWidget(self.cb)
+        if self.cb.currentText() == 'train':
+            self.command_layout.addWidget(self.level_textbox)  # this widget should be made in the setup function
+        elif self.cb.currentText() == 'catch':
+            self.command_layout.addWidget(self.catch_textbox)
+        self.command_layout.addWidget(self.cb_options)
+        self.command_layout.addWidget(self.confirm_btn)
+        self.command_box.setLayout(self.command_layout)
+
+        # # total layout
+        # main_layout = QVBoxLayout()
+        # main_layout.addWidget(self.badges, 1)
+        # # main_layout.addWidget(buttonGroupBox, 1)
+        # main_layout.addWidget(self.party.groupbox, 2)
+        # main_layout.addWidget(self.command_groupbox, 1)
+        # main_layout.addWidget(self.command_box)
+        #
+        # self.central_widget.setLayout(main_layout)
+
+
+    def update_options_combo(self):
+        self.cb_options.clear()
+        map = {'catch'}
 
     @poke_action
-    def run_command(self):
+    def run_command(self, _called: bool) -> None:  # need the _called arg to work with decorator and pyqt slots
         # Step 2: Create a QThread object
+        try:
+            self.thread = QThread()
+            # Step 3: Create a worker object
+            self.worker = Worker()
+            self.worker.execute_command_arg = self.command_textbox.text()
+            # Step 4: Move worker to the thread
+            self.worker.moveToThread(self.thread)
+            # Step 5: Connect signals and slots
+            self.thread.started.connect(self.worker.execute_command)
+            self.worker.finished.connect(self.thread.quit)
+            self.worker.finished.connect(self.worker.deleteLater)
+            self.thread.finished.connect(self.thread.deleteLater)
+            # self.worker.progress.connect(self.reportProgress)
+            # Step 6: Start the thread
+            self.thread.start()
 
-        self.thread = QThread()
-        # Step 3: Create a worker object
-        self.worker = Worker()
-        self.worker.execute_command_arg = self.command_textbox.text()
-        # Step 4: Move worker to the thread
-        self.worker.moveToThread(self.thread)
-        # Step 5: Connect signals and slots
-        self.thread.started.connect(self.worker.execute_command)
-        self.worker.finished.connect(self.thread.quit)
-        self.worker.finished.connect(self.worker.deleteLater)
-        self.thread.finished.connect(self.thread.deleteLater)
-        # self.worker.progress.connect(self.reportProgress)
-        # Step 6: Start the thread
-        self.thread.start()
+            # Final resets
+            self.new_game_btn.setEnabled(False)
+            self.command_btn.setEnabled(False)
+            self.thread.finished.connect(
+                lambda: self.new_game_btn.setEnabled(True)
+            )
+            self.thread.finished.connect(
+                lambda: self.command_btn.setEnabled(True)
+            )
+        except Exception:
+            logger.error(f"Err: ", exc_info=True)
 
-        # Final resets
-        self.new_game_btn.setEnabled(False)
-        self.command_btn.setEnabled(False)
-        self.thread.finished.connect(
-            lambda: self.new_game_btn.setEnabled(True)
-        )
-        self.thread.finished.connect(
-            lambda: self.command_btn.setEnabled(True)
-        )
+    @poke_action
+    def run_command2(self, _called: bool) -> None:  # need the _called arg to work with decorator and pyqt slots
+        # Step 2: Create a QThread object
+        try:
+            from pokebot.combiner import go_to, talk, buy, catch, train
+            from pokebot.short_cuts import mom, oak
+            func_map = {'go to': go_to,
+                        'talk': talk,
+                        'buy': buy,
+                        'catch': catch,
+                        'train': train}
+            arg_map = {'Mom': mom,
+                       'Professor Oak': oak}
+
+            self.thread = QThread()
+            # Step 3: Create a worker object
+            self.worker = Worker()
+
+            self.worker.func = func_map[self.cb.currentText()]
+            self.worker.args = self.cb_options.currentText()
+
+            # create the function that should be performed by the worker in the thread
+            self.worker.partial_func = partial(func_map[self.cb.currentText()], arg_map[self.cb_options.currentText()])
+
+            # Step 4: Move worker to the thread
+            self.worker.moveToThread(self.thread)
+            # Step 5: Connect signals and slots
+            self.thread.started.connect(self.worker.execute_partial)
+            self.worker.finished.connect(self.thread.quit)
+            self.worker.finished.connect(self.worker.deleteLater)
+            self.thread.finished.connect(self.thread.deleteLater)
+            # self.worker.progress.connect(self.reportProgress)
+            # Step 6: Start the thread
+            self.thread.start()
+
+            # Final resets
+            # self.new_game_btn.setEnabled(False)
+            self.confirm_btn.setEnabled(False)
+            self.thread.finished.connect(
+                lambda: self.new_game_btn.setEnabled(True)
+            )
+            self.thread.finished.connect(
+                lambda: self.command_btn.setEnabled(True)
+            )
+        except Exception:
+            logger.error(f"Err: ", exc_info=True)
 
     @poke_action
     def runLongTask(self):

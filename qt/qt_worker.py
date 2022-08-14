@@ -29,11 +29,20 @@ class Worker(QObject):
 
 
     def execute_command(self):
-        from pokebot.combiner import go_to, talk
-        # print(f"Executing: {self.execute_command_arg}")
         try:
-            # exec(self.execute_command_arg)
+            from pokebot.combiner import go_to, talk
+            from pokebot.short_cuts import mom
             print(f"Executing: {self.execute_command_arg}")
+            exec(self.execute_command_arg)
+            print(f"Executing: {self.execute_command_arg}")
+        except Exception:
+            logger.error(f"Uncaught backend error: ", exc_info=True)
+        print(f"Command executed")
+        self.finished.emit()  # tell the main thread that we are done
+
+    def execute_partial(self):
+        try:
+            self.partial_func()
         except Exception:
             logger.error(f"Uncaught backend error: ", exc_info=True)
         print(f"Command executed")
