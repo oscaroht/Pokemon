@@ -4,9 +4,10 @@ from functools import wraps
 
 import cv2
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, QTimer
-from PyQt5.QtGui import QPixmap, QColor, QImage, QFont, QFontDatabase
+from PyQt5.QtGui import QPixmap, QColor, QImage, QFont, QFontDatabase, QStandardItemModel, QStandardItem, QFontMetrics
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import *
+# from PyQt5 import QtWidgets, QtGui, QtCore
 from functools import partial
 
 # https://www.pythonguis.com/tutorials/creating-your-own-custom-widgets/
@@ -26,6 +27,7 @@ from qt.qt_badges import QBadgesGroupBox
 from qt.qt_pokemon import QParty, QMoves
 from qt.qt_menu import CustomMenuBar
 from qt.qt_worker import Worker
+from qt.qt_checkable_combobox import CheckableComboBox
 
 OwnPokemon.new_game()
 Items.new_game()
@@ -138,6 +140,9 @@ class Window(QMainWindow):
         self.level_textbox = QLineEdit("to what level?")  # not yet in layout
         self.catch_textbox = QLineEdit("which pokemon?")  # not yet in layout
 
+        self.cb_train = CheckableComboBox()
+
+
         self.command_layout.addWidget(self.cb)
         self.command_layout.addWidget(self.cb_options)
         self.command_layout.addWidget(self.confirm_btn)
@@ -189,14 +194,17 @@ class Window(QMainWindow):
         # clear all widgets from layout
         for i in reversed(range(self.command_layout.count())):
             self.command_layout.itemAt(i).widget().setParent(None)
-
-        self.command_layout.addWidget(self.cb)
+        self.command_layout.addWidget(self.cb, 1)
         if self.cb.currentText() == 'train':
-            self.command_layout.addWidget(self.level_textbox)  # this widget should be made in the setup function
+            self.command_layout.addWidget(self.level_textbox, 1)
+            self.cb_train.clear()
+            self.cb_train.addItems(OwnPokemon.party.list_all_own_names())
+            self.command_layout.addWidget(self.cb_train, 1)
+
         elif self.cb.currentText() == 'catch':
-            self.command_layout.addWidget(self.catch_textbox)
-        self.command_layout.addWidget(self.cb_options)
-        self.command_layout.addWidget(self.confirm_btn)
+            self.command_layout.addWidget(self.catch_textbox, 1)
+        self.command_layout.addWidget(self.cb_options, 1)
+        self.command_layout.addWidget(self.confirm_btn, 1)
         self.command_box.setLayout(self.command_layout)
 
         # # total layout
