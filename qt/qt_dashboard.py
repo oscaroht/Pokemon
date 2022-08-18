@@ -4,7 +4,7 @@ from functools import wraps
 
 import cv2
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, QTimer
-from PyQt5.QtGui import QPixmap, QColor, QImage, QFont, QFontDatabase, QStandardItemModel, QStandardItem, QFontMetrics
+from PyQt5.QtGui import QPixmap, QColor, QImage, QFont, QFontDatabase, QStandardItemModel, QStandardItem, QFontMetrics, QPalette
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import *
 # from PyQt5 import QtWidgets, QtGui, QtCore
@@ -27,7 +27,7 @@ from qt.qt_badges import QBadgesGroupBox
 from qt.qt_pokemon import QParty, QMoves
 from qt.qt_menu import CustomMenuBar
 from qt.qt_worker import Worker
-from qt.qt_checkable_combobox import CheckableComboBox
+from qt.qt_checkable_combobox import CheckableComboBox, ComboBox
 
 OwnPokemon.new_game()
 Items.new_game()
@@ -51,6 +51,9 @@ VBA_DIR = "C:\\Users\\oscar\\PycharmProjects\\Pokemon"
 #             if img[y, x, 3] != 0:  # where the opacity is 0 (so not the background)
 #                 img[y, x, :3] = [0, 0, 0]  # set the color to black (nor the opacity to 0!)
 #     return img
+
+
+
 
 
 class Window(QMainWindow):
@@ -133,17 +136,21 @@ class Window(QMainWindow):
         self.cb = QComboBox()
         self.cb.addItems(['go to', 'talk', 'train', 'catch', 'buy'])
         self.cb.currentIndexChanged.connect(self.update_command_layout)
+        self.cb.setInsertPolicy(QComboBox.NoInsert)
+        # go to, talk
         self.cb_options = QComboBox()
         self.cb_options.addItems(['Mom','Professor Oak'])
         self.cb_options.setEditable(True)
-        self.cb.setInsertPolicy(QComboBox.NoInsert)
+        # catch, train
         self.level_textbox = QLineEdit("to what level?")  # not yet in layout
-        self.catch_textbox = QLineEdit("which pokemon?")  # not yet in layout
-
         self.cb_train = CheckableComboBox()
+        self.cb_train_where = ComboBox()
+        self.cb_train_where.addItems(['Route 2 from Pewter city', 'Route 3 from route 3 PC'])
 
+        # self.catch_textbox = QLineEdit("which pokemon?")  # not yet in layout
 
         self.command_layout.addWidget(self.cb)
+        # set default go to
         self.command_layout.addWidget(self.cb_options)
         self.command_layout.addWidget(self.confirm_btn)
         self.command_box.setLayout(self.command_layout)
@@ -195,15 +202,22 @@ class Window(QMainWindow):
         for i in reversed(range(self.command_layout.count())):
             self.command_layout.itemAt(i).widget().setParent(None)
         self.command_layout.addWidget(self.cb, 1)
-        if self.cb.currentText() == 'train':
+        if self.cb.currentText() in ['train', 'catch']:
+            if self.cb.currentText() == 'train':
+                self.level_textbox.setText('to what level?')
+                self.cb_train.clear()
+                self.cb_train.addItems(OwnPokemon.party.list_all_own_names())
+                self.cb_train.setPlaceholderText('-- Select 1 or more pokemon --')
+                self.command_layout.addWidget(self.cb_train, 1)
+            elif self.cb.currentText() == 'catch':
+                self.level_textbox.setText('which pokemon?')
             self.command_layout.addWidget(self.level_textbox, 1)
-            self.cb_train.clear()
-            self.cb_train.addItems(OwnPokemon.party.list_all_own_names())
-            self.command_layout.addWidget(self.cb_train, 1)
+            self.cb_train_where.setPlaceholderText('-- Where? --')
+            self.cb_train_where.setCurrentIndex(-1)
+            self.command_layout.addWidget(self.cb_train_where, 1)
 
-        elif self.cb.currentText() == 'catch':
-            self.command_layout.addWidget(self.catch_textbox, 1)
-        self.command_layout.addWidget(self.cb_options, 1)
+        elif self.cb.currentText() in ['go to', 'talk']:
+            self.command_layout.addWidget(self.cb_options, 1)
         self.command_layout.addWidget(self.confirm_btn, 1)
         self.command_box.setLayout(self.command_layout)
 

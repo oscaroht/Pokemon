@@ -3,9 +3,34 @@
 
 from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtGui import QStandardItem, QFontMetrics, QPalette
-from PyQt5.QtWidgets import QComboBox, QStyledItemDelegate, qApp
+from PyQt5.QtWidgets import QComboBox, QStyledItemDelegate, qApp, QStylePainter, QStyle, QStyleOptionComboBox
 
-class CheckableComboBox(QComboBox):
+class ComboBox(QComboBox):
+    # Placeholder function is broken for QCombobox so overwrite it with this class
+    # https://stackoverflow.com/questions/65826378/how-do-i-use-qcombobox-setplaceholdertext/65830989#65830989
+    # https://code.qt.io/cgit/qt/qtbase.git/tree/src/widgets/widgets/qcombobox.cpp?h=5.15.2#n3173
+    def paintEvent(self, event):
+
+        painter = QStylePainter(self)
+        painter.setPen(self.palette().color(QPalette.Text))
+
+        # draw the combobox frame, focusrect and selected etc.
+        opt = QStyleOptionComboBox()
+        self.initStyleOption(opt)
+        painter.drawComplexControl(QStyle.CC_ComboBox, opt)
+
+        if self.currentIndex() < 0:
+            opt.palette.setBrush(
+                QPalette.ButtonText,
+                opt.palette.brush(QPalette.ButtonText).color().lighter(),
+            )
+            if self.placeholderText():
+                opt.currentText = self.placeholderText()
+
+        # draw the icon and text
+        painter.drawControl(QStyle.CE_ComboBoxLabel, opt)
+
+class CheckableComboBox(ComboBox):
     # Subclass Delegate to increase item height
     class Delegate(QStyledItemDelegate):
         def sizeHint(self, option, index):
@@ -88,6 +113,9 @@ class CheckableComboBox(QComboBox):
             if self.model().item(i).checkState() == Qt.Checked:
                 texts.append(self.model().item(i).text())
         text = ", ".join(texts)
+
+        if text == '' and self.placeholderText():
+            text = self.placeholderText()  # added this myself to add placeholder text
 
         # Compute elided text (with "...")
         metrics = QFontMetrics(self.lineEdit().font())
